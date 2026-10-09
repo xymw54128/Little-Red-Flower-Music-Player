@@ -1,0 +1,20 @@
+[
+  {
+    "page": "library",
+    "drawable": "ic_flower",
+    "transparentCorners": true,
+    "paintedPixels": 21713
+  },
+  {
+    "page": "playlists",
+    "drawable": "ic_header_playlists",
+    "transparentCorners": true,
+    "paintedPixels": 10155
+  },
+  {
+    "page": "settings",
+    "drawable": "ic_header_settings",
+    "transparentCorners": true,
+    "paintedPixels": 21713
+  }
+]

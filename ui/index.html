@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#F8F8F6">
+  <title>小红花 · 本地音乐播放器</title>
+  <link rel="icon" href="assets/flower.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="styles.css">
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <aside class="studio" aria-label="设计预览导航">
+    <a class="studio-brand" href="index.html"><img src="assets/flower.svg" alt="">小红花<span>界面设计</span></a>
+    <p class="studio-intro">把喜欢的音乐，<br>好好留在身边。</p>
+    <nav id="studio-nav" aria-label="页面目录"></nav>
+    <div class="studio-footer">
+      <label for="device-size">预览尺寸</label>
+      <select id="device-size"><option value="390,844">390 × 844 · 标准全面屏</option><option value="360,800">360 × 800 · 紧凑屏幕</option><option value="430,932">430 × 932 · 大屏幕</option></select>
+      <a class="overview-link" href="gallery.html">查看全部页面总览 <span aria-hidden="true">↗</span></a>
+      <p>可点击 UI 原型 · 示例数据<br>真实音频播放与安卓系统功能待实现</p>
+    </div>
+  </aside>
+  <main class="preview-stage">
+    <div class="device" id="device">
+      <div class="player-background" id="player-background" aria-hidden="true"></div>
+      <div class="system-bar" aria-hidden="true"><span>9:41</span><span class="camera"></span><span class="system-icons">▂▄▆ <svg viewBox="0 0 20 14"><path d="M2 5q8-7 16 0M5 8q5-5 10 0M8 11q2-2 4 0" fill="none" stroke="currentColor" stroke-width="1.8"/></svg><span class="battery"></span></span></div>
+      <div class="app" id="app"></div>
+      <div class="gesture-zone" aria-hidden="true"><span></span></div>
+      <div id="overlay-root"></div>
+      <div class="toast" id="toast" role="status" aria-live="polite"></div>
+    </div>
+  </main>
+  <input id="music-files" type="file" multiple accept="audio/*,.flac,.mp3,.wav,.m4a,.aac,.ogg,.opus" hidden>
+  <input id="music-folder" type="file" multiple webkitdirectory hidden>
+  <input id="backup-file" type="file" accept="application/json,.json" hidden>
+  <input id="background-file" type="file" accept="image/jpeg,image/png,image/webp" hidden>
+  <input id="lyric-file" type="file" accept=".lrc,text/plain" hidden>
+</body>
+</html>

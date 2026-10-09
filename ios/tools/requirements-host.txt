@@ -1,0 +1,5 @@
+tree-sitter==0.26.0
+tree-sitter-swift==0.7.4
+openstep-parser==2.0.3
+fonttools==4.66.1
+Pillow>=11,<13

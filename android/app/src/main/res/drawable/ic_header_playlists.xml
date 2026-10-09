@@ -1,0 +1,8 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp" android:height="108dp"
+    android:viewportWidth="108" android:viewportHeight="108">
+    <!-- One outlined five-petal blossom; the interior and background stay transparent. -->
+    <path android:fillColor="#00000000" android:strokeColor="#CE3C4C" android:strokeWidth="4.5" android:strokeLineJoin="round"
+        android:pathData="M41.152,35.018 A13,13 0,0 1 66.848,35.018 Q67.013,36.089 68.082,35.915 A13,13 0,0 1 76.023,60.354 Q75.056,60.841 75.551,61.805 A13,13 0,0 1 54.763,76.908 Q54,76.139 53.237,76.908 A13,13 0,0 1 32.449,61.805 Q32.944,60.841 31.977,60.354 A13,13 0,0 1 39.918,35.915 Q40.987,36.089 41.152,35.018 Z" />
+    <path android:fillColor="#F6D88C" android:pathData="M46.5,54 A7.5,7.5 0,1 0,61.5 54 A7.5,7.5 0,1 0,46.5 54 Z" />
+</vector>

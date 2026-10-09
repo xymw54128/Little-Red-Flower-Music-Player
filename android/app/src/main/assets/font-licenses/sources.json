@@ -1,0 +1,26 @@
+[
+  {
+    "file": "lxgw_wenkai.ttf",
+    "version": "1.522",
+    "url": "https://github.com/lxgw/LxgwWenKai/releases/download/v1.522/LXGWWenKai-Regular.ttf",
+    "license": "https://raw.githubusercontent.com/lxgw/LxgwWenKai/v1.522/OFL.txt",
+    "sha256": "39ad71264b588165b469e35e6afb162a378dacd1f95348160240ba9038ac3009",
+    "bytes": 25575676
+  },
+  {
+    "file": "source_han_serif_cn.otf",
+    "version": "2.003",
+    "url": "https://raw.githubusercontent.com/adobe-fonts/source-han-serif/7889f11bf31170b5d092a083b357c8c8130f89e0/SubsetOTF/CN/SourceHanSerifCN-Regular.otf",
+    "license": "https://raw.githubusercontent.com/adobe-fonts/source-han-serif/7889f11bf31170b5d092a083b357c8c8130f89e0/LICENSE.txt",
+    "sha256": "3754ea669c530e2473354f8f6d9f79680a44d7e26ec7d00eeabee4a7e0753c5d",
+    "bytes": 11626108
+  },
+  {
+    "file": "zhuque_fangsong.ttf",
+    "version": "0.212 (upstream preview)",
+    "url": "https://github.com/TrionesType/zhuque/releases/download/v0.212/ZhuqueFangsong-v0.212.zip",
+    "license": "https://raw.githubusercontent.com/TrionesType/zhuque/v0.212/LICENSE.txt",
+    "sha256": "558c62730844fe54ba220146ed62f859d4e2880188d92d985f8921c6e3743bc4",
+    "bytes": 8824084
+  }
+]

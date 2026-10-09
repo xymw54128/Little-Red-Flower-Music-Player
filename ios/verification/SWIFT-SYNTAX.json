@@ -1,0 +1,27 @@
+{
+  "scope": "Swift grammar parsing only, not type checking or Apple SDK compilation",
+  "treeSitter": "0.26.0",
+  "swiftGrammar": "0.7.4",
+  "files": [
+    "Package.swift",
+    "Tests/CoreTests/CoreTests.swift",
+    "Tests/UITests/PlayerUITests.swift",
+    "Xiaohonghua/Core/AudioTags.swift",
+    "Xiaohonghua/Core/Lyrics.swift",
+    "Xiaohonghua/Core/Models.swift",
+    "Xiaohonghua/DebugFixtures.swift",
+    "Xiaohonghua/Design.swift",
+    "Xiaohonghua/FileLibrary.swift",
+    "Xiaohonghua/LaunchView.swift",
+    "Xiaohonghua/LibraryView.swift",
+    "Xiaohonghua/LyricView.swift",
+    "Xiaohonghua/MusicLibrary.swift",
+    "Xiaohonghua/Playback.swift",
+    "Xiaohonghua/PlayerView.swift",
+    "Xiaohonghua/PlaylistsView.swift",
+    "Xiaohonghua/SettingsView.swift",
+    "Xiaohonghua/SongList.swift",
+    "Xiaohonghua/XiaohonghuaApp.swift"
+  ],
+  "errors": []
+}

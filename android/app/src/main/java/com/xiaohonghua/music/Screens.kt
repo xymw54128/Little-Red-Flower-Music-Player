@@ -1,0 +1,380 @@
+@file:OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
+
+package com.xiaohonghua.music
+
+import android.content.Intent
+import android.graphics.BitmapFactory
+import android.net.Uri
+import android.os.SystemClock
+import android.provider.Settings as AndroidSettings
+import androidx.activity.compose.BackHandler
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.*
+import androidx.compose.foundation.*
+import androidx.compose.foundation.gestures.*
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.layout.boundsInRoot
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.semantics.selected
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.map
+import java.io.File
+
+internal val accents = listOf(Color(0xFFCE3C4C), Color(0xFF527568), Color(0xFF436B92), Color(0xFF98644E), Color(0xFF76668D))
+internal val pageColor = Color(0xFFF8F8F6)
+internal val ink = Color(0xFF272B29)
+internal val muted = Color(0xFF696F6B)
+
+@Composable
+fun MusicApp(model: MusicModel,showStartup: Boolean = false) {
+    val library by model.library.collectAsStateWithLifecycle()
+    // Only the seek bar observes position ticks; library/navigation stay stable.
+    val details=remember(model) {model.playback.map {it.copy(position=0)}.distinctUntilChanged()}
+    val playback by details.collectAsStateWithLifecycle(initialValue=PlaybackState())
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+    val snackbar = remember { SnackbarHostState() }
+    fun message(text: String) { scope.launch { snackbar.showSnackbar(text) } }
+    var screen by rememberSaveable { mutableStateOf("library") }
+    var startupActive by remember {mutableStateOf(showStartup)}
+    var flowerDestination by remember {mutableStateOf<Offset?>(null)}
+    var parent by rememberSaveable { mutableStateOf("library") }
+    var playerReturn by rememberSaveable { mutableStateOf("library") }
+    var playlistId by rememberSaveable { mutableStateOf<String?>(null) }
+    var coverId by rememberSaveable { mutableStateOf<String?>(null) }
+    var coverTarget by rememberSaveable { mutableStateOf<String?>(null) }
+    var group by rememberSaveable { mutableStateOf<String?>(null) }
+    var libraryTab by rememberSaveable { mutableIntStateOf(0) }
+    var query by rememberSaveable { mutableStateOf("") }
+    var sheet by remember { mutableStateOf<String?>(null) }
+    var info by remember { mutableStateOf<Song?>(null) }
+    var addSong by remember { mutableStateOf<Song?>(null) }
+    var lyricTarget by rememberSaveable { mutableStateOf<String?>(null) }
+    var rename by remember { mutableStateOf<Playlist?>(null) }
+    var create by remember { mutableStateOf(false) }
+    var restoreUri by remember { mutableStateOf<Uri?>(null) }
+    var removeFolder by remember { mutableStateOf<Folder?>(null) }
+    val files = rememberLauncherForActivityResult(ActivityResultContracts.OpenMultipleDocuments()) { uris ->
+        uris.forEach { uri -> runCatching { context.contentResolver.takePersistableUriPermission(uri,Intent.FLAG_GRANT_READ_URI_PERMISSION) }.onFailure { message("文件授权未能长期保存，重启后可能需要重新选择") } }
+        if(uris.isNotEmpty()) model.repository.importFiles(uris)
+    }
+    val folder = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocumentTree()) { uri ->
+        if(uri != null) {
+            runCatching {
+                context.contentResolver.takePersistableUriPermission(uri,Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                val name = android.provider.DocumentsContract.getTreeDocumentId(uri).substringAfterLast('/').substringAfterLast(':').ifBlank { "音乐文件夹" }
+                model.repository.addFolder(uri,name)
+            }.onFailure { message("文件夹授权失败：${it.message}") }
+        }
+    }
+    val lyrics = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri -> if(uri != null) lyricTarget?.let { model.importLyrics(it,uri,::message) } }
+    val image = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri -> if(uri != null) model.importBackground(uri,::message) }
+    val coverPhoto = rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) {uri ->
+        if(uri != null) coverTarget?.let {model.importPlaylistCover(it,uri,::message)}
+        coverTarget=null
+    }
+    val export = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("application/json")) { uri -> if(uri != null) model.exportBackup(uri,::message) }
+    val restore = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri -> restoreUri=uri }
+    val playlist = library.playlists.find { it.id == playlistId }
+    val byId=remember(library.songs) {library.songs.associateBy {it.id}}
+    val current = byId[playback.currentId]
+    val inPlaylist=screen == "playlist"
+    val baseSongs = remember(inPlaylist,playlist?.songIds,library.songs) { if(inPlaylist) playlist?.songIds?.mapNotNull(byId::get).orEmpty() else library.songs }
+    val activeSort=if(inPlaylist) playlist?.sort ?: SortMode.CUSTOM else library.sort
+    val custom=if(inPlaylist) playlist?.songIds.orEmpty() else library.custom
+    val random=if(inPlaylist) playlist?.randomIds.orEmpty() else library.random
+    val sorted = remember(sheet,baseSongs,activeSort,custom,random) {if(sheet == "custom-sort") orderedSongs(baseSongs,activeSort,custom,random) else emptyList()}
+    fun go(page: String) { if(page == "player") playerReturn=screen; parent=screen; screen=page; sheet=null }
+    fun back() { when { screen == "player" -> screen=playerReturn; group != null -> group=null; screen == "playlist" -> screen="playlists"; else -> screen=if(parent == "player") "player" else "settings" } }
+    BackHandler(screen !in listOf("library","playlists","settings") || group != null) { back() }
+    BackHandler(startupActive) {startupActive=false}
+    MaterialTheme(colorScheme=lightColorScheme(primary=accents[library.settings.theme],background=pageColor,surface=Color.White,onSurface=ink,onBackground=ink,outlineVariant=Color(0xFFE6E8E3))) {
+        Box(Modifier.fillMaxSize()) {
+        Scaffold(modifier=Modifier.fillMaxSize(),containerColor=pageColor,snackbarHost={ SnackbarHost(snackbar) },
+            bottomBar={ if(screen != "player") Column {
+                if(current != null) MiniPlayer(current,playback,model) { go("player") }
+                NavigationBar(containerColor=pageColor,tonalElevation=0.dp) {
+                    listOf(Triple("library","音乐库",Icons.Outlined.LibraryMusic),Triple("playlists","歌单",Icons.Outlined.QueueMusic),Triple("settings","设置",Icons.Outlined.Settings)).forEach { (page,label,icon) ->
+                        NavigationBarItem(selected=screen == page || (page == "playlists" && screen == "playlist"),onClick={ screen=page; group=null; query=""; sheet=null },icon={ Icon(icon,label) },label={ Text(label) })
+                    }
+                }
+            } }) { padding ->
+            Box(Modifier.fillMaxSize().padding(padding)) {
+                AnimatedContent(targetState=screen,modifier=Modifier.fillMaxSize(),transitionSpec={
+                    val enteringPlayer=targetState == "player"
+                    val leavingPlayer=initialState == "player"
+                    ((fadeIn(tween(280)) + if(enteringPlayer) slideInVertically(tween(320)) {it/12} else slideInHorizontally(tween(280)) {if(leavingPlayer) 0 else it/16}) togetherWith
+                        (fadeOut(tween(160)) + if(leavingPlayer) slideOutVertically(tween(280)) {it/12} else slideOutHorizontally(tween(220)) {if(enteringPlayer) 0 else -it/16})).using(null)
+                },label="page-transition") { page ->
+                val pageBase=remember(page,playlist?.songIds,library.songs) {if(page == "playlist") playlist?.songIds?.mapNotNull(byId::get).orEmpty() else library.songs}
+                val pageSort=if(page == "playlist") playlist?.sort ?: SortMode.CUSTOM else library.sort
+                val pageCustom=if(page == "playlist") playlist?.songIds.orEmpty() else library.custom
+                val pageRandom=if(page == "playlist") playlist?.randomIds.orEmpty() else library.random
+                val pageSorted=remember(page,pageBase,pageSort,pageCustom,pageRandom) {if(page in listOf("library","playlist")) orderedSongs(pageBase,pageSort,pageCustom,pageRandom) else emptyList()}
+                val displayed=remember(pageSorted,group,libraryTab,query) {pageSorted.filter { song -> (group == null || if(libraryTab == 1) "${song.artist}\u0000${song.album}" == group else song.artist == group) &&
+                    (query.isBlank() || listOf(song.title,song.artist,song.album,song.name).any {it.contains(query,true)})}}
+                val groupSongs=remember(pageSorted,query) {if(query.isBlank()) pageSorted else pageSorted.filter {"${it.title} ${it.artist} ${it.album}".contains(query,true)}}
+                if(page == "player") {
+                    PlayerScreen(current,library,playback,model,onBack=::back,onQueue={ sheet="queue" },onAdd={ addSong=current },onLyrics={
+                        if(current != null) { lyricTarget=current.id; lyrics.launch(arrayOf("*/*")) }
+                    },onStyle={ go("lyric-style") })
+                } else Column(Modifier.fillMaxSize()) {
+                    val title = when(page) {
+                        "library" -> if(group != null) (if(libraryTab == 1) group!!.substringAfter('\u0000') else group!!) else "音乐库"
+                        "playlist" -> playlist?.name ?: "歌单"
+                        "playlists" -> "我的歌单"
+                        "folders" -> "歌曲文件夹"
+                        "lyric-style" -> "歌词样式"
+                        "theme" -> "主题颜色"
+                        "background" -> "播放背景"
+                        "backup" -> "备份与恢复"
+                        else -> "设置"
+                    }
+                    Row(Modifier.fillMaxWidth().padding(start=16.dp,end=12.dp,top=12.dp,bottom=8.dp),verticalAlignment=Alignment.CenterVertically) {
+                        if(page !in listOf("library","playlists","settings") || group != null) IconButton(onClick=::back) { Icon(Icons.Outlined.ArrowBack,"返回") }
+                        else Image(painterResource(when(page) {
+                            "playlists" -> R.drawable.ic_header_playlists
+                            "settings" -> R.drawable.ic_header_settings
+                            else -> R.drawable.ic_flower
+                        }),null,modifier=Modifier.padding(8.dp).size(24.dp).onGloballyPositioned {
+                            if(page == "library") flowerDestination=it.boundsInRoot().center
+                        }.testTag(if(page == "library") "library-header-flower" else "page-header-flower").graphicsLayer {
+                            scaleX=1.5f;scaleY=1.5f;alpha=if(page == "library" && startupActive) 0f else 1f
+                        })
+                        Text(title,Modifier.weight(1f),fontSize=27.sp,fontWeight=FontWeight.SemiBold,maxLines=1,overflow=TextOverflow.Ellipsis)
+                        if(page == "library") IconButton(onClick={ sheet="import" }) { Icon(Icons.Outlined.Add,"导入音乐") }
+                        if(page == "playlists") IconButton(onClick={ create=true }) { Icon(Icons.Outlined.Add,"新建歌单") }
+                        if(page == "playlist") {
+                            IconButton(onClick={ coverId=playlist?.id }) { Icon(Icons.Outlined.PhotoLibrary,"更换歌单封面") }
+                            IconButton(onClick={ rename=playlist }) { Icon(Icons.Outlined.Edit,"重命名歌单") }
+                            IconButton(onClick={ sheet="delete-playlist" }) { Icon(Icons.Outlined.DeleteOutline,"删除歌单") }
+                        }
+                    }
+                    when(page) {
+                        "library","playlist" -> {
+                            if(page == "library" && group == null) Row(Modifier.padding(horizontal=24.dp),horizontalArrangement=Arrangement.spacedBy(8.dp)) {
+                                listOf("歌曲","专辑","歌手").forEachIndexed { index,label -> FilterChip(selected=libraryTab == index,onClick={ libraryTab=index; query="" },label={ Text(label) }) }
+                            }
+                            OutlinedTextField(query,{query=it},Modifier.fillMaxWidth().padding(horizontal=24.dp,vertical=8.dp),singleLine=true,placeholder={ Text("搜索歌曲、歌手或专辑") },leadingIcon={ Icon(Icons.Outlined.Search,null) },shape=RoundedCornerShape(16.dp))
+                            if(page == "library" && libraryTab != 0 && group == null) {
+                                GroupList(groupSongs,libraryTab) { group=it; query="" }
+                            } else {
+                                Row(Modifier.padding(horizontal=24.dp).fillMaxWidth(),verticalAlignment=Alignment.CenterVertically) {
+                                    Text("共 ${pageBase.size} 首${if(query.isNotBlank()) " · 找到 ${displayed.size} 首" else ""}",Modifier.weight(1f),fontSize=12.sp,color=muted)
+                                    TextButton(onClick={ sheet="sort" }) { Text(if(page == "playlist") playlist?.sort?.label ?: "排序" else library.sort.label); Icon(Icons.Outlined.SwapVert, null,Modifier.size(18.dp)) }
+                                }
+                                Row(Modifier.fillMaxWidth().padding(horizontal=24.dp),verticalAlignment=Alignment.CenterVertically) {
+                                    FilledTonalButton(onClick={ model.play(displayed) },enabled=displayed.any { it.available }) { Icon(Icons.Outlined.PlayArrow,null); Text("播放全部") }
+                                    if(page == "playlist") Text("  添加歌曲：在音乐库选择目标歌单",fontSize=11.sp,color=muted,modifier=Modifier.weight(1f))
+                                }
+                                if(displayed.isEmpty()) EmptyLibrary(query.isNotBlank(),page == "playlist") { sheet="import" }
+                                else SongList(displayed,pageBase.size,current?.id,Modifier.weight(1f),onPlay={model.play(displayed,it.id)},onAdd={addSong=it},onInfo={info=it},onRemove=if(page == "playlist" && playlist != null) {
+                                    {song -> model.repository.playlist(playlist.copy(songIds=playlist.songIds-song.id))}
+                                } else null)
+                            }
+                        }
+                        "playlists" -> {
+                            Text("${library.playlists.size} 个歌单",Modifier.padding(horizontal=24.dp,vertical=8.dp),fontSize=12.sp,color=muted)
+                            if(library.playlists.isEmpty()) Column(Modifier.fillMaxWidth().padding(40.dp),horizontalAlignment=Alignment.CenterHorizontally) { Icon(Icons.Outlined.QueueMusic,null,Modifier.size(52.dp),tint=MaterialTheme.colorScheme.primary); Text("把喜欢的歌放在一起",Modifier.padding(20.dp)); Button(onClick={create=true}) { Text("创建第一个歌单") } }
+                            LazyColumn(contentPadding=PaddingValues(24.dp),verticalArrangement=Arrangement.spacedBy(16.dp)) {
+                                items(library.playlists,key={it.id}) { list -> Row(Modifier.fillMaxWidth().clip(RoundedCornerShape(20.dp)).background(Color.White).clickable { playlistId=list.id; screen="playlist"; group=null; query="" }.padding(16.dp),verticalAlignment=Alignment.CenterVertically) {
+                                    PlaylistCover(list,Modifier.size(64.dp).clickable {coverId=list.id})
+                                    Column(Modifier.padding(start=16.dp).weight(1f)) { Text(list.name,fontWeight=FontWeight.Medium,fontSize=18.sp); Text("${list.songIds.size} 首歌曲",fontSize=12.sp,color=muted,modifier=Modifier.padding(top=6.dp)) }
+                                    IconButton(onClick={coverId=list.id}) {Icon(Icons.Outlined.PhotoLibrary,"更换歌单封面",tint=muted,modifier=Modifier.size(20.dp))}
+                                } }
+                            }
+                        }
+                        "settings" -> SettingsPage(library,onPage=::go,onSystemLock={
+                            runCatching { context.startActivity(Intent(AndroidSettings.ACTION_APP_NOTIFICATION_SETTINGS).putExtra(AndroidSettings.EXTRA_APP_PACKAGE,context.packageName)) }.onFailure { message("请在手机设置中打开小红花的通知与锁屏显示设置") }
+                        })
+                        "folders" -> FolderPage(library,onAdd={folder.launch(null)},onRefresh={model.repository.requestRefresh()},onRemove={removeFolder=it},onMonitor={model.repository.settings(library.settings.copy(monitor=it))})
+                        "lyric-style" -> LyricSettings(library.settings) { model.repository.settings(it) }
+                        "theme" -> ThemeSettings(library.settings) { model.repository.settings(it) }
+                        "background" -> BackgroundSettings(library.settings,current,{image.launch(arrayOf("image/jpeg","image/png","image/webp"))}) { model.repository.settings(it) }
+                        "backup" -> BackupPage(onExport={export.launch("小红花备份-${java.time.LocalDate.now()}.json")},onRestore={restore.launch(arrayOf("application/json","text/plain","application/octet-stream"))})
+                    }
+                }
+                }
+                if(library.showScanProgress && screen in listOf("library","playlist")) LinearProgressIndicator(Modifier.testTag("manual-scan-progress").align(Alignment.TopCenter).fillMaxWidth())
+            }
+        }
+        if(startupActive) LaunchScreen(flowerDestination) {startupActive=false}
+        }
+        library.playlists.find {it.id == coverId}?.let {list ->
+            PlaylistCoverSheet(list,onDismiss={coverId=null},onPreset={model.repository.playlistCover(list.id,it)},onPhoto={
+                coverTarget=list.id;coverId=null;coverPhoto.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
+            })
+        }
+        if(sheet == "import") ModalBottomSheet(onDismissRequest={sheet=null}) { SheetTitle("导入本地音乐","按原位置读取，不复制音乐文件")
+            SettingRow(Icons.Outlined.AudioFile,"选择音乐文件","支持一次选择多首") { sheet=null; files.launch(arrayOf("audio/*","application/ogg","application/octet-stream")) }
+            SettingRow(Icons.Outlined.FolderOpen,"选择音乐文件夹","扫描子文件夹和同名 LRC") { sheet=null; folder.launch(null) }
+            Text("支持 FLAC、MP3、WAV、AAC、M4A、OGG、Opus 等常见音频。实际解码能力取决于文件编码。",Modifier.padding(24.dp),fontSize=12.sp,color=muted)
+        }
+        if(sheet == "sort") ModalBottomSheet(onDismissRequest={sheet=null}) { SheetTitle("歌曲排序","音乐库和每个歌单独立保存顺序")
+            SortMode.entries.forEach { mode -> SettingRow(Icons.Outlined.Sort,mode.label,if(mode == SortMode.CUSTOM) "拖动调整，保存后生效" else "") {
+                if(mode == SortMode.CUSTOM) sheet="custom-sort" else { model.repository.sort(mode,if(screen == "playlist") playlistId else null); sheet=null }
+            } }; Spacer(Modifier.height(16.dp))
+        }
+        if(sheet == "custom-sort") OrderSheet(sorted,onCancel={sheet=null},onSave={ ids -> model.repository.customOrder(ids,if(screen == "playlist") playlistId else null); sheet=null })
+        if(sheet == "queue") QueueSheet(library,playback,model) {sheet=null}
+        if(addSong != null) PlaylistPicker(addSong!!,library.playlists,onDismiss={addSong=null},onAdd={ list ->
+            model.repository.playlist(list.copy(songIds=(list.songIds+addSong!!.id).distinct())); addSong=null; message("已添加到「${list.name}」")
+        },onCreate={ name -> val list=model.repository.createPlaylist(name); model.repository.playlist(list.copy(songIds=listOf(addSong!!.id))); addSong=null; message("已创建歌单并添加歌曲") })
+        if(info != null) SongInfo(info!!) {info=null}
+        if(create || rename != null) NameDialog(if(rename != null) "重命名歌单" else "新建歌单",rename?.name.orEmpty(),onDismiss={create=false;rename=null}) { name ->
+            if(rename != null) model.repository.playlist(rename!!.copy(name=name)) else model.repository.createPlaylist(name)
+            create=false;rename=null
+        }
+        if(sheet == "delete-playlist" && playlist != null) AlertDialog(onDismissRequest={sheet=null},title={Text("删除「${playlist.name}」？")},text={Text("只删除歌单，保留原音乐文件。")},confirmButton={TextButton(onClick={model.repository.deletePlaylist(playlist.id);sheet=null;screen="playlists"}){Text("删除")}},dismissButton={TextButton(onClick={sheet=null}){Text("取消")}})
+        if(restoreUri != null) AlertDialog(onDismissRequest={restoreUri=null},title={Text("恢复备份？")},text={Text("这会替换当前音乐索引、歌单和设置。原音乐文件不会改变；恢复后需要重新授权文件夹。")},confirmButton={TextButton(onClick={model.restoreBackup(restoreUri!!,::message);restoreUri=null}){Text("恢复")}},dismissButton={TextButton(onClick={restoreUri=null}){Text("取消")}})
+        if(removeFolder != null) AlertDialog(onDismissRequest={removeFolder=null},title={Text("移除文件夹？")},text={Text("从音乐库和歌单移除此来源的歌曲，原文件保留。其他来源仍在的歌曲会保留。")},confirmButton={TextButton(onClick={model.repository.removeFolder(removeFolder!!);removeFolder=null}){Text("移除")}},dismissButton={TextButton(onClick={removeFolder=null}){Text("取消")}})
+    }
+}
+
+@Composable internal fun Cover(song: Song?, modifier: Modifier = Modifier) {
+    BoxWithConstraints(modifier.clip(RoundedCornerShape(16.dp)).background(MaterialTheme.colorScheme.primary.copy(alpha=.08f)),contentAlignment=Alignment.Center) {
+        val pixels=with(androidx.compose.ui.platform.LocalDensity.current) {maxWidth.coerceAtMost(400.dp).roundToPx()}.coerceIn(64,1400)
+        val image = rememberImage(song?.artwork.orEmpty(),pixels)
+        if(image != null) Image(image,null,Modifier.fillMaxSize(),contentScale=ContentScale.Crop)
+        else Icon(Icons.Outlined.LocalFlorist,null,Modifier.fillMaxSize(.45f),tint=MaterialTheme.colorScheme.primary.copy(alpha=.8f))
+    }
+}
+@Composable internal fun rememberImage(path: String,targetPixels: Int=1600): androidx.compose.ui.graphics.ImageBitmap? {
+    val stamp=if(path.isNotBlank()) File(path).lastModified() else 0L
+    return produceState<androidx.compose.ui.graphics.ImageBitmap?>(null,path,stamp,targetPixels) {
+        value=withContext(Dispatchers.IO) { runCatching {
+            if(path.isBlank()) return@runCatching null
+            val info=BitmapFactory.Options().apply { inJustDecodeBounds=true }
+            BitmapFactory.decodeFile(path,info)
+            val options=BitmapFactory.Options().apply {inSampleSize=1;while(info.outWidth/inSampleSize>targetPixels || info.outHeight/inSampleSize>targetPixels*1.5f) inSampleSize*=2}
+            BitmapFactory.decodeFile(path,options)?.asImageBitmap()
+        }.getOrNull() }
+    }.value
+}
+@Composable private fun SongRow(song: Song,index: Int,selected: Boolean,onClick:()->Unit,onAdd:()->Unit,onInfo:()->Unit,onRemove:(()->Unit)?=null) {
+    var menu by remember { mutableStateOf(false) }
+    Row(Modifier.testTag("song-${song.id}").semantics {this.selected=selected}.fillMaxWidth().clickable(enabled=song.available,onClick=onClick).padding(start=16.dp,end=4.dp,top=8.dp,bottom=8.dp),verticalAlignment=Alignment.CenterVertically) {
+        Text(index.toString(),Modifier.width(28.dp),fontSize=12.sp,textAlign=TextAlign.Center,color=if(selected) MaterialTheme.colorScheme.primary else muted)
+        Cover(song,Modifier.size(44.dp))
+        Column(Modifier.weight(1f).padding(horizontal=12.dp)) {
+            Text(song.title,maxLines=1,overflow=TextOverflow.Ellipsis,fontSize=15.sp,color=if(selected) MaterialTheme.colorScheme.primary else ink,fontWeight=if(selected) FontWeight.SemiBold else FontWeight.Normal)
+            Text(if(song.available) "${song.artist} · ${song.format}" else "文件待重新授权",maxLines=1,overflow=TextOverflow.Ellipsis,fontSize=11.sp,color=muted,modifier=Modifier.padding(top=4.dp))
+        }
+        Text(timeLabel(song.duration),fontSize=11.sp,color=muted)
+        Box { IconButton(onClick={menu=true}) { Icon(Icons.Outlined.MoreVert,"歌曲操作") }
+            DropdownMenu(menu,{menu=false}) {
+                DropdownMenuItem(text={Text("添加到歌单")},onClick={menu=false;onAdd()})
+                DropdownMenuItem(text={Text("歌曲信息")},onClick={menu=false;onInfo()})
+                if(onRemove != null) DropdownMenuItem(text={Text("从歌单移除")},onClick={menu=false;onRemove()})
+            }
+        }
+    }
+}
+@Composable internal fun SongList(songs: List<Song>,total: Int,currentId: String?,modifier: Modifier = Modifier,
+    onPlay:(Song)->Unit,onAdd:(Song)->Unit,onInfo:(Song)->Unit,onRemove:((Song)->Unit)?=null) {
+    val list=rememberLazyListState()
+    val scope=rememberCoroutineScope()
+    val density=LocalDensity.current
+    val currentIndex=remember(songs,currentId) {songs.indexOfFirst {it.id == currentId}}
+    var locatorVisible by remember {mutableStateOf(false)}
+    var locating by remember {mutableStateOf(false)}
+    LaunchedEffect(list) {
+        snapshotFlow {list.isScrollInProgress to locating}.collectLatest {(scrolling,jumping) ->
+            if(scrolling && !jumping) locatorVisible=true
+            else if(!scrolling) {delay(2000);locatorVisible=false}
+        }
+    }
+    Box(modifier.fillMaxWidth()) {
+        LazyColumn(Modifier.testTag("song-list").fillMaxSize(),state=list,contentPadding=PaddingValues(top=12.dp,bottom=16.dp)) {
+            itemsIndexed(songs,key={_,song->song.id}) {index,song ->
+                SongRow(song,index+1,song.id == currentId,{onPlay(song)},{onAdd(song)},{onInfo(song)},onRemove?.let {remove -> {remove(song)}})
+            }
+            item {Text("$total 首歌曲 · 音乐保存在本机",Modifier.fillMaxWidth().padding(20.dp),textAlign=TextAlign.Center,fontSize=11.sp,color=muted)}
+        }
+        AnimatedVisibility(locatorVisible && currentIndex >= 0,modifier=Modifier.align(Alignment.BottomEnd).padding(end=80.dp,bottom=48.dp),
+            enter=fadeIn(tween(160))+scaleIn(tween(180),initialScale=.85f),exit=fadeOut(tween(160))+scaleOut(tween(160),targetScale=.9f)) {
+            SmallFloatingActionButton(onClick={
+                locatorVisible=false
+                if(currentIndex >= 0) scope.launch {
+                    locating=true
+                    try {
+                        val rowHeight=list.layoutInfo.visibleItemsInfo.firstOrNull()?.size ?: with(density) {64.dp.roundToPx()}
+                        val viewport=list.layoutInfo.viewportEndOffset-list.layoutInfo.viewportStartOffset
+                        list.animateScrollToItem(currentIndex,-((viewport-rowHeight)/2).coerceAtLeast(0))
+                    } finally {locating=false}
+                }
+            },modifier=Modifier.testTag("locate-current-song"),shape=CircleShape,containerColor=Color.White,contentColor=MaterialTheme.colorScheme.primary) {
+                Icon(Icons.Outlined.MyLocation,"定位当前播放歌曲",Modifier.size(22.dp))
+            }
+        }
+    }
+}
+@Composable private fun GroupList(songs: List<Song>,tab: Int,onSelect:(String)->Unit) {
+    val groups=songs.groupBy { if(tab == 1) "${it.artist}\u0000${it.album}" else it.artist }.toSortedMap()
+    LazyColumn(contentPadding=PaddingValues(24.dp),verticalArrangement=Arrangement.spacedBy(16.dp)) {
+        items(groups.keys.toList()) { key -> val tracks=groups.getValue(key)
+            Row(Modifier.fillMaxWidth().clickable {onSelect(key)},verticalAlignment=Alignment.CenterVertically) {
+                Cover(tracks.first(),Modifier.size(60.dp))
+                Column(Modifier.padding(horizontal=16.dp).weight(1f)) { Text(if(tab == 1) tracks.first().album else key,maxLines=1,overflow=TextOverflow.Ellipsis,fontSize=17.sp); Text("${tracks.size} 首${if(tab == 1) " · ${tracks.first().artist}" else ""}",fontSize=12.sp,color=muted,modifier=Modifier.padding(top=6.dp)) }
+                Icon(Icons.Outlined.ChevronRight,null)
+            }
+        }
+    }
+}
+@Composable private fun EmptyLibrary(search: Boolean,playlist: Boolean,onImport:()->Unit) {
+    Column(Modifier.fillMaxWidth().padding(40.dp),horizontalAlignment=Alignment.CenterHorizontally) {
+        Icon(if(search) Icons.Outlined.SearchOff else Icons.Outlined.LocalFlorist,null,Modifier.size(60.dp),tint=MaterialTheme.colorScheme.primary.copy(alpha=.7f))
+        Text(if(search) "没有找到匹配的歌曲" else if(playlist) "歌单还没有歌曲" else "让音乐，在这里开花",Modifier.padding(top=24.dp),fontSize=19.sp)
+        Text(if(playlist) "在音乐库的歌曲菜单中添加到此歌单" else "从本机文件或文件夹导入",Modifier.padding(vertical=12.dp),fontSize=12.sp,color=muted,textAlign=TextAlign.Center)
+        if(!playlist && !search) Button(onClick=onImport) {Text("导入音乐")}
+    }
+}
+@Composable private fun MiniPlayer(song: Song,p: PlaybackState,model: MusicModel,onOpen:()->Unit) {
+    Surface(color=Color.White,shadowElevation=1.dp) { Row(Modifier.testTag("mini-player").fillMaxWidth().clickable(onClick=onOpen).padding(start=16.dp,top=8.dp,bottom=8.dp),verticalAlignment=Alignment.CenterVertically) {
+        Cover(song,Modifier.size(40.dp)); Column(Modifier.weight(1f).padding(horizontal=12.dp)) { Text(song.title,maxLines=1,overflow=TextOverflow.Ellipsis,fontSize=14.sp); Text(song.artist,maxLines=1,overflow=TextOverflow.Ellipsis,fontSize=11.sp,color=muted) }
+        IconButton(onClick={model.previous()},enabled=p.connected) {Icon(Icons.Outlined.SkipPrevious,"上一首")}
+        IconButton(onClick={model.toggle()}) { Icon(if(p.playing) Icons.Outlined.Pause else Icons.Outlined.PlayArrow,if(p.playing) "暂停" else "播放") }
+        IconButton(onClick={model.next()}) { Icon(Icons.Outlined.SkipNext,"下一首") }
+    } }
+}

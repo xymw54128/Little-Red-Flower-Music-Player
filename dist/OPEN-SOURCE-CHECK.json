@@ -1,0 +1,28 @@
+{
+  "date": "2026-10-09",
+  "scope": "Open-source build preparation; no runtime feature changes",
+  "androidWithoutOfficialKey": {
+    "debugBuild": "pass",
+    "debugSigning": "valid independent development certificate",
+    "unitTestsPassed": 16,
+    "unitTestFailures": 0,
+    "releaseBuild": "pass",
+    "releaseSigning": "unsigned, requires developer signing"
+  },
+  "officialAPK": {
+    "signatureVerified": true,
+    "sha256": "fd2c001a683fa80b3ba80404c6f182f3bb83c096921325db8844cc392c22cacf",
+    "unchanged": true
+  },
+  "iOS": {
+    "swiftGrammar": "pass",
+    "projectResourcesAndFonts": "pass",
+    "archiveIntegrity": "pass",
+    "xcodeCompilationAndTests": "not_run_no_mac"
+  },
+  "webPrototypeJavaScriptSyntax": "pass",
+  "notVerified": [
+    "Android instrumented tests and device animation performance",
+    "iPhone build, signing and device behavior"
+  ]
+}

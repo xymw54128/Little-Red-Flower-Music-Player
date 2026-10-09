@@ -1,0 +1,20 @@
+[
+  {
+    "file": "lxgw_wenkai.ttf",
+    "family": "LXGW WenKai",
+    "glyphs": 46490,
+    "sampleMissingGlyphs": []
+  },
+  {
+    "file": "source_han_serif_cn.otf",
+    "family": "Source Han Serif CN",
+    "glyphs": 30930,
+    "sampleMissingGlyphs": []
+  },
+  {
+    "file": "zhuque_fangsong.ttf",
+    "family": "Zhuque Fangsong (technical preview)",
+    "glyphs": 12882,
+    "sampleMissingGlyphs": []
+  }
+]

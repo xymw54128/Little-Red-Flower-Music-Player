@@ -1,0 +1,9 @@
+const fs=require('node:fs');
+const path=require('node:path');
+const cp=require('node:child_process');
+const root=path.resolve('.toolchain');
+const config=JSON.parse(fs.readFileSync(path.join(root,'env.json'),'utf8'));
+const args=process.argv.slice(2);
+const userHome=path.join(root,'android-user');fs.mkdirSync(userHome,{recursive:true});
+const result=cp.spawnSync(path.join(config.sdk,'platform-tools/adb.exe'),args.length?args:['devices','-l'],{env:{...process.env,ANDROID_USER_HOME:userHome},encoding:'utf8'});
+process.stdout.write(result.stdout||'');process.stderr.write(result.stderr||'');process.exitCode=result.status||0;

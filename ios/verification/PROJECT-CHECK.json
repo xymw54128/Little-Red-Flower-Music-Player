@@ -1,0 +1,71 @@
+{
+  "result": "pass",
+  "scope": "Project format, paths, build settings, assets, font hashes/names/glyphs, XML and test discovery; NOT Xcode compilation or test execution",
+  "version": "1.0.1",
+  "build": 8,
+  "minimumIOS": "17.0",
+  "appSources": 16,
+  "fonts": [
+    {
+      "file": "lxgw_wenkai.ttf",
+      "postScriptName": "LXGWWenKai-Regular",
+      "sha256": "39ad71264b588165b469e35e6afb162a378dacd1f95348160240ba9038ac3009"
+    },
+    {
+      "file": "source_han_serif_cn.otf",
+      "postScriptName": "SourceHanSerifCN-Regular",
+      "sha256": "3754ea669c530e2473354f8f6d9f79680a44d7e26ec7d00eeabee4a7e0753c5d"
+    },
+    {
+      "file": "zhuque_fangsong.ttf",
+      "postScriptName": "ZhuqueFangsong-Regular",
+      "sha256": "558c62730844fe54ba220146ed62f859d4e2880188d92d985f8921c6e3743bc4"
+    }
+  ],
+  "assets": [
+    {
+      "name": "AppIcon.appiconset",
+      "size": [
+        1024,
+        1024
+      ],
+      "mode": "RGB"
+    },
+    {
+      "name": "Flower.imageset",
+      "size": [
+        768,
+        768
+      ],
+      "mode": "RGBA"
+    },
+    {
+      "name": "FlowerCenter.imageset",
+      "size": [
+        768,
+        768
+      ],
+      "mode": "RGBA"
+    },
+    {
+      "name": "FlowerPlaylists.imageset",
+      "size": [
+        768,
+        768
+      ],
+      "mode": "RGBA"
+    },
+    {
+      "name": "FlowerSettings.imageset",
+      "size": [
+        768,
+        768
+      ],
+      "mode": "RGBA"
+    }
+  ],
+  "coreTestsDiscovered": 20,
+  "uiTestsDiscovered": 3,
+  "xcodeBuild": "not_run_no_mac",
+  "iPhoneTest": "not_run_no_device"
+}
