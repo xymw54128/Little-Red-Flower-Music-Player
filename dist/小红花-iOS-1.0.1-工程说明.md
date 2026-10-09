@@ -2,7 +2,7 @@
 
 作者：浪雨林兴云魔王。暂按 iOS 17 及以上、iPhone 竖屏适配，独立原生工程。原 Android 1.0.1 安装包保留。
 
-源码包：[GitHub Release 下载](https://github.com/xymw54128/Little-Red-Flower-Music-Player/releases/download/v1.0.1/%E5%B0%8F%E7%BA%A2%E8%8A%B1-iOS-1.0.1-%E6%BA%90%E7%A0%81.zip)。本地副本 `小红花-iOS-1.0.1-源码.zip` 继续保留。解压后用 Mac 的 Xcode 16 或更新版本打开 `Xiaohonghua.xcodeproj`，详细功能、平台差异、构建步骤和实机验收项目见包内 `README.md`。源码包包含 MIT 许可证与原始字体授权。
+源码包：[GitHub Release 下载](https://github.com/xymw54128/Little-Red-Flower-Music-Player/releases/download/v1.0.1/Xiaohonghua-iOS-1.0.1-source.zip)。本地副本 `小红花-iOS-1.0.1-源码.zip` 继续保留。解压后用 Mac 的 Xcode 16 或更新版本打开 `Xiaohonghua.xcodeproj`，详细功能、平台差异、构建步骤和实机验收项目见包内 `README.md`。源码包包含 MIT 许可证与原始字体授权。
 
 代码包括音乐/文件夹导入、歌曲标签、封面与歌词、歌单与相册封面、歌曲排序、队列/进度/播放模式、上一首、当前歌曲定位、居中动态歌词、字体/字号/行距、主题与相册背景、后台音频/系统锁屏指令、启动动画、备份和作者署名。
 

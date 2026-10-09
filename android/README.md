@@ -4,7 +4,7 @@
 
 ## 安装与使用
 
-安装包：[下载小红花 1.0.1 APK](https://github.com/xymw54128/Little-Red-Flower-Music-Player/releases/download/v1.0.1/%E5%B0%8F%E7%BA%A2%E8%8A%B1-1.0.1.apk)，约 44 MB / 41.70 MiB（包含内置中文字体）。沿用旧版的应用 ID 与签名，直接覆盖安装，保留现有数据。本地已有安装包仍位于 `../dist/小红花-1.0.1.apk`；Git 克隆不包含 APK，请从 Release 下载。
+安装包：[下载小红花 1.0.1 APK](https://github.com/xymw54128/Little-Red-Flower-Music-Player/releases/download/v1.0.1/Xiaohonghua-1.0.1.apk)，约 44 MB / 41.70 MiB（包含内置中文字体）。沿用旧版的应用 ID 与签名，直接覆盖安装，保留现有数据。本地已有安装包仍位于 `../dist/小红花-1.0.1.apk`；Git 克隆不包含 APK，请从 Release 下载。
 
 1. 将 APK 传到小米 15，在手机文件管理器中打开并安装。手机可能要求为文件管理器允许安装此应用。
 2. 打开小红花，点音乐库右上角 `+`，选择音乐文件，或授权音乐文件夹。文件夹递归扫描，音乐原文件不复制、不修改。
