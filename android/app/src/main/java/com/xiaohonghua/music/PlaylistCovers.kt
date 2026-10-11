@@ -25,16 +25,24 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import java.io.File
 
 private val coverColors=listOf(Color(0xFFA94857),Color(0xFF557968),Color(0xFF4C7396),Color(0xFF817097),
-    Color(0xFFB18B47),Color(0xFFAC765B),Color(0xFF497F83),Color(0xFF687586))
+    Color(0xFFB18B47),Color(0xFFAC765B),Color(0xFF497F83),Color(0xFF687586),
+    Color(0xFFD2778B),Color(0xFF7C9D7B),Color(0xFFD85C66),Color(0xFF78A094),Color(0xFF8D79B9),
+    Color(0xFFC4953C),Color(0xFFCF6D6B),Color(0xFF759FCA),Color(0xFFC07F91),Color(0xFF6198C1),Color(0xFFCE3C4C))
 private val coverIcons=listOf(Icons.Outlined.LocalFlorist,Icons.Outlined.Forest,Icons.Outlined.Waves,Icons.Outlined.NightsStay,
     Icons.Outlined.WbSunny,Icons.Outlined.Album,Icons.Outlined.Headphones,Icons.Outlined.Piano)
-private val coverNames=listOf("红花","森林","海浪","月夜","暖阳","唱片","耳机","钢琴")
+// The first eight indices stay unchanged so saved covers survive an upgrade.
+private val floralCovers=listOf(R.drawable.ic_cover_peach,R.drawable.ic_cover_daisy,R.drawable.ic_cover_tulip,
+    R.drawable.ic_cover_lily,R.drawable.ic_cover_iris,R.drawable.ic_cover_sunflower,R.drawable.ic_cover_camellia,
+    R.drawable.ic_cover_hydrangea,R.drawable.ic_cover_lotus,R.drawable.ic_cover_poppy,R.drawable.ic_cover_favorite)
+private val coverNames=listOf("红花","森林","海浪","月夜","暖阳","唱片","耳机","钢琴",
+    "桃枝","雏菊","郁金香","铃兰","鸢尾","向日葵","山茶","绣球","荷风","蓝罂粟","心之花")
 
 @Composable internal fun PlaylistCover(playlist: Playlist,modifier: Modifier=Modifier) {
     val index=playlist.coverPreset.coerceIn(0,PLAYLIST_COVER_COUNT-1)
@@ -42,11 +50,17 @@ private val coverNames=listOf("红花","森林","海浪","月夜","暖阳","唱�
     val image=rememberImage(photo?.let {File(LocalContext.current.filesDir,"playlist-covers/$it").absolutePath}.orEmpty())
     val color by animateColorAsState(coverColors[index],tween(180),label="playlist-cover-color")
     BoxWithConstraints(modifier.testTag("playlist-cover-${playlist.id}").clip(RoundedCornerShape(14.dp)).background(color.copy(alpha=.12f)),contentAlignment=Alignment.Center) {
+        val coverWidth=maxWidth
         if(image != null) Image(image,null,Modifier.fillMaxSize(),contentScale=ContentScale.Crop)
         else {
-            Box(Modifier.fillMaxSize().background(Brush.linearGradient(listOf(color.copy(alpha=.07f),color.copy(alpha=.21f)))))
-            Box(Modifier.size(maxWidth*.76f).offset(x=maxWidth*.25f,y=maxWidth*.32f).border(1.dp,color.copy(alpha=.13f),CircleShape))
-            Crossfade(index,animationSpec=tween(160),label="playlist-cover-icon") {preset -> Icon(coverIcons[preset],null,Modifier.size(maxWidth*.44f),tint=color)}
+            Crossfade(index,modifier=Modifier.fillMaxSize(),animationSpec=tween(160),label="playlist-cover-icon") {preset ->
+                if(preset < coverIcons.size) Box(Modifier.fillMaxSize(),contentAlignment=Alignment.Center) {
+                    Box(Modifier.fillMaxSize().background(Brush.linearGradient(listOf(color.copy(alpha=.07f),color.copy(alpha=.21f)))))
+                    Box(Modifier.size(coverWidth*.76f).offset(x=coverWidth*.25f,y=coverWidth*.32f).border(1.dp,color.copy(alpha=.13f),CircleShape))
+                    Icon(coverIcons[preset],null,Modifier.size(coverWidth*.44f),tint=color)
+                }
+                else Image(painterResource(floralCovers[preset-coverIcons.size]),null,Modifier.fillMaxSize(),contentScale=ContentScale.Fit)
+            }
         }
     }
 }
@@ -60,9 +74,10 @@ private val coverNames=listOf("红花","森林","海浪","月夜","暖阳","唱�
         Column(Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).selectableGroup().padding(horizontal=24.dp),horizontalAlignment=Alignment.CenterHorizontally) {
             PlaylistCover(playlist,Modifier.size(112.dp).padding(bottom=8.dp))
             Text("选择图案，或使用自己的照片",color=muted,fontSize=12.sp,modifier=Modifier.padding(vertical=12.dp))
-            repeat(2) {row -> Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.spacedBy(12.dp)) {
-                repeat(4) {column ->
+            repeat((coverNames.size+3)/4) {row -> Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.spacedBy(12.dp)) {
+                repeat(4) columns@ {column ->
                     val index=row*4+column
+                    if(index >= coverNames.size) {Spacer(Modifier.weight(1f));return@columns}
                     val selected=playlist.coverPhoto.isEmpty() && playlist.coverPreset == index
                     val border by animateColorAsState(if(selected) MaterialTheme.colorScheme.primary else Color.Transparent,tween(160),label="cover-selection-border")
                     val scale by animateFloatAsState(if(selected) 1f else .96f,tween(180),label="cover-selection-scale")

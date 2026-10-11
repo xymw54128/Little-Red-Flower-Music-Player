@@ -1,0 +1,81 @@
+{
+  "date": "2026-10-11",
+  "platform": "Android",
+  "version": "1.0.5",
+  "instrumentedTestsCompiled": true,
+  "instrumentedTestsExecuted": false,
+  "status": "blocked_by_test_environment",
+  "reason": "No Android device is connected (adb devices -l returned an empty list in this run). Release/Debug and instrumented APKs compiled; UI tests were not executed, and no native frame measurement was performed. The previous unaccelerated emulator environment was not retried.",
+  "deviceSnapshot": "List of devices attached: none",
+  "compiledSuites": [
+    {
+      "name": "MainNavigationUiTest",
+      "tests": 6,
+      "scope": "Home navigation/search/favorites with no success message, clean lyric header, paused seek/re-entry centering, settings lyric import, child return paths and deletion undo"
+    },
+    {
+      "name": "PlayerNavigationUiTest",
+      "tests": 6,
+      "scope": "Artwork/preview taps, pager swipes and indicators, clean lyric controls/header, queue/collapse callbacks, plain background and reorder boundary drag"
+    },
+    {
+      "name": "SettingsInteractionUiTest",
+      "tests": 9,
+      "scope": "Local slider preview and commit-on-release, inline sheet Back, target changes, repeated confirmations and IME retry; current-song lyric import enabled/disabled and callback"
+    },
+    {
+      "name": "SongListUiTest",
+      "tests": 3,
+      "scope": "Current-song locator, centering, two-second fade and missing target"
+    },
+    {
+      "name": "NativeSmokeTest",
+      "tests": 1,
+      "scope": "Synthetic FLAC/WAV playback, wrapped/translated lyric centering, paused slider seek, page re-entry, automatic return under three seconds, settings, covers and backup migration; old favorite default upgrades once, then a manually reselected old preset survives reload"
+    }
+  ],
+  "emulatorOnlyGuards": true,
+  "phoneAcceptancePending": true,
+  "nativeFramePerformanceMeasured": false,
+  "real100GBLibraryTested": false,
+  "ios": "1.0.1 source retained; not changed, built or tested in this Android update.",
+  "lyricMotion": {
+    "styleDurationMillis": 300,
+    "scrollDurationMillis": 300,
+    "completionLeadWallMillis": 20,
+    "idleReturnMillis": 1500,
+    "speedAwareAndRetimed": true,
+    "denseIntervalsCompressed": true,
+    "mediaClockFreezesOnPause": true,
+    "seekStartsFromLastRenderedFrame": true,
+    "lazyViewport": true,
+    "staticGlyphAlphaLayers": true,
+    "sharedProgress": true,
+    "interruptedAnimationRebased": true,
+    "frameSamplingTestsAreNotDeviceMeasurements": true
+  },
+  "headerFlowers": {
+    "durationMillis": 2000,
+    "everyTapRestarts": true,
+    "interruptedPosePreserved": true,
+    "staleGenerationCancelled": true,
+    "cachedPaths": true,
+    "restingVectorReused": true,
+    "nativeFramePerformanceMeasured": false
+  },
+  "playlistCovers": {
+    "legacyPresets": 8,
+    "newFlowerPresets": 10,
+    "favoriteHeartFlower": true,
+    "totalPresets": 19,
+    "photoSupportRetained": true,
+    "defaultFavoriteUpgradeOnce": true,
+    "preview": "歌单花朵封面-1.0.5.png",
+    "previewIsNativeScreenshot": false
+  },
+  "unitTestsPassed": 59,
+  "lint": {
+    "errors": 0,
+    "warnings": 17
+  }
+}

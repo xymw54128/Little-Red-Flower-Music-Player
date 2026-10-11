@@ -11,6 +11,7 @@ class FavoritesTest {
         assertEquals("我喜欢", playlists.single().name)
         assertTrue(playlists.single().isFavorites)
         assertTrue(playlists.single().songIds.isEmpty())
+        assertEquals(FAVORITES_FLOWER_COVER,playlists.single().coverPreset)
     }
 
     @Test fun existingNamedPlaylistKeepsCoverAndCustomOrderWhenAdopted() {
@@ -94,5 +95,30 @@ class FavoritesTest {
         assertEquals(listOf("b", "a"), restored.first().songIds)
         assertEquals(restored, normalizeFavorites(restored, setOf("a", "b")))
         assertTrue(normalizeFavorites(listOf(backupPlaylists.last()), setOf("a", "b")).first().isFavorites)
+    }
+
+    @Test fun oldDefaultFavoriteFlowerUpgradePreservesOrderAndMembership() {
+        val old=Playlist(FAVORITES_PLAYLIST_ID,"我喜欢",listOf("b","a"),SortMode.RANDOM,
+            listOf("a","b"),coverPreset=(FAVORITES_PLAYLIST_ID.hashCode() and Int.MAX_VALUE)%8)
+        val upgraded=upgradeFavoriteFlower(old)
+        assertEquals(old.copy(coverPreset=FAVORITES_FLOWER_COVER),upgraded)
+        assertEquals(upgraded,upgradeFavoriteFlower(upgraded))
+    }
+
+    @Test fun flowerUpgradeDoesNotReplacePhotosOrChosenLegacyPresets() {
+        val oldDefault=(FAVORITES_PLAYLIST_ID.hashCode() and Int.MAX_VALUE)%8
+        val photo=Playlist(FAVORITES_PLAYLIST_ID,"我喜欢",coverPreset=oldDefault,coverPhoto="photo.jpg")
+        val chosen=photo.copy(coverPreset=(oldDefault+1)%8,coverPhoto="")
+        val ordinary=photo.copy(id="ordinary",coverPhoto="")
+        assertEquals(photo,upgradeFavoriteFlower(photo))
+        assertEquals(chosen,upgradeFavoriteFlower(chosen))
+        assertEquals(ordinary,upgradeFavoriteFlower(ordinary))
+    }
+
+    @Test fun newPlaylistDefaultsUseAllTenFlowerPresetsAndStayInRange() {
+        val presets=(0..1000).map {defaultPlaylistCover("playlist-"+it)}.toSet()
+        assertEquals((8..17).toSet(),presets)
+        assertEquals(18,defaultPlaylistCover(FAVORITES_PLAYLIST_ID))
+        assertEquals(19,PLAYLIST_COVER_COUNT)
     }
 }

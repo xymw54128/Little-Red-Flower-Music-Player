@@ -1,0 +1,47 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp" android:height="108dp"
+    android:viewportWidth="108" android:viewportHeight="108">
+    <!-- 向日葵: original floral cover, rendered from these same paths in the design preview. -->
+    <path android:fillColor="#FFF7DE" android:pathData="M0,0 H108 V108 H0 Z" />
+    <path android:fillColor="#00000000" android:strokeColor="#7F965C" android:strokeWidth="2.6" android:strokeLineCap="round" android:strokeLineJoin="round" android:pathData="M53,88 C56,70 59,57 60,43" />
+    <path android:fillColor="#8CA968" android:pathData="M55,78 C46,63 28,64 26,73 C37,83 48,84 55,78 Z" />
+    <path android:fillColor="#A4B876" android:pathData="M57,69 C66,55 79,58 83,65 C75,73 66,75 57,69 Z" />
+    <group android:translateX="61" android:translateY="39" android:rotation="9">
+        <group android:rotation="-3" android:scaleX="0.9475" android:scaleY="0.9475">
+            <path android:fillColor="#E5AD42" android:pathData="M-5,-13 C-10,-20 -9,-30 -2,-33 C5,-28 8,-23 5,-14 Z" />
+        </group>
+        <group android:rotation="34.727" android:scaleX="0.9825" android:scaleY="0.9825">
+            <path android:fillColor="#F3C959" android:pathData="M-5,-13 C-10,-20 -9,-30 -2,-33 C5,-28 8,-23 5,-14 Z" />
+        </group>
+        <group android:rotation="62.45399999999999" android:scaleX="1.0175" android:scaleY="1.0175">
+            <path android:fillColor="#F7D575" android:pathData="M-5,-13 C-10,-20 -9,-30 -2,-33 C5,-28 8,-23 5,-14 Z" />
+        </group>
+        <group android:rotation="100.18099999999998" android:scaleX="1.0525" android:scaleY="1.0525">
+            <path android:fillColor="#E5AD42" android:pathData="M-5,-13 C-10,-20 -9,-30 -2,-33 C5,-28 8,-23 5,-14 Z" />
+        </group>
+        <group android:rotation="127.90799999999999" android:scaleX="0.9475" android:scaleY="0.9475">
+            <path android:fillColor="#F3C959" android:pathData="M-5,-13 C-10,-20 -9,-30 -2,-33 C5,-28 8,-23 5,-14 Z" />
+        </group>
+        <group android:rotation="165.635" android:scaleX="0.9825" android:scaleY="0.9825">
+            <path android:fillColor="#F7D575" android:pathData="M-5,-13 C-10,-20 -9,-30 -2,-33 C5,-28 8,-23 5,-14 Z" />
+        </group>
+        <group android:rotation="193.36199999999997" android:scaleX="1.0175" android:scaleY="1.0175">
+            <path android:fillColor="#E5AD42" android:pathData="M-5,-13 C-10,-20 -9,-30 -2,-33 C5,-28 8,-23 5,-14 Z" />
+        </group>
+        <group android:rotation="231.08899999999997" android:scaleX="1.0525" android:scaleY="1.0525">
+            <path android:fillColor="#F3C959" android:pathData="M-5,-13 C-10,-20 -9,-30 -2,-33 C5,-28 8,-23 5,-14 Z" />
+        </group>
+        <group android:rotation="258.816" android:scaleX="0.9475" android:scaleY="0.9475">
+            <path android:fillColor="#F7D575" android:pathData="M-5,-13 C-10,-20 -9,-30 -2,-33 C5,-28 8,-23 5,-14 Z" />
+        </group>
+        <group android:rotation="296.54299999999995" android:scaleX="0.9825" android:scaleY="0.9825">
+            <path android:fillColor="#E5AD42" android:pathData="M-5,-13 C-10,-20 -9,-30 -2,-33 C5,-28 8,-23 5,-14 Z" />
+        </group>
+        <group android:rotation="324.27" android:scaleX="1.0175" android:scaleY="1.0175">
+            <path android:fillColor="#F3C959" android:pathData="M-5,-13 C-10,-20 -9,-30 -2,-33 C5,-28 8,-23 5,-14 Z" />
+        </group>
+    </group>
+    <path android:fillColor="#987747" android:pathData="M44,39 A17,17 0,1 0,78,39 A17,17 0,1 0,44,39 Z" />
+    <path android:fillColor="#B68B50" android:pathData="M49,39 A12,12 0,1 0,73,39 A12,12 0,1 0,49,39 Z" />
+    <path android:fillColor="#00000000" android:strokeColor="#765F3F" android:strokeWidth="1.7" android:strokeLineCap="round" android:strokeLineJoin="round" android:pathData="M54,34 L57,32 M63,32 L66,34 M52,41 L55,40 M61,38 L63,39 M68,41 L70,43 M57,45 L60,47 M65,47 L67,46" />
+</vector>

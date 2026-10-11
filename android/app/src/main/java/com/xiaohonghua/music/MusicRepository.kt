@@ -177,7 +177,7 @@ class MusicRepository private constructor(private val context: Context) {
     }
     fun createPlaylist(name: String): Playlist {
         if(name.trim() == "我喜欢") return state.value.playlists.first {it.isFavorites}
-        val preset=(0 until PLAYLIST_COVER_COUNT).minBy {index -> state.value.playlists.count {it.coverPreset == index}}
+        val preset=(8..17).minBy {index -> state.value.playlists.count {it.coverPreset == index}}
         return Playlist(UUID.randomUUID().toString(),name.trim(),coverPreset=preset).also {playlist(it)}
     }
     fun playlistCover(id: String, preset: Int, photo: String = ""): Boolean {

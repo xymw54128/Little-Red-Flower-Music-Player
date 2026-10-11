@@ -1,0 +1,13 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp" android:height="108dp"
+    android:viewportWidth="108" android:viewportHeight="108">
+    <!-- 郁金香: original floral cover, rendered from these same paths in the design preview. -->
+    <path android:fillColor="#FFF0EB" android:pathData="M0,0 H108 V108 H0 Z" />
+    <path android:fillColor="#00000000" android:strokeColor="#728C61" android:strokeWidth="2.7" android:strokeLineCap="round" android:strokeLineJoin="round" android:pathData="M57,88 C57,67 59,52 60,39" />
+    <path android:fillColor="#91A579" android:pathData="M56,86 C38,82 24,62 24,40 C39,52 40,70 56,86 Z" />
+    <path android:fillColor="#678861" android:pathData="M57,88 C67,69 72,46 84,41 C81,65 73,82 57,88 Z" />
+    <path android:fillColor="#D75F6C" android:pathData="M58,58 C39,59 29,38 38,19 C46,20 52,28 55,35 C58,23 66,16 73,18 C77,31 75,39 70,46 C70,53 65,58 58,58 Z" />
+    <path android:fillColor="#EA8790" android:pathData="M39,22 C36,38 44,53 58,55 C48,45 48,33 39,22 Z" />
+    <path android:fillColor="#C94859" android:pathData="M57,55 C50,45 50,33 55,27 C61,35 64,45 57,55 Z" />
+    <path android:fillColor="#F39BA2" android:pathData="M57,55 C67,47 71,34 71,21 C79,33 74,50 57,55 Z" />
+</vector>

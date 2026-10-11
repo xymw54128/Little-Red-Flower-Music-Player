@@ -1,14 +1,14 @@
 {
-  "date": "2026-10-11T13:16:39.134Z",
-  "apk": "D:\\music player app\\dist\\小红花-1.0.4.apk",
+  "date": "2026-10-11T14:34:00.928Z",
+  "apk": "D:\\music player app\\dist\\小红花-1.0.5.apk",
   "buildType": "release",
   "debuggable": false,
   "testComponentsAbsent": true,
   "networkPermissionAbsent": true,
-  "size": 43795611,
-  "sha256": "873ffb20ae1239e3a8e0d13d8e96fb3cd59b368f7d981a4b74086695796c9748",
+  "size": 43824911,
+  "sha256": "6016a8c7b0a1ece85e37037b3f3859fea35da44ad9f6f4873ccd0c9b725bf086",
   "metadata": [
-    "package: name='com.xiaohonghua.music' versionCode='11' versionName='1.0.4' platformBuildVersionName='16' platformBuildVersionCode='36' compileSdkVersion='36' compileSdkVersionCodename='16'",
+    "package: name='com.xiaohonghua.music' versionCode='12' versionName='1.0.5' platformBuildVersionName='16' platformBuildVersionCode='36' compileSdkVersion='36' compileSdkVersionCodename='16'",
     "minSdkVersion:'26'",
     "targetSdkVersion:'36'",
     "application-label:'小红花'",
@@ -40,6 +40,10 @@
     {
       "version": "1.0.3",
       "sameSigningCertificate": true
+    },
+    {
+      "version": "1.0.4",
+      "sameSigningCertificate": true
     }
   ],
   "iconResources": {
@@ -66,6 +70,63 @@
       "drawable": "ic_header_settings",
       "path": "res/RW.xml",
       "foregroundOnly": true
+    }
+  ],
+  "playlistCovers": [
+    {
+      "drawable": "ic_cover_peach",
+      "path": "res/wh.xml",
+      "vector": true
+    },
+    {
+      "drawable": "ic_cover_daisy",
+      "path": "res/2n.xml",
+      "vector": true
+    },
+    {
+      "drawable": "ic_cover_tulip",
+      "path": "res/rQ.xml",
+      "vector": true
+    },
+    {
+      "drawable": "ic_cover_lily",
+      "path": "res/gy.xml",
+      "vector": true
+    },
+    {
+      "drawable": "ic_cover_iris",
+      "path": "res/b8.xml",
+      "vector": true
+    },
+    {
+      "drawable": "ic_cover_sunflower",
+      "path": "res/9A.xml",
+      "vector": true
+    },
+    {
+      "drawable": "ic_cover_camellia",
+      "path": "res/zj.xml",
+      "vector": true
+    },
+    {
+      "drawable": "ic_cover_hydrangea",
+      "path": "res/PY.xml",
+      "vector": true
+    },
+    {
+      "drawable": "ic_cover_lotus",
+      "path": "res/ro.xml",
+      "vector": true
+    },
+    {
+      "drawable": "ic_cover_poppy",
+      "path": "res/WI.xml",
+      "vector": true
+    },
+    {
+      "drawable": "ic_cover_favorite",
+      "path": "res/ea.xml",
+      "vector": true
     }
   ],
   "fonts": [
@@ -109,7 +170,13 @@
     },
     {
       "name": "com.xiaohonghua.music.FavoritesTest",
-      "tests": 9,
+      "tests": 12,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "name": "com.xiaohonghua.music.HeaderFlowerMotionTest",
+      "tests": 7,
       "failures": 0,
       "errors": 0
     },
@@ -121,7 +188,7 @@
     },
     {
       "name": "com.xiaohonghua.music.LyricMotionTest",
-      "tests": 8,
+      "tests": 16,
       "failures": 0,
       "errors": 0
     },
@@ -142,6 +209,6 @@
     "errors": 0,
     "warnings": 17
   },
-  "acceptance": "1.0.4 cleans the lyric page and removes playlist/favorite success prompts. LRC boundaries share one frame clock for 250ms style and 300ms centering transitions, rebasing interrupted animations. Browsing returns after 1.5s idle; lyric import is in settings. A separate Cocos Creator 3.8 TypeScript example is provided. Native behavior and frame performance await phone acceptance.",
-  "nativeTests": "Instrumented tests compile successfully. Device execution status is recorded separately in ANDROID-1.0.4-UI-CHECK.json; compilation alone does not confirm runtime behavior or native frame performance."
+  "acceptance": "1.0.5 restores the light lyric surface, synchronizes theme-colored glyph layers and lazy centering, and anticipates LRC boundaries with speed-aware windows and pre-timestamp completion. Adds ten flower covers and a favorite heart-flower, three restartable two-second header animations, theme-colored selection and revised copy. Device timing and frame performance await phone acceptance.",
+  "nativeTests": "Instrumented tests compile successfully. Device execution status is recorded separately in ANDROID-1.0.5-UI-CHECK.json; compilation alone does not confirm runtime behavior or native frame performance."
 }

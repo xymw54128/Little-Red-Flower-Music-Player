@@ -1,0 +1,13 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp" android:height="108dp"
+    android:viewportWidth="108" android:viewportHeight="108">
+    <!-- 心之花: original floral cover, rendered from these same paths in the design preview. -->
+    <path android:fillColor="#FFF0F2" android:pathData="M0,0 H108 V108 H0 Z" />
+    <path android:fillColor="#00000000" android:strokeColor="#92A28E" android:strokeWidth="1.5" android:strokeLineCap="round" android:strokeLineJoin="round" android:pathData="M55,79 C58,87 57,94 53,98" />
+    <path android:fillColor="#B3C4AA" android:pathData="M56,91 C61,82 75,80 79,84 C76,93 64,95 56,91 Z" />
+    <group android:translateX="0" android:translateY="-5" android:pivotX="54" android:pivotY="54" android:rotation="-10" android:scaleX="1.3" android:scaleY="1.3">
+        <path android:fillColor="#00000000" android:strokeColor="#CE3C4C" android:strokeWidth="3.1" android:strokeLineCap="round" android:strokeLineJoin="round" android:pathData="M41.152,35.018 A13,13 0,0 1 66.848,35.018 Q67.013,36.089 68.082,35.915 A13,13 0,0 1 76.023,60.354 Q75.056,60.841 75.551,61.805 A13,13 0,0 1 54.763,76.908 Q54,76.139 53.237,76.908 A13,13 0,0 1 32.449,61.805 Q32.944,60.841 31.977,60.354 A13,13 0,0 1 39.918,35.915 Q40.987,36.089 41.152,35.018 Z" />
+        <path android:fillColor="#F5D58C" android:pathData="M43.5,54 A10.5,10.5 0,1 0,64.5,54 A10.5,10.5 0,1 0,43.5,54 Z" />
+        <path android:fillColor="#CE3C4C" android:pathData="M54,60 C51,57 46.3,54.9 47.5,51.8 C48.8,48.8 52.2,50 54,52 C55.8,50 59.2,48.8 60.5,51.8 C61.7,54.9 57,57 54,60 Z" />
+    </group>
+</vector>

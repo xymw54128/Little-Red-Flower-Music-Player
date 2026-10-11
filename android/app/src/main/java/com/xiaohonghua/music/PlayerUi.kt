@@ -10,6 +10,7 @@ import androidx.compose.foundation.gestures.*
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsDraggedAsState
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.pager.HorizontalPager
@@ -30,7 +31,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.input.pointer.pointerInput
@@ -40,6 +40,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFontFamilyResolver
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.selected
@@ -91,9 +92,9 @@ import java.io.File
     val pageMotion=tween<Float>(360,easing=FastOutSlowInEasing)
     val showBackground by remember {derivedStateOf {pager.currentPage == 0 || pager.currentPageOffsetFraction != 0f}}
     val lyricsVisible by remember {derivedStateOf {pager.currentPage == 1 || pager.currentPageOffsetFraction > 0f}}
-    val surface by animateColorAsState(if(pager.currentPage == 1) Color(0xFF171C1A) else pageColor,tween(240),label="player-surface")
-    val foreground by animateColorAsState(if(pager.currentPage == 1) Color.White else ink,tween(240),label="player-foreground")
-    val secondary by animateColorAsState(if(pager.currentPage == 1) Color(0xFFAEB8B2) else muted,tween(240),label="player-secondary")
+    val surface=pageColor
+    val foreground=ink
+    val secondary=muted
     fun openLyrics() {scope.launch {pager.animateScrollToPage(1,animationSpec=pageMotion)}}
     CompositionLocalProvider(LocalContentColor provides foreground) {
     Box(Modifier.fillMaxSize().background(surface)) {
@@ -195,9 +196,9 @@ import java.io.File
     val latestVisible by rememberUpdatedState(visible)
     val latestPlayback by rememberUpdatedState(p)
     val latestDynamic by rememberUpdatedState(settings.dynamicLyrics)
-    BoxWithConstraints(Modifier.testTag("player-lyrics-page").fillMaxSize().background(Color(0xFF171C1A))) {
+    BoxWithConstraints(Modifier.testTag("player-lyrics-page").fillMaxSize().background(pageColor)) {
         if(lines.isEmpty()) Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(32.dp),horizontalAlignment=Alignment.CenterHorizontally,verticalArrangement=Arrangement.Center) {
-            Text(text.ifBlank {"还没有歌词\n在设置 → 歌词样式中导入当前歌曲歌词"},style=style,color=Color(0xFFD3D8D5).copy(alpha=.6f))
+            Text(text.ifBlank {"还没有歌词\n在设置 → 歌词样式中导入当前歌曲歌词"},style=style,color=muted.copy(alpha=.6f))
         } else {
             val width=with(density) {(maxWidth-48.dp).roundToPx().coerceAtLeast(1)}
             // Measure the same fixed text layout used below. Scaling affects drawing only;
@@ -210,13 +211,17 @@ import java.io.File
                 var top=0f
                 heights.map {height -> (top+height/2f).also {top+=height}}
             }
-            // Rebuild only for a new song or text layout. Initial placement is already
-            // centered before the page appears, rather than correcting a visible old row.
+            // A lazy viewport keeps the frame cost independent of the complete LRC length.
+            // Prefix heights include wrapped translations; half-screen padding centers any row.
+            val tops=remember(heights) {var top=0f;heights.map {height -> top.also {top+=height}}}
+            val activeColor=MaterialTheme.colorScheme.primary
             key(lines,p.currentId,width,style,settings.lyricGap,typeface) {
                 val initial=Lrc.current(lines,model.playbackPosition())
-                val scroll=rememberScrollState(initial=centers.getOrElse(initial) {0f}.toInt())
+                val scroll=rememberLazyListState(initialFirstVisibleItemIndex=initial.coerceAtLeast(0),
+                    initialFirstVisibleItemScrollOffset=if(initial >= 0) heights[initial]/2 else 0)
+                fun offset(): Float=tops.getOrElse(scroll.firstVisibleItemIndex) {0f}+scroll.firstVisibleItemScrollOffset
                 var current by remember {mutableIntStateOf(initial)}
-                val visual=remember {mutableStateOf(LyricFrame(if(initial >= 0) mapOf(initial to 1f) else emptyMap(),scroll.value.toFloat(),false))}
+                val visual=remember {mutableStateOf(LyricFrame(if(initial >= 0) mapOf(initial to 1f) else emptyMap(),centers.getOrElse(initial) {0f},false))}
                 var follow by remember {mutableStateOf(true)}
                 var fingerDown by remember {mutableStateOf(false)}
                 var touched by remember {mutableLongStateOf(0)}
@@ -229,70 +234,99 @@ import java.io.File
                 }
                 LaunchedEffect(scroll,lines,lifecycle) {
                     lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                        snapshotFlow {scroll.maxValue}.first {it != Int.MAX_VALUE}
-                        // Finish an interrupted presentation after foreground restoration.
-                        var transition: LyricTransition?=LyricTransition(visual.value.weights,scroll.value.toFloat(),current,
-                            if(follow) centers.getOrElse(current) {0f} else scroll.value.toFloat(),android.os.SystemClock.elapsedRealtime())
-                        var lastIndex=current
+                        snapshotFlow {scroll.layoutInfo.totalItemsCount}.first {it == lines.size}
+                        var transition: LyricTransition?=null
+                        var mediaClock=false
+                        var finishPosition=0L
+                        var motionSpeed=latestPlayback.speed
+                        var suppressedLead=-1
                         var lastSeek=latestPlayback.seekRevision
                         var lastRequest=seekRequest
-                        var lastPosition=model.playbackPosition()
-                        var lastClock=android.os.SystemClock.elapsedRealtime()
+                        val initialClock=android.os.SystemClock.elapsedRealtime()
                         var wasVisible=latestVisible
                         var wasFollowing=follow
+                        // Recover an interrupted foreground presentation from its visible pose.
+                        transition=LyricTransition(visual.value.weights,offset(),current,
+                            if(follow) centers.getOrElse(current) {0f} else offset(),initialClock,300L,300L)
                         while(isActive) {
                             val now=android.os.SystemClock.elapsedRealtime()
                             val position=model.playbackPosition()
-                            val index=Lrc.current(lines,position)
+                            val actual=Lrc.current(lines,position)
                             val state=latestPlayback
-                            val elapsed=(now-lastClock).coerceAtLeast(0)
-                            val expected=if(state.playing) elapsed*state.speed else 0f
-                            val seeking=seekRequest != lastRequest || state.seekRevision != lastSeek || kotlin.math.abs(position-lastPosition-expected) > 120f
+                            // Media3 reports real discontinuities. A delayed frame or a speed
+                            // change must not be mistaken for a seek and restart the animation.
+                            val seeking=seekRequest != lastRequest || state.seekRevision != lastSeek
                             val entering=latestVisible && !wasVisible
                             if(seeking || entering || !latestVisible) follow=true
                             val returning=follow && !wasFollowing
                             val followChanged=follow != wasFollowing
-                            val changed=index != lastIndex
-                            if(changed || seeking || entering || returning || followChanged) {
-                                val weights=transition?.sample(now)?.weights ?: visual.value.weights
-                                val target=if(follow && (latestDynamic || seeking || entering || returning)) centers.getOrElse(index) {0f} else scroll.value.toFloat()
-                                // Natural playback uses the exact LRC boundary, including a
-                                // late display frame. Seek/return starts at the actual picture.
-                                val late=if(changed && state.playing && !seeking && !entering && !returning && index >= 0)
-                                    ((position-lines[index].startTime)/state.speed.coerceAtLeast(.01f)).toLong().coerceIn(0,300) else 0L
-                                transition=LyricTransition(weights,scroll.value.toFloat(),index,target,now-late)
-                                current=index
+                            val lead=Lrc.lead(lines,position,state.speed)
+                            if(actual >= suppressedLead) suppressedLead=-1
+                            if(seeking) suppressedLead=lead?.targetIndex ?: -1
+                            val candidate=lead?.takeIf {it.targetIndex != suppressedLead}?.targetIndex ?: actual
+                            // Slowing playback can move the lead window into the future. Keep
+                            // the already selected row instead of briefly scrolling backward.
+                            val anticipated=if(mediaClock && current > actual && !seeking) current else candidate
+                            val retime=mediaClock && state.playing && transition != null && current > actual && state.speed != motionSpeed
+                            val targetIndex=when {
+                                seeking -> actual
+                                state.playing -> anticipated
+                                entering || returning -> actual
+                                else -> current // Pausing an anticipated row freezes its presentation.
+                            }
+                            val changed=targetIndex != current
+                            if(changed || seeking || entering || returning || followChanged || retime) {
+                                val weights=visual.value.weights
+                                val target=if(follow && (latestDynamic || seeking || entering || returning)) centers.getOrElse(targetIndex) {0f} else offset()
+                                val targetLead=lead?.takeIf {it.targetIndex == targetIndex} ?: if(retime)
+                                    Lrc.lead(lines,lines[targetIndex].startTime-1L,state.speed) else null
+                                val natural=state.playing && !seeking && (changed || entering || returning || retime) && targetLead?.targetIndex == targetIndex
+                                if(natural) {
+                                    // Start from the actual rendered frame, never backdate new weights.
+                                    // Both layers and scrolling reach the next row before its timestamp.
+                                    finishPosition=targetLead!!.finishAtPosition
+                                    motionSpeed=state.speed
+                                    val remaining=(finishPosition-position).coerceAtLeast(0L)
+                                    transition=LyricTransition(weights,offset(),targetIndex,target,position,remaining,remaining)
+                                    mediaClock=true
+                                } else {
+                                    val remaining=if(mediaClock && !seeking && !entering && !returning && followChanged) (finishPosition-position).coerceAtLeast(0L) else 300L
+                                    val keepMedia=mediaClock && !seeking && !entering && !returning && followChanged
+                                    transition=LyricTransition(weights,offset(),targetIndex,target,if(keepMedia) position else now,remaining,remaining)
+                                    mediaClock=keepMedia
+                                }
+                                current=targetIndex
                             }
                             transition?.let {motion ->
-                                val frame=motion.sample(now)
+                                val frame=motion.sample(if(mediaClock) position else now)
                                 visual.value=frame
                                 if(follow) {
-                                    val delta=frame.offset-scroll.value
+                                    val delta=frame.offset-offset()
                                     if(kotlin.math.abs(delta) > .1f) try {scroll.scrollBy(delta)} catch(e: kotlinx.coroutines.CancellationException) {
-                                        // A user gesture wins the scroll mutex; lifecycle
-                                        // cancellation must still terminate this frame loop.
+                                        // Touch owns the scroll mutex; lifecycle cancellation still exits.
                                         if(!isActive) throw e
                                     }
                                 }
                                 if(!frame.running) transition=null
                             }
-                            lastIndex=index;lastSeek=state.seekRevision;lastRequest=seekRequest;lastPosition=position;lastClock=now;wasVisible=latestVisible;wasFollowing=follow
-                            // A paused seek still finishes its presentation animation. Hidden
-                            // or settled paused pages do not request a continuous frame clock.
-                            if(latestVisible && state.playing || transition != null) withFrameNanos {} else delay(50)
+                            lastSeek=state.seekRevision;lastRequest=seekRequest;wasVisible=latestVisible;wasFollowing=follow
+                            if(latestVisible && (state.playing || transition != null && !mediaClock)) withFrameNanos {} else delay(50)
                         }
                     }
                 }
-                Column(Modifier.testTag("lyrics-list").fillMaxSize().pointerInput(text) {
+                LazyColumn(Modifier.testTag("lyrics-list").fillMaxSize().pointerInput(text) {
                     awaitEachGesture {awaitFirstDown(requireUnconsumed=false);browse(true);waitForUpOrCancellation();browse(false)}
-                }.verticalScroll(scroll).padding(horizontal=24.dp,vertical=maxHeight/2),horizontalAlignment=Alignment.CenterHorizontally) {
-                    lines.forEachIndexed {index,line ->
+                },state=scroll,contentPadding=PaddingValues(horizontal=24.dp,vertical=maxHeight/2),horizontalAlignment=Alignment.CenterHorizontally) {
+                    itemsIndexed(lines,key={index,_ -> index}) {index,line ->
                         val weight=remember(index) {derivedStateOf(structuralEqualityPolicy()) {visual.value.weights[index] ?: 0f}}
                         Box(Modifier.fillMaxWidth().height(with(density) {heights[index].toDp()}).testTag(if(index == current) "current-lyric" else "lyric-$index")
                             .clickable {model.seek(line.startTime);seekRequest++;follow=true},contentAlignment=Alignment.Center) {
-                            BasicText(line.text.ifBlank {"·"},Modifier.fillMaxWidth().graphicsLayer {
-                                scaleX=1f+.05f*weight.value;scaleY=scaleX;alpha=.6f+.4f*weight.value
-                            },style=style,color={lerp(Color(0xFFD3D8D5),Color.White,weight.value)})
+                            // Static glyph layers: only alpha and the shared transform change per frame.
+                            // Keep one accessible text label, despite the two visual color layers.
+                            Box(Modifier.fillMaxWidth().graphicsLayer {scaleX=1f+.05f*weight.value;scaleY=scaleX}) {
+                                BasicText(line.text.ifBlank {"·"},Modifier.fillMaxWidth().graphicsLayer {alpha=.6f},style=style,color={muted})
+                                BasicText(line.text.ifBlank {"·"},Modifier.fillMaxWidth().clearAndSetSemantics {}.graphicsLayer {alpha=weight.value},style=style,color={activeColor})
+                            }
                         }
                     }
                 }

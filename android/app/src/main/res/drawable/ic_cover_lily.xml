@@ -1,0 +1,14 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp" android:height="108dp"
+    android:viewportWidth="108" android:viewportHeight="108">
+    <!-- 铃兰: original floral cover, rendered from these same paths in the design preview. -->
+    <path android:fillColor="#EEF5F1" android:pathData="M0,0 H108 V108 H0 Z" />
+    <path android:fillColor="#00000000" android:strokeColor="#6A9982" android:strokeWidth="2.1" android:strokeLineCap="round" android:strokeLineJoin="round" android:pathData="M47,88 C48,70 48,35 68,21 C82,13 88,23 79,32" />
+    <path android:fillColor="#8BB299" android:pathData="M46,88 C29,80 23,60 29,41 C40,46 40,66 46,88 Z" />
+    <path android:fillColor="#A6C4AD" android:pathData="M48,87 C56,66 65,58 72,51 C75,69 64,84 48,87 Z" />
+    <path android:fillColor="#00000000" android:strokeColor="#6A9982" android:strokeWidth="1.4" android:strokeLineCap="round" android:strokeLineJoin="round" android:pathData="M55,35 C61,33 63,34 63,40 M50,49 C59,45 61,45 63,51 M49,64 C57,59 62,60 64,64" />
+    <path android:fillColor="#FCFDF5" android:strokeColor="#B9CEC1" android:strokeWidth="1.2" android:strokeLineCap="round" android:strokeLineJoin="round" android:pathData="M72,27 C67,32 67,37 73,42 C77,45 83,43 87,38 C81,37 79,30 78,27 Z" />
+    <path android:fillColor="#FFFFFF" android:strokeColor="#B9CEC1" android:strokeWidth="1.2" android:strokeLineCap="round" android:strokeLineJoin="round" android:pathData="M61,38 C55,43 54,50 60,55 C66,58 72,55 75,50 C69,49 67,42 67,38 Z" />
+    <path android:fillColor="#FCFDF5" android:strokeColor="#B9CEC1" android:strokeWidth="1.2" android:strokeLineCap="round" android:strokeLineJoin="round" android:pathData="M61,51 C54,57 55,63 61,68 C67,71 74,67 76,63 C69,62 68,54 68,51 Z" />
+    <path android:fillColor="#FFFFFF" android:strokeColor="#B9CEC1" android:strokeWidth="1.2" android:strokeLineCap="round" android:strokeLineJoin="round" android:pathData="M63,65 C58,70 59,77 65,80 C71,82 77,79 79,75 C71,74 70,68 70,65 Z" />
+</vector>

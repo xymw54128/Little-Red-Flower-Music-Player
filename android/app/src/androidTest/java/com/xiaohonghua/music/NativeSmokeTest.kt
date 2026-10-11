@@ -180,7 +180,19 @@ class NativeSmokeTest {
         assertEquals(defaultPlaylistCover("old-list"),playlistFromJson(oldPlaylist).coverPreset)
         val coverStore=LibraryStore(context)
         val currentJson=coverStore.prefs.getString("playlists","[]")!!
+        val previousFlowerMarker=coverStore.prefs.getBoolean("favoriteFlowerCoverV1",false)
         try {
+            val oldDefault=(FAVORITES_PLAYLIST_ID.hashCode() and Int.MAX_VALUE)%8
+            val oldFavorite=Playlist(FAVORITES_PLAYLIST_ID,"我喜欢",listOf(first.id),coverPreset=oldDefault)
+            coverStore.prefs.edit().putString("playlists",org.json.JSONArray(listOf(oldFavorite.toJson())).toString())
+                .putBoolean("favoriteFlowerCoverV1",false).commit()
+            val updatedFavorite=coverStore.playlists().single()
+            assertEquals(FAVORITES_FLOWER_COVER,updatedFavorite.coverPreset)
+            assertEquals(oldFavorite.songIds,updatedFavorite.songIds)
+            assertTrue(coverStore.prefs.getBoolean("favoriteFlowerCoverV1",false))
+            // After the one-time upgrade, choosing the old preset must persist.
+            coverStore.savePlaylists(listOf(updatedFavorite.copy(coverPreset=oldDefault)))
+            assertEquals(oldDefault,coverStore.playlists().single().coverPreset)
             val legacy=org.json.JSONArray().put(oldPlaylist).put(org.json.JSONObject(oldPlaylist.toString()).put("id","another-old-list"))
             coverStore.prefs.edit().putString("playlists",legacy.toString()).commit()
             val migrated=coverStore.playlists()
@@ -190,7 +202,7 @@ class NativeSmokeTest {
             assertNotEquals(old.coverPreset,another.coverPreset)
             assertEquals(listOf(first.id),old.songIds)
             assertEquals(migrated,coverStore.playlists())
-        } finally {coverStore.prefs.edit().putString("playlists",currentJson).commit()}
+        } finally {coverStore.prefs.edit().putString("playlists",currentJson).putBoolean("favoriteFlowerCoverV1",previousFlowerMarker).commit()}
         assertEquals(listOf(first.id),LibraryStore(context).playlists().first {it.id == savedPlaylist.id}.songIds)
         assertEquals(2,LibraryStore(context).playlists().first {it.id == savedPlaylist.id}.coverPreset)
         compose.onNodeWithTag("nav-settings").performClick()

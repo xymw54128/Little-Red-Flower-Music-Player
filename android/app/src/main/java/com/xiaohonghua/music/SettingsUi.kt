@@ -66,7 +66,7 @@ import kotlinx.coroutines.withContext
         SettingRow(Icons.Outlined.FolderOpen,"歌曲文件夹","${library.folders.size} 个来源 · 刷新与增删改同步") {onPage("folders")}
         SettingRow(Icons.Outlined.Backup,"备份与恢复","保存歌单、排序、歌词与设置") {onPage("backup")}
         GroupLabel("关于")
-        Text("小红花 ${BuildConfig.VERSION_NAME} · 本地播放器\n音乐文件按原位置读取，全部播放与管理功能无需网络。",Modifier.padding(horizontal=24.dp,vertical=12.dp),fontSize=12.sp,lineHeight=20.sp,color=muted)
+        Text("小红花 ${BuildConfig.VERSION_NAME} · 本地播放器\n春风桃李花开日，秋雨梧桐叶落时。",Modifier.padding(horizontal=24.dp,vertical=12.dp),fontSize=12.sp,lineHeight=20.sp,color=muted)
         Text("作者：浪雨林兴云魔王",Modifier.testTag("app-author").padding(horizontal=24.dp),fontSize=14.sp,color=MaterialTheme.colorScheme.primary,fontFamily=lyricFont("kai"))
     }
 }
@@ -114,9 +114,9 @@ private fun UriLabel(uri: String)=android.net.Uri.decode(uri.substringAfter("/tr
         SettingSlider("行间距","${draft.lyricGap.toInt()} dp",draft.lyricGap,0f..48f,onFinished=::finish) {draft=draft.copy(lyricGap=it)}
         Row(Modifier.fillMaxWidth().padding(vertical=12.dp),verticalAlignment=Alignment.CenterVertically) {Column(Modifier.weight(1f)) {Text("动态歌词");Text("按 LRC 时间戳高亮并平滑定位",fontSize=12.sp,color=muted,modifier=Modifier.padding(top=6.dp))};Switch(draft.dynamicLyrics,{apply(draft.copy(dynamicLyrics=it))})}
         Text("效果预览",fontSize=12.sp,color=muted,modifier=Modifier.padding(top=20.dp,bottom=12.dp))
-        Surface(Modifier.fillMaxWidth(),shape=RoundedCornerShape(20.dp),color=Color(0xFF171C1A)) {Column(Modifier.padding(24.dp),horizontalAlignment=Alignment.CenterHorizontally) {
+        Surface(Modifier.fillMaxWidth(),shape=RoundedCornerShape(20.dp),color=pageColor) {Column(Modifier.padding(24.dp),horizontalAlignment=Alignment.CenterHorizontally) {
             listOf("风经过窗边","让音乐在这里开花","把这一刻慢慢留下").forEachIndexed {index,text -> Text(text,Modifier.fillMaxWidth().padding(vertical=draft.lyricGap.dp/2+6.dp).graphicsLayer {scaleX=if(index == 1) 1.05f else 1f;scaleY=scaleX},fontSize=draft.lyricSize.sp,fontFamily=lyricFont(draft.lyricFont),textAlign=TextAlign.Center,
-                color=if(index == 1) Color.White else Color(0xFFD3D8D5).copy(alpha=.6f),fontWeight=FontWeight.Normal) }
+                color=if(index == 1) MaterialTheme.colorScheme.primary else muted.copy(alpha=.6f),fontWeight=FontWeight.Normal) }
         }}
         Text("手动浏览歌词后，1.5 秒无操作平滑回到当前歌词行。普通 LRC 提供逐行效果；没有逐字时间戳时不生成逐字动画。",Modifier.padding(top=16.dp),fontSize=12.sp,color=muted,lineHeight=20.sp)
         TextButton(onClick={licenses=true},modifier=Modifier.padding(top=8.dp)) {Text("字体来源与许可",fontSize=12.sp)}

@@ -7,6 +7,7 @@ import android.database.sqlite.SQLiteOpenHelper
 import android.net.Uri
 import android.provider.DocumentsContract
 import android.provider.OpenableColumns
+import androidx.core.content.edit
 import org.json.JSONArray
 import org.json.JSONObject
 import java.io.File
@@ -75,11 +76,13 @@ class LibraryStore(val context: Context) : SQLiteOpenHelper(context, "music.db",
             val playlist=playlistFromJson(json)
             list += if(json.has("coverPreset")) playlist else {
                 migrated=true
-                playlist.copy(coverPreset=(0 until PLAYLIST_COVER_COUNT).minBy {preset -> list.count {it.coverPreset == preset}})
+                playlist.copy(coverPreset=if(playlist.isFavorites) FAVORITES_FLOWER_COVER else (8..17).minBy {preset -> list.count {it.coverPreset == preset}})
             }
         }
-        val normalized=normalizeFavorites(list)
+        val updateFlower= !prefs.getBoolean("favoriteFlowerCoverV1",false)
+        val normalized=normalizeFavorites(list).let {if(updateFlower) it.map(::upgradeFavoriteFlower) else it}
         if(migrated || normalized != list) savePlaylists(normalized)
+        if(updateFlower) prefs.edit {putBoolean("favoriteFlowerCoverV1",true)}
         normalized
     }
     fun savePlaylists(list: List<Playlist>) { prefs.edit().putString("playlists", JSONArray(normalizeFavorites(list).map { it.toJson() }).toString()).apply() }

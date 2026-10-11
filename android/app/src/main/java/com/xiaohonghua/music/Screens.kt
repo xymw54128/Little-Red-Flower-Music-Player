@@ -43,6 +43,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.graphicsLayer
@@ -198,7 +199,12 @@ fun MusicApp(model: MusicModel,showStartup: Boolean = false) {
     LaunchedEffect(playlistId,library.playlists,library.ready,screen) {if(library.ready && screen == "playlist" && playlist == null) {history=emptyList();screen="playlists"}}
     BackHandler(screen !in mainPages || screen == "library" && (group != null || searchExpanded)) { back() }
     BackHandler(startupActive) {startupActive=false}
-    MaterialTheme(colorScheme=lightColorScheme(primary=accents[library.settings.theme],background=pageColor,surface=Color.White,onSurface=ink,onBackground=ink,outlineVariant=Color(0xFFE6E8E3))) {
+    val accent=accents[library.settings.theme]
+    val selectedContainer=lerp(pageColor,accent,.16f)
+    MaterialTheme(colorScheme=lightColorScheme(primary=accent,onPrimary=Color.White,primaryContainer=selectedContainer,onPrimaryContainer=accent,
+        secondary=accent,onSecondary=Color.White,secondaryContainer=accent,onSecondaryContainer=Color.White,
+        tertiary=accent,onTertiary=Color.White,tertiaryContainer=accent,onTertiaryContainer=Color.White,
+        background=pageColor,surface=Color.White,onSurface=ink,onBackground=ink,outlineVariant=Color(0xFFE6E8E3))) {
         Box(Modifier.fillMaxSize()) {
         Scaffold(modifier=Modifier.fillMaxSize(),containerColor=pageColor,snackbarHost={ SnackbarHost(snackbar) {ActionSnackbar(it)} },
             bottomBar={ if(screen != "player") Column {
@@ -238,15 +244,9 @@ fun MusicApp(model: MusicModel,showStartup: Boolean = false) {
                     }
                     Row(Modifier.fillMaxWidth().padding(start=16.dp,end=12.dp,top=12.dp,bottom=8.dp),verticalAlignment=Alignment.CenterVertically) {
                         if(page !in listOf("library","playlists","settings") || group != null) ExpressiveIconButton(onClick=::back) { Icon(Icons.Outlined.ArrowBack,"返回") }
-                        else Image(painterResource(when(page) {
-                            "playlists" -> R.drawable.ic_header_playlists
-                            "settings" -> R.drawable.ic_header_settings
-                            else -> R.drawable.ic_flower
-                        }),null,modifier=Modifier.padding(8.dp).size(24.dp).onGloballyPositioned {
+                        else InteractiveHeaderFlower(page,Modifier.onGloballyPositioned {
                             if(page == "library") flowerDestination=it.boundsInRoot().center
-                        }.testTag(if(page == "library") "library-header-flower" else "page-header-flower").graphicsLayer {
-                            scaleX=1.5f;scaleY=1.5f;alpha=if(page == "library" && startupActive) 0f else 1f
-                        })
+                        }.graphicsLayer {alpha=if(page == "library" && startupActive) 0f else 1f})
                         if(page == "library") LibrarySearchHeader(title,query,searchExpanded,{query=it},{searchExpanded=true},{searchExpanded=false;query=""},Modifier.weight(1f))
                         else Text(title,Modifier.weight(1f),fontSize=27.sp,fontWeight=FontWeight.SemiBold,maxLines=1,overflow=TextOverflow.Ellipsis)
                         if(page == "playlists") ExpressiveIconButton(onClick={ create=true }) { Icon(Icons.Outlined.Add,"新建歌单") }
@@ -493,7 +493,7 @@ fun MusicApp(model: MusicModel,showStartup: Boolean = false) {
                     modifier=Modifier.animateItem(placementSpec=spring(dampingRatio=.9f,stiffness=450f)),onRemove=onRemove?.let {remove -> {remove(song)}},
                     favorite=song.id in favoriteIds,onFavorite=onFavorite?.let {like -> {like(song)}})
             }
-            item {Text("$total 首歌曲 · 音乐保存在本机",Modifier.fillMaxWidth().padding(20.dp),textAlign=TextAlign.Center,fontSize=11.sp,color=muted)}
+            item {Text("共 $total 首歌曲",Modifier.fillMaxWidth().padding(20.dp),textAlign=TextAlign.Center,fontSize=11.sp,color=muted)}
         }
         AnimatedVisibility(locatorVisible && currentIndex >= 0,modifier=Modifier.align(Alignment.BottomEnd).padding(end=80.dp,bottom=48.dp),
             enter=fadeIn(tween(160))+scaleIn(tween(180),initialScale=.85f),exit=fadeOut(tween(160))+scaleOut(tween(160),targetScale=.9f)) {

@@ -1,0 +1,16 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp" android:height="108dp"
+    android:viewportWidth="108" android:viewportHeight="108">
+    <!-- 鸢尾: original floral cover, rendered from these same paths in the design preview. -->
+    <path android:fillColor="#F0EDF8" android:pathData="M0,0 H108 V108 H0 Z" />
+    <path android:fillColor="#00000000" android:strokeColor="#7B9D89" android:strokeWidth="2.3" android:strokeLineCap="round" android:strokeLineJoin="round" android:pathData="M55,89 C55,72 57,54 61,39" />
+    <path android:fillColor="#88A58D" android:pathData="M49,89 C33,75 37,54 33,37 C43,53 43,74 49,89 Z" />
+    <path android:fillColor="#A4B8A0" android:pathData="M57,88 C66,73 71,57 78,48 C78,68 73,82 57,88 Z" />
+    <path android:fillColor="#AC96CF" android:pathData="M56,51 C42,39 41,23 47,19 C55,18 60,33 59,47 Z" />
+    <path android:fillColor="#8F79BB" android:pathData="M60,48 C57,30 66,18 74,20 C78,24 71,44 60,48 Z" />
+    <path android:fillColor="#BDA9D9" android:pathData="M54,47 C43,31 26,33 25,40 C28,49 42,54 54,53 Z" />
+    <path android:fillColor="#A790CC" android:pathData="M59,46 C68,32 85,32 87,39 C84,49 70,52 60,52 Z" />
+    <path android:fillColor="#7F69A7" android:pathData="M58,45 C47,44 38,49 36,58 C36,65 50,68 55,60 C58,72 70,73 77,62 C78,56 68,49 58,45 Z" />
+    <path android:fillColor="#F0CD78" android:pathData="M57,49 C50,50 48,54 48,59 C55,57 61,56 67,60 C66,54 62,51 57,49 Z" />
+    <path android:fillColor="#00000000" android:strokeColor="#69548F" android:strokeWidth="1.2" android:strokeLineCap="round" android:strokeLineJoin="round" android:pathData="M53,55 L48,64 M63,56 L70,65" />
+</vector>

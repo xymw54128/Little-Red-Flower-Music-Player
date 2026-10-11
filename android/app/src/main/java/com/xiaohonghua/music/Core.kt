@@ -29,8 +29,13 @@ data class Song(
 }
 
 enum class SortMode(val label: String) { TITLE("歌曲名 A–Z"), ARTIST("歌手 A–Z"), RANDOM("随机排序"), CUSTOM("自定义排序") }
-const val PLAYLIST_COVER_COUNT = 8
-fun defaultPlaylistCover(id: String): Int = (id.hashCode() and Int.MAX_VALUE) % PLAYLIST_COVER_COUNT
+const val PLAYLIST_COVER_COUNT = 19
+const val FAVORITES_FLOWER_COVER = 18
+fun defaultPlaylistCover(id: String): Int = if(id == FAVORITES_PLAYLIST_ID) FAVORITES_FLOWER_COVER else 8+(id.hashCode() and Int.MAX_VALUE)%10
+
+// Upgrade only the old default. A chosen photo or another preset remains untouched.
+fun upgradeFavoriteFlower(playlist: Playlist): Playlist = if(playlist.isFavorites && playlist.coverPhoto.isEmpty() &&
+    playlist.coverPreset == (FAVORITES_PLAYLIST_ID.hashCode() and Int.MAX_VALUE)%8) playlist.copy(coverPreset=FAVORITES_FLOWER_COVER) else playlist
 data class Playlist(val id: String, val name: String, val songIds: List<String> = emptyList(), val sort: SortMode = SortMode.CUSTOM,
     val randomIds: List<String> = emptyList(), val coverPreset: Int = defaultPlaylistCover(id), val coverPhoto: String = "")
 const val FAVORITES_PLAYLIST_ID = "favorites"
@@ -107,7 +112,19 @@ data class LyricLine(val time: Long, val text: String, val endTime: Long = Long.
 
 data class LyricFrame(val weights: Map<Int,Float>, val offset: Float, val running: Boolean)
 
-// One wall-clock start drives both styles and centering. Replacing a transition
+// All positions and durations are in media milliseconds, not wall-clock time.
+// The real LRC index remains unchanged until its timestamp; this is its visual lead.
+data class LyricLead(
+    val targetIndex: Int,
+    val startedAtPosition: Long,
+    val finishAtPosition: Long,
+    val durationMillis: Long,
+    val elapsedMillis: Long,
+)
+
+// One clock drives both styles and centering. The caller can use media time for
+// natural playback (which freezes on pause), or wall time for a seek/return.
+// Replacing a transition
 // with its sampled frame preserves the visible state during a seek or dense LRC.
 class LyricTransition(
     fromWeights: Map<Int,Float>,
@@ -120,6 +137,7 @@ class LyricTransition(
 ) {
     private val initialWeights = fromWeights.toMap()
     private val targetWeights = if(targetIndex < 0) emptyMap() else mapOf(targetIndex to 1f)
+    private val animatedIndices = (initialWeights.keys+targetWeights.keys).toIntArray()
 
     fun sample(now: Long): LyricFrame {
         // Subtract as doubles so an extreme seek/clock sample cannot overflow Long.
@@ -127,12 +145,15 @@ class LyricTransition(
         val styleFraction = easeOut(elapsed,styleDurationMillis)
         val scrollFraction = easeOut(elapsed,scrollDurationMillis)
         val weights = when {
-            styleFraction == 0f -> initialWeights.toMap()
+            styleFraction == 0f -> initialWeights
             styleFraction == 1f -> targetWeights
-            else -> (initialWeights.keys+targetWeights.keys).associateWith { index ->
-                val initial = initialWeights[index] ?: 0f
-                initial+((targetWeights[index] ?: 0f)-initial)*styleFraction
-            }.filterValues {it > 0f}
+            else -> buildMap {
+                for(index in animatedIndices) {
+                    val initial = initialWeights[index] ?: 0f
+                    val weight = initial+((targetWeights[index] ?: 0f)-initial)*styleFraction
+                    if(weight > 0f) put(index,weight)
+                }
+            }
         }
         val offset = when(scrollFraction) {
             0f -> fromOffset
@@ -182,6 +203,29 @@ object Lrc {
             if (lines[middle].time <= position) { found = middle; low = middle + 1 } else high = middle - 1
         }
         return found
+    }
+
+    // Begin up to 300 wall milliseconds early and finish 20 wall milliseconds
+    // before the timestamp. Short intervals compress the whole animation; its
+    // start never overlaps the preceding row's timestamp. The one-frame margin
+    // shrinks only when the interval itself is shorter than a few display frames.
+    fun lead(lines: List<LyricLine>, position: Long, speed: Float = 1f): LyricLead? {
+        val actual = current(lines,position)
+        val targetIndex = actual+1
+        val target = lines.getOrNull(targetIndex) ?: return null
+        val previous = lines.getOrNull(actual)?.startTime?.coerceAtLeast(0) ?: 0L
+        if(target.startTime <= previous) return null
+        val gap = target.startTime-previous
+        // A one-millisecond interval cannot contain a positive animation and a
+        // pre-timestamp deadline. The normal index still handles this boundary.
+        if(gap < 2) return null
+        val rate = speed.takeIf {it.isFinite() && it > 0f}?.toDouble() ?: 1.0
+        val margin = kotlin.math.ceil(20.0*rate).toLong().coerceIn(1L,(gap/4).coerceAtLeast(1L))
+        val finish = target.startTime-margin
+        val duration = kotlin.math.ceil(300.0*rate).toLong().coerceIn(1L,finish-previous)
+        val start = finish-duration
+        if(position < start) return null
+        return LyricLead(targetIndex,start,finish,duration,(position-start).coerceIn(0L,duration))
     }
 }
 
