@@ -1,10 +1,10 @@
 # 小红花 Android · 1.0.5
 
-原生 Kotlin / Compose / Media3 本地音乐播放器。保留 `../ui/` 作为设计参考；本工程生成真正的安卓 APK。源码已准备开源，正式签名密钥仅保存在本地。
+原生 Kotlin / Compose / Media3 本地音乐播放器。保留 `../ui/` 作为设计参考；本工程生成真正的安卓 APK。源码采用 MIT 许可证，正式签名密钥仅保存在本地。
 
 ## 安装与使用
 
-安装包：[本地小红花 1.0.5 APK](../dist/小红花-1.0.5.apk)，包含内置中文字体。沿用旧版的应用 ID 与签名，直接覆盖安装，保留现有数据。**1.0.5 仅本地生成，尚未发布到 GitHub。** Git 克隆不包含本地 APK；已公开的 [1.0.1 APK](https://github.com/xymw54128/Little-Red-Flower-Music-Player/releases/download/v1.0.1/Xiaohonghua-1.0.1.apk) 仍可下载。当前版本名 `1.0.5`，版本号 `12`，SHA-256：**6016a8c7b0a1ece85e37037b3f3859fea35da44ad9f6f4873ccd0c9b725bf086**。
+安装包：[下载小红花 1.0.5 APK](https://github.com/xymw54128/Little-Red-Flower-Music-Player/releases/download/v1.0.5/Xiaohonghua-1.0.5.apk) · [发布页面](https://github.com/xymw54128/Little-Red-Flower-Music-Player/releases/tag/v1.0.5)，包含内置中文字体。沿用旧版的应用 ID 与签名，直接覆盖安装，保留现有数据。源码与安装包已发布到 GitHub；Git 克隆不包含 APK，请从 Releases 下载。当前版本名 `1.0.5`，版本号 `12`，SHA-256：**6016a8c7b0a1ece85e37037b3f3859fea35da44ad9f6f4873ccd0c9b725bf086**。
 
 1. 将 APK 传到小米 15，在手机文件管理器中打开并安装。手机可能要求为文件管理器允许安装此应用。
 2. 打开小红花，在 **设置 → 歌曲文件夹** 选择音乐文件，或授权音乐文件夹。文件夹递归扫描，音乐原文件不复制、不修改。
@@ -24,7 +24,7 @@
 - 新增桃枝、雏菊、郁金香、铃兰、鸢尾、向日葵、山茶、绣球、荷风、蓝罂粟共 10 款自然花型；“我喜欢”默认“心之花”。原 8 个封面编号与照片保留，原收藏默认图案只升级一次，之后用户选择照常保存。
 - 音乐库、歌单、设置页头花朵分别支持 2 秒旋转减速、黄蕊显现后轮廓描线、五瓣散开依次归位。每次点击采样当前姿态重新开始，旧 generation 不回写；后台暂停，系统关闭动画时静态落位。
 - 库底统计为“共 N 首歌曲”；关于文案为“春风桃李花开日，秋雨梧桐叶落时。”
-- Android 版本 1.0.5 / code 12，本地保存、同签名覆盖升级，不推送 GitHub。实现与验收边界见 [1.0.5 说明](../docs/design/1.0.5-flower-motion.md)；[封面实际路径预览](../dist/歌单花朵封面-1.0.5.png)。
+- Android 版本 1.0.5 / code 12，已发布到 GitHub，同签名覆盖升级。实现与验收边界见 [1.0.5 说明](../docs/design/1.0.5-flower-motion.md)；[封面实际路径预览](../dist/歌单花朵封面-1.0.5.png)。
 
 ## 1.0.4 歌词同步与页面精简（2026-10-11）
 

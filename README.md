@@ -6,9 +6,9 @@
 
 ## 下载与安装
 
-**[本地 Android 1.0.5 APK](dist/小红花-1.0.5.apk)** · [本地发布说明](dist/小红花-1.0.5-发布说明.md) · [安装与换机说明](dist/安装说明.md)
+**[下载 Android 1.0.5 APK](https://github.com/xymw54128/Little-Red-Flower-Music-Player/releases/download/v1.0.5/Xiaohonghua-1.0.5.apk)** · [1.0.5 发布页面](https://github.com/xymw54128/Little-Red-Flower-Music-Player/releases/tag/v1.0.5) · [发布说明](dist/小红花-1.0.5-发布说明.md) · [安装与换机说明](dist/安装说明.md)
 
-**1.0.5 仅本地生成，尚未发布到 GitHub。** 本地 APK 不包含在 Git 克隆中；公开下载仍为 **[Android 1.0.1 APK](https://github.com/xymw54128/Little-Red-Flower-Music-Player/releases/download/v1.0.1/Xiaohonghua-1.0.1.apk)** · [1.0.1 发布页面](https://github.com/xymw54128/Little-Red-Flower-Music-Player/releases/tag/v1.0.1)。
+源码与 Android 1.0.5 已公开发布，APK 和校验文件保存在 GitHub Releases；Git 克隆不包含安装包。历史版本见 [全部发布](https://github.com/xymw54128/Little-Red-Flower-Music-Player/releases)。
 
 - Android 8.0 及以上，针对 Android 16 开发；支持 ARM64、ARMv7、x86、x86_64。
 - 包含离线中文字体。下载后在手机文件管理器中打开 APK，按系统提示允许该文件管理器安装应用。
@@ -16,7 +16,7 @@
 - 安装后在 **设置 → 歌曲文件夹** 导入音乐文件或授权音乐文件夹。
 - 应用运行不需要网络权限；首次下载源码构建所需的工具和依赖需要联网。
 
-APK SHA-256（[校验文件](dist/小红花-1.0.5.apk.sha256)）：
+APK SHA-256（[下载校验文件](https://github.com/xymw54128/Little-Red-Flower-Music-Player/releases/download/v1.0.5/Xiaohonghua-1.0.5.apk.sha256)）：
 
 ```text
 6016a8c7b0a1ece85e37037b3f3859fea35da44ad9f6f4873ccd0c9b725bf086
@@ -52,7 +52,7 @@ iOS 暂按 iPhone / iOS 17+ 制作，目前提供源码，**没有可安装的 I
 | [`ios/`](ios/README.md) | SwiftUI / UIKit / AVFoundation 原生 iPhone 工程及测试 |
 | [`ui/`](ui/README.md) | 可点击的网页 UI 原型，使用模拟播放时钟 |
 | [`docs/design/`](docs/design/) | 版本设计与实现范围 |
-| [`dist/`](dist/) | 发布说明、SHA-256、检查报告与资源预览；1.0.5 APK 仅保存在本地，公开 1.0.1 安装包在 GitHub Releases |
+| [`dist/`](dist/) | 发布说明、SHA-256、检查报告与资源预览；公开安装包在 GitHub Releases |
 | [`examples/cocos-lyrics/`](examples/cocos-lyrics/README.md) | 独立 Cocos Creator 3.8 歌词脚本、节点说明与核心测试 |
 | [`tools/`](tools/) | 原工作区的构建、打包与资源检查助手 |
 
