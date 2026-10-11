@@ -223,9 +223,7 @@ fun MusicApp(model: MusicModel,showStartup: Boolean = false) {
                     (query.isBlank() || listOf(song.title,song.artist,song.album,song.name).any {it.contains(query,true)})}}
                 val groupSongs=remember(pageSorted,query) {if(query.isBlank()) pageSorted else pageSorted.filter {"${it.title} ${it.artist} ${it.album}".contains(query,true)}}
                 if(page == "player") {
-                    PlayerScreen(current,library,playback,model,onBack=::back,onQueue={ sheet="queue" },onAdd={ addSong=current },onLyrics={
-                        if(current != null) { lyricTarget=current.id; lyrics.launch(arrayOf("*/*")) }
-                    },onStyle={ go("lyric-style") })
+                    PlayerScreen(current,library,playback,model,onBack=::back,onQueue={ sheet="queue" },onAdd={ addSong=current })
                 } else Column(Modifier.testTag("page-$page").fillMaxSize()) {
                     val title = when(page) {
                         "library" -> if(group != null) (if(libraryTab == 1) group!!.substringAfter('\u0000') else group!!) else "音乐库"
@@ -288,9 +286,7 @@ fun MusicApp(model: MusicModel,showStartup: Boolean = false) {
                                     }}
                                 } else null,favoriteIds=favoriteIds,onFavorite={song ->
                                     if(model.repository.state.value.songs.any {it.id == song.id}) {
-                                        val liked=song.id in model.repository.state.value.playlists.firstOrNull {it.isFavorites}?.songIds.orEmpty()
                                         model.repository.toggleFavorite(song.id)
-                                        completed(if(liked) "已取消喜欢" else "已加入「我喜欢」")
                                     }
                                 })
                             }
@@ -312,7 +308,9 @@ fun MusicApp(model: MusicModel,showStartup: Boolean = false) {
                             runCatching { context.startActivity(Intent(AndroidSettings.ACTION_APP_NOTIFICATION_SETTINGS).putExtra(AndroidSettings.EXTRA_APP_PACKAGE,context.packageName)) }.onFailure { message("请在手机设置中打开小红花的通知与锁屏显示设置") }
                         })
                         "folders" -> FolderPage(library,onAdd={folder.launch(null)},onRefresh={model.repository.requestRefresh()},onRemove={removeFolder=it},onMonitor={model.repository.settings(library.settings.copy(monitor=it))},onFiles={files.launch(arrayOf("audio/*","application/ogg","application/octet-stream"))})
-                        "lyric-style" -> LyricSettings(library.settings,onComplete={completed(it)}) { model.repository.settings(it) }
+                        "lyric-style" -> LyricSettings(library.settings,song=current,onImport={
+                            if(current != null) {lyricTarget=current.id;lyrics.launch(arrayOf("*/*"))}
+                        },onComplete={completed(it)}) { model.repository.settings(it) }
                         "theme" -> ThemeSettings(library.settings) {model.repository.settings(it);completed("已应用主题颜色")}
                         "background" -> BackgroundSettings(library.settings,current,{image.launch(arrayOf("image/jpeg","image/png","image/webp"))},onComplete={completed(it)}) { model.repository.settings(it) }
                         "backup" -> BackupPage(onExport={export.launch("小红花备份-${java.time.LocalDate.now()}.json")},onRestore={restore.launch(arrayOf("application/json","text/plain","application/octet-stream"))})
@@ -355,18 +353,16 @@ fun MusicApp(model: MusicModel,showStartup: Boolean = false) {
             val song=addSong
             val target=model.repository.state.value.playlists.find {it.id == list.id}
             if(song != null && target != null && model.repository.state.value.songs.any {it.id == song.id}) {
-                if(song.id !in target.songIds) {model.repository.playlist(target.copy(songIds=target.songIds+song.id));completed("已添加到「${target.name}」")}
+                if(song.id !in target.songIds) model.repository.playlist(target.copy(songIds=target.songIds+song.id))
                 else message("这首歌已在「${target.name}」中")
             } else message("歌曲或歌单已变化，请重新选择")
             addSong=null
         },onCreate={ name ->
             val song=addSong
             if(song != null && model.repository.state.value.songs.any {it.id == song.id}) {
-                val priorIds=model.repository.state.value.playlists.map {it.id}.toSet()
                 val list=model.repository.createPlaylist(name)
                 if(song.id !in list.songIds) {
                     model.repository.playlist(list.copy(songIds=list.songIds+song.id))
-                    completed(if(list.id in priorIds) "已添加到「${list.name}」" else "已创建「${list.name}」并添加歌曲")
                 } else message("这首歌已在「${list.name}」中")
             } else message("歌曲已变化，请重新选择")
             addSong=null
@@ -377,7 +373,7 @@ fun MusicApp(model: MusicModel,showStartup: Boolean = false) {
             else {
                 if(rename != null) {
                     model.repository.state.value.playlists.find {it.id == rename!!.id}?.let {model.repository.playlist(it.copy(name=name));completed("已重命名为「$name」")}
-                } else {model.repository.createPlaylist(name);completed(if(name == "我喜欢") "「我喜欢」已在歌单中" else "已创建「$name」")}
+                } else model.repository.createPlaylist(name)
                 create=false;rename=null
             }
         }

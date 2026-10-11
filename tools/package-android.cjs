@@ -1,12 +1,12 @@
 const fs=require('node:fs');const path=require('node:path');const cp=require('node:child_process');const crypto=require('node:crypto');
 const config=JSON.parse(fs.readFileSync('.toolchain/env.json','utf8'));
-const version='1.0.3';const versionCode='10';
+const version='1.0.4';const versionCode='11';
 const apk=path.resolve('android/app/build/outputs/apk/release/app-release.apk');
 const output=path.resolve('dist');fs.mkdirSync(output,{recursive:true});
 function check(exe,args) {const result=cp.spawnSync(exe,args,{encoding:'utf8',env:{...process.env,JAVA_HOME:config.javaHome}});if(result.error)throw result.error;if(result.status!==0)throw new Error(result.stdout+result.stderr);return result.stdout+result.stderr;}
 const signing=check(path.join(config.javaHome,'bin/java.exe'),['-jar',path.join(config.sdk,'build-tools/35.0.0/lib/apksigner.jar'),'verify','--verbose','--print-certs',apk]);
 const certificate=text=>text.match(/Signer #1 certificate SHA-256 digest: (\w+)/)?.[1];
-const upgradeCertificates=['0.1.0','0.1.5','1.0.0','1.0.1','1.0.2'].map(version=>{
+const upgradeCertificates=['0.1.0','0.1.5','1.0.0','1.0.1','1.0.2','1.0.3'].map(version=>{
   const previous=path.join(output,`小红花-${version}.apk`);
   if(!fs.existsSync(previous))throw new Error('Upgrade baseline APK missing: '+version);
   const oldSigning=check(path.join(config.javaHome,'bin/java.exe'),['-jar',path.join(config.sdk,'build-tools/35.0.0/lib/apksigner.jar'),'verify','--print-certs',previous]);
@@ -74,7 +74,7 @@ const lint=fs.readFileSync('android/app/build/intermediates/lint_intermediate_te
 if(!lint||Number(lint[1])!==0)throw new Error('Lint errors or missing report');
 if(!metadata.some(m=>m.includes("name='com.xiaohonghua.music'")&&m.includes(`versionName='${version}'`)&&m.includes(`versionCode='${versionCode}'`)))throw new Error('APK identity or version mismatch');
 fs.copyFileSync(apk,dest);
-const report={date:new Date().toISOString(),apk:dest,buildType:'release',debuggable:false,testComponentsAbsent:true,networkPermissionAbsent:true,size:fs.statSync(dest).size,sha256:crypto.createHash('sha256').update(fs.readFileSync(dest)).digest('hex'),metadata,signing:signing.trim(),sameSigningCertificateAs010:sameSigningCertificate,upgradeCertificates,iconResources,launchIcon,headerIcons,fonts,zipAlign16k:true,arm64LoadSegmentAlignments:aligns,unitTests:suites,lint:{errors:Number(lint[1]),warnings:Number(lint[2])},acceptance:'1.0.3 adds unified press feedback, favorite animation, spring transitions, reorder lift and boundary handling, inline playlist creation, nonblocking completion and safe playlist undo. Settings sliders preview locally and persist on release. These changes await phone acceptance.',nativeTests:'Instrumented tests compile successfully. Device execution status is recorded separately in ANDROID-1.0.3-UI-CHECK.json; compilation alone does not confirm runtime behavior or native frame performance.'};
+const report={date:new Date().toISOString(),apk:dest,buildType:'release',debuggable:false,testComponentsAbsent:true,networkPermissionAbsent:true,size:fs.statSync(dest).size,sha256:crypto.createHash('sha256').update(fs.readFileSync(dest)).digest('hex'),metadata,signing:signing.trim(),sameSigningCertificateAs010:sameSigningCertificate,upgradeCertificates,iconResources,launchIcon,headerIcons,fonts,zipAlign16k:true,arm64LoadSegmentAlignments:aligns,unitTests:suites,lint:{errors:Number(lint[1]),warnings:Number(lint[2])},acceptance:'1.0.4 cleans the lyric page and removes playlist/favorite success prompts. LRC boundaries share one frame clock for 250ms style and 300ms centering transitions, rebasing interrupted animations. Browsing returns after 1.5s idle; lyric import is in settings. A separate Cocos Creator 3.8 TypeScript example is provided. Native behavior and frame performance await phone acceptance.',nativeTests:'Instrumented tests compile successfully. Device execution status is recorded separately in ANDROID-1.0.4-UI-CHECK.json; compilation alone does not confirm runtime behavior or native frame performance.'};
 fs.writeFileSync(path.join(output,'APK-CHECK.json'),JSON.stringify(report,null,2));
 fs.writeFileSync(path.join(output,`小红花-${version}-CHECK.json`),JSON.stringify(report,null,2));
 fs.writeFileSync(path.join(output,`小红花-${version}.apk.sha256`),report.sha256+'  '+path.basename(dest)+'\n');

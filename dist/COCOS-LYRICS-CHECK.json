@@ -1,0 +1,18 @@
+{
+  "date": "2026-10-11",
+  "environment": "Node.js 24 / TypeScript 5.8.3 / official @cocos/creator-types 3.8.6",
+  "coreTests": {
+    "executed": 16,
+    "passed": 16,
+    "failed": 0
+  },
+  "strictTypeCheck": {
+    "core": true,
+    "controller": true,
+    "noEmit": true,
+    "officialEngineDeclarations": true
+  },
+  "creatorEditorExecuted": false,
+  "deviceBuildExecuted": false,
+  "deviceFramePerformanceMeasured": false
+}

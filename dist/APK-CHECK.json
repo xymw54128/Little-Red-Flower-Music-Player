@@ -1,14 +1,14 @@
 {
-  "date": "2026-10-11T08:43:11.280Z",
-  "apk": "D:\\music player app\\dist\\小红花-1.0.3.apk",
+  "date": "2026-10-11T13:16:39.134Z",
+  "apk": "D:\\music player app\\dist\\小红花-1.0.4.apk",
   "buildType": "release",
   "debuggable": false,
   "testComponentsAbsent": true,
   "networkPermissionAbsent": true,
   "size": 43795611,
-  "sha256": "f36b274bb34048e57b2711f746e09d17cef43d104933624521e0f51db37caa4e",
+  "sha256": "873ffb20ae1239e3a8e0d13d8e96fb3cd59b368f7d981a4b74086695796c9748",
   "metadata": [
-    "package: name='com.xiaohonghua.music' versionCode='10' versionName='1.0.3' platformBuildVersionName='16' platformBuildVersionCode='36' compileSdkVersion='36' compileSdkVersionCodename='16'",
+    "package: name='com.xiaohonghua.music' versionCode='11' versionName='1.0.4' platformBuildVersionName='16' platformBuildVersionCode='36' compileSdkVersion='36' compileSdkVersionCodename='16'",
     "minSdkVersion:'26'",
     "targetSdkVersion:'36'",
     "application-label:'小红花'",
@@ -35,6 +35,10 @@
     },
     {
       "version": "1.0.2",
+      "sameSigningCertificate": true
+    },
+    {
+      "version": "1.0.3",
       "sameSigningCertificate": true
     }
   ],
@@ -99,7 +103,7 @@
   "unitTests": [
     {
       "name": "com.xiaohonghua.music.CoreTest",
-      "tests": 4,
+      "tests": 5,
       "failures": 0,
       "errors": 0
     },
@@ -117,7 +121,7 @@
     },
     {
       "name": "com.xiaohonghua.music.LyricMotionTest",
-      "tests": 5,
+      "tests": 8,
       "failures": 0,
       "errors": 0
     },
@@ -138,6 +142,6 @@
     "errors": 0,
     "warnings": 17
   },
-  "acceptance": "1.0.3 adds unified press feedback, favorite animation, spring transitions, reorder lift and boundary handling, inline playlist creation, nonblocking completion and safe playlist undo. Settings sliders preview locally and persist on release. These changes await phone acceptance.",
-  "nativeTests": "Instrumented tests compile successfully. Device execution status is recorded separately in ANDROID-1.0.3-UI-CHECK.json; compilation alone does not confirm runtime behavior or native frame performance."
+  "acceptance": "1.0.4 cleans the lyric page and removes playlist/favorite success prompts. LRC boundaries share one frame clock for 250ms style and 300ms centering transitions, rebasing interrupted animations. Browsing returns after 1.5s idle; lyric import is in settings. A separate Cocos Creator 3.8 TypeScript example is provided. Native behavior and frame performance await phone acceptance.",
+  "nativeTests": "Instrumented tests compile successfully. Device execution status is recorded separately in ANDROID-1.0.4-UI-CHECK.json; compilation alone does not confirm runtime behavior or native frame performance."
 }

@@ -29,6 +29,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
@@ -57,7 +58,7 @@ import kotlinx.coroutines.withContext
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(bottom=24.dp)) {
         GroupLabel("播放与歌词")
         SettingRow(Icons.Outlined.Lock,"系统锁屏音乐控件","前往手机通知设置管理锁屏显示",onSystemLock)
-        SettingRow(Icons.Outlined.TextFields,"歌词样式","字体、字号、行间距与动态滚动") {onPage("lyric-style")}
+        SettingRow(Icons.Outlined.TextFields,"歌词样式","歌词导入、字体、字号、行间距与动态滚动") {onPage("lyric-style")}
         GroupLabel("外观")
         SettingRow(Icons.Outlined.Palette,"主题颜色","红花、森林、海蓝、陶土、暮紫") {onPage("theme")}
         SettingRow(Icons.Outlined.Wallpaper,"播放背景","仅播放封面页使用照片，歌词页保持纯色") {onPage("background")}
@@ -89,13 +90,18 @@ import kotlinx.coroutines.withContext
 }
 private fun UriLabel(uri: String)=android.net.Uri.decode(uri.substringAfter("/tree/"))
 
-@Composable internal fun LyricSettings(settings: Settings,onComplete:(String)->Unit={},onChange:(Settings)->Unit) {
+@Composable internal fun LyricSettings(settings: Settings,song: Song?=null,onImport:(()->Unit)?=null,onComplete:(String)->Unit={},onChange:(Settings)->Unit) {
     var licenses by remember {mutableStateOf(false)}
     var draft by remember(settings) {mutableStateOf(settings)}
     val haptic=rememberActionHaptic()
     fun apply(value: Settings) {val changed=value != draft;draft=value;if(value != settings) onChange(value);if(changed) haptic()}
     fun finish() {if(draft != settings) {onChange(draft);haptic();onComplete("已保存歌词样式")}}
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(24.dp)) {
+        Text("当前歌曲歌词",fontWeight=FontWeight.Medium)
+        Text(song?.let {"${it.title} - ${it.artist}"} ?: "先播放一首歌曲，再导入对应歌词。",fontSize=12.sp,color=muted,modifier=Modifier.padding(top=8.dp))
+        OutlinedButton(onClick={onImport?.invoke()},enabled=song != null && onImport != null,modifier=Modifier.testTag("import-current-lyrics").fillMaxWidth().padding(top=12.dp,bottom=24.dp)) {
+            Icon(Icons.Outlined.Description,null,Modifier.size(18.dp));Spacer(Modifier.width(8.dp));Text("导入当前歌曲歌词")
+        }
         Text("字体",fontWeight=FontWeight.Medium)
         Column(Modifier.selectableGroup().padding(top=8.dp)) {lyricFontOptions.forEach { (key,label) ->
             val selected=draft.lyricFont == key
@@ -108,11 +114,11 @@ private fun UriLabel(uri: String)=android.net.Uri.decode(uri.substringAfter("/tr
         SettingSlider("行间距","${draft.lyricGap.toInt()} dp",draft.lyricGap,0f..48f,onFinished=::finish) {draft=draft.copy(lyricGap=it)}
         Row(Modifier.fillMaxWidth().padding(vertical=12.dp),verticalAlignment=Alignment.CenterVertically) {Column(Modifier.weight(1f)) {Text("动态歌词");Text("按 LRC 时间戳高亮并平滑定位",fontSize=12.sp,color=muted,modifier=Modifier.padding(top=6.dp))};Switch(draft.dynamicLyrics,{apply(draft.copy(dynamicLyrics=it))})}
         Text("效果预览",fontSize=12.sp,color=muted,modifier=Modifier.padding(top=20.dp,bottom=12.dp))
-        Surface(Modifier.fillMaxWidth(),shape=RoundedCornerShape(20.dp),color=Color.White) {Column(Modifier.padding(24.dp),horizontalAlignment=Alignment.CenterHorizontally) {
-            listOf("风经过窗边","让音乐在这里开花","把这一刻慢慢留下").forEachIndexed {index,text -> Text(text,Modifier.fillMaxWidth().padding(vertical=draft.lyricGap.dp/2+6.dp),fontSize=draft.lyricSize.sp,fontFamily=lyricFont(draft.lyricFont),textAlign=TextAlign.Center,
-                color=if(index == 1) MaterialTheme.colorScheme.primary else muted.copy(alpha=.5f),fontWeight=FontWeight.Normal) }
+        Surface(Modifier.fillMaxWidth(),shape=RoundedCornerShape(20.dp),color=Color(0xFF171C1A)) {Column(Modifier.padding(24.dp),horizontalAlignment=Alignment.CenterHorizontally) {
+            listOf("风经过窗边","让音乐在这里开花","把这一刻慢慢留下").forEachIndexed {index,text -> Text(text,Modifier.fillMaxWidth().padding(vertical=draft.lyricGap.dp/2+6.dp).graphicsLayer {scaleX=if(index == 1) 1.05f else 1f;scaleY=scaleX},fontSize=draft.lyricSize.sp,fontFamily=lyricFont(draft.lyricFont),textAlign=TextAlign.Center,
+                color=if(index == 1) Color.White else Color(0xFFD3D8D5).copy(alpha=.6f),fontWeight=FontWeight.Normal) }
         }}
-        Text("手动浏览歌词后，4 秒无操作恢复定位。普通 LRC 提供逐行效果；没有逐字时间戳时不生成逐字动画。",Modifier.padding(top=16.dp),fontSize=12.sp,color=muted,lineHeight=20.sp)
+        Text("手动浏览歌词后，1.5 秒无操作平滑回到当前歌词行。普通 LRC 提供逐行效果；没有逐字时间戳时不生成逐字动画。",Modifier.padding(top=16.dp),fontSize=12.sp,color=muted,lineHeight=20.sp)
         TextButton(onClick={licenses=true},modifier=Modifier.padding(top=8.dp)) {Text("字体来源与许可",fontSize=12.sp)}
     }
     if(licenses) FontLicenseDialog {licenses=false}

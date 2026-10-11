@@ -12,10 +12,10 @@ import androidx.compose.foundation.interaction.collectIsDraggedAsState
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PagerDefaults
 import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -30,6 +30,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.input.pointer.pointerInput
@@ -48,6 +49,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.text.style.TextMotion
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.unit.Constraints
@@ -78,26 +80,32 @@ import java.io.File
 }
 
 @Composable internal fun PlayerScreen(song: Song?,library: LibraryState,p: PlaybackState,model: MusicModel,
-    onBack:()->Unit,onQueue:()->Unit,onAdd:()->Unit,onLyrics:()->Unit,onStyle:()->Unit) {
+    onBack:()->Unit,onQueue:()->Unit,onAdd:()->Unit) {
     val pager=rememberPagerState {2}
     val scope=rememberCoroutineScope()
     val artworkPress=remember {MutableInteractionSource()}
     val lyricText=library.manualLyrics[song?.id] ?: song?.lyrics.orEmpty()
-    val lines=remember(lyricText) {Lrc.parse(lyricText)}
+    val lines=remember(lyricText,song?.duration) {Lrc.parse(lyricText,song?.duration?.takeIf {it > 0})}
     val lyricIndex=remember(lines,model) {model.playback.map {Lrc.current(lines,it.position)}.distinctUntilChanged()}
     val current by lyricIndex.collectAsStateWithLifecycle(initialValue=-1)
     val pageMotion=tween<Float>(360,easing=FastOutSlowInEasing)
     val showBackground by remember {derivedStateOf {pager.currentPage == 0 || pager.currentPageOffsetFraction != 0f}}
+    val lyricsVisible by remember {derivedStateOf {pager.currentPage == 1 || pager.currentPageOffsetFraction > 0f}}
+    val surface by animateColorAsState(if(pager.currentPage == 1) Color(0xFF171C1A) else pageColor,tween(240),label="player-surface")
+    val foreground by animateColorAsState(if(pager.currentPage == 1) Color.White else ink,tween(240),label="player-foreground")
+    val secondary by animateColorAsState(if(pager.currentPage == 1) Color(0xFFAEB8B2) else muted,tween(240),label="player-secondary")
     fun openLyrics() {scope.launch {pager.animateScrollToPage(1,animationSpec=pageMotion)}}
-    Box(Modifier.fillMaxSize().background(pageColor)) {
+    CompositionLocalProvider(LocalContentColor provides foreground) {
+    Box(Modifier.fillMaxSize().background(surface)) {
         if(showBackground) PlayerBackground(library.settings,song,Modifier.testTag("player-page-background").matchParentSize().graphicsLayer {
             alpha=(1f-pager.currentPage-pager.currentPageOffsetFraction).coerceIn(0f,1f)
         })
         Column(Modifier.fillMaxSize()) {
             Row(Modifier.fillMaxWidth().padding(horizontal=8.dp,vertical=4.dp),verticalAlignment=Alignment.CenterVertically) {
                 ExpressiveIconButton(onClick=onBack) {Icon(Icons.Outlined.KeyboardArrowDown,"收起播放器")}
-                Text(if(pager.currentPage == 1) "动态歌词" else "正在播放",Modifier.weight(1f),textAlign=TextAlign.Center,fontSize=13.sp,color=muted)
-                ExpressiveIconButton(onClick=onAdd,enabled=song != null) {Icon(Icons.Outlined.PlaylistAdd,"添加到歌单")}
+                Text(if(pager.currentPage == 1) song?.let {"${it.title} - ${it.artist}"}.orEmpty() else "正在播放",Modifier.weight(1f).padding(horizontal=8.dp),textAlign=TextAlign.Center,fontSize=13.sp,color=secondary,maxLines=1,overflow=TextOverflow.Ellipsis)
+                if(pager.currentPage == 0) ExpressiveIconButton(onClick=onAdd,enabled=song != null) {Icon(Icons.Outlined.PlaylistAdd,"添加到歌单")}
+                else Spacer(Modifier.size(48.dp))
             }
             if(song == null) Column(Modifier.weight(1f).fillMaxWidth(),horizontalAlignment=Alignment.CenterHorizontally,verticalArrangement=Arrangement.Center) {
                 Icon(Icons.Outlined.LocalFlorist,null,Modifier.size(72.dp),tint=MaterialTheme.colorScheme.primary); Text("从音乐库选择一首歌曲",Modifier.padding(24.dp),color=muted)
@@ -112,7 +120,7 @@ import java.io.File
                         Text(listOfNotNull(song.format.takeIf {it.isNotBlank()},song.bitDepth.takeIf {it > 0}?.let {"$it bit"},song.sampleRate.takeIf {it > 0}?.let {"${it/1000f} kHz"}).joinToString(" · "),Modifier.padding(top=12.dp),fontSize=11.sp,color=muted,textAlign=TextAlign.Center)
                         Text(lines.getOrNull(current)?.text ?: "点击封面或左滑查看歌词",Modifier.testTag("player-lyric-preview").fillMaxWidth().padding(top=24.dp).clickable(onClickLabel="查看歌词",onClick=::openLyrics),textAlign=TextAlign.Center,fontSize=library.settings.lyricSize.coerceAtMost(24f).sp,fontFamily=lyricFont(library.settings.lyricFont),color=MaterialTheme.colorScheme.primary,maxLines=2,overflow=TextOverflow.Ellipsis)
                     }
-                } else LyricsPage(lines,lyricText,library.settings,pager.currentPage == 1,p,model,onImport=onLyrics,onStyle=onStyle)
+                } else LyricsPage(lines,lyricText,library.settings,lyricsVisible,p,model)
             }
             Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.Center) {
                 repeat(2) { index ->
@@ -121,27 +129,28 @@ import java.io.File
                     Box(Modifier.testTag(if(index == 0) "player-page-cover" else "player-page-lyrics").size(48.dp).clip(CircleShape)
                         .semantics {this.selected=selected;contentDescription=if(index == 0) "播放封面" else "歌词"}
                         .clickable(role=Role.Tab) {scope.launch {pager.animateScrollToPage(index,animationSpec=pageMotion)}},contentAlignment=Alignment.Center) {
-                        Box(Modifier.size(dotWidth,6.dp).clip(CircleShape).background(if(selected) MaterialTheme.colorScheme.primary else muted.copy(alpha=.25f)))
+                        Box(Modifier.size(dotWidth,6.dp).clip(CircleShape).background(if(selected) MaterialTheme.colorScheme.primary else secondary.copy(alpha=.25f)))
                     }
                 }
             }
-            PlayerControls(song?.duration ?: 0,model,onQueue)
+            PlayerControls(song?.duration ?: 0,model,onQueue,surface,secondary)
         }
     }
+    }
 }
-@Composable private fun PlayerControls(fallbackDuration: Long,model: MusicModel,onQueue:()->Unit) {
+@Composable private fun PlayerControls(fallbackDuration: Long,model: MusicModel,onQueue:()->Unit,surface: Color,secondary: Color) {
     val p by model.playback.collectAsStateWithLifecycle()
     val haptic=rememberActionHaptic()
     val playPress=remember {MutableInteractionSource()}
     var drag by remember { mutableStateOf<Float?>(null) }
     LaunchedEffect(p.currentId) {drag=null}
     val duration=(if(p.duration > 0) p.duration else fallbackDuration).coerceAtLeast(1)
-    Column(Modifier.fillMaxWidth().background(Brush.verticalGradient(listOf(pageColor.copy(alpha=0f),pageColor.copy(alpha=.90f)))).padding(horizontal=28.dp,vertical=8.dp)) {
+    Column(Modifier.fillMaxWidth().background(Brush.verticalGradient(listOf(surface.copy(alpha=0f),surface.copy(alpha=.90f)))).padding(horizontal=28.dp,vertical=8.dp)) {
         p.error?.let { Text(it,fontSize=12.sp,color=MaterialTheme.colorScheme.error,maxLines=2,modifier=Modifier.padding(bottom=8.dp)) }
         PlaybackSeekBar(p,duration,drag,onChange={drag=it},onFinished={drag?.let {model.seek(it.toLong());haptic()};drag=null})
-        Row(Modifier.fillMaxWidth()) { Text(timeLabel((drag?.toLong() ?: p.position)),Modifier.weight(1f),fontSize=11.sp,color=muted); Text(timeLabel(duration),fontSize=11.sp,color=muted) }
+        Row(Modifier.fillMaxWidth()) { Text(timeLabel((drag?.toLong() ?: p.position)),Modifier.weight(1f),fontSize=11.sp,color=secondary); Text(timeLabel(duration),fontSize=11.sp,color=secondary) }
         Row(Modifier.fillMaxWidth().padding(top=12.dp,bottom=4.dp),horizontalArrangement=Arrangement.SpaceBetween,verticalAlignment=Alignment.CenterVertically) {
-            ExpressiveIconButton(onClick={model.mode()},enabled=p.currentId != null,tactile=true) {Icon(when(p.mode) {2 -> Icons.Outlined.RepeatOne; 3 -> Icons.Outlined.Shuffle; else -> Icons.Outlined.Repeat},listOf("顺序播放","列表循环","单曲循环","随机播放")[p.mode],tint=if(p.mode == 0) muted else MaterialTheme.colorScheme.primary)}
+            ExpressiveIconButton(onClick={model.mode()},enabled=p.currentId != null,tactile=true) {Icon(when(p.mode) {2 -> Icons.Outlined.RepeatOne; 3 -> Icons.Outlined.Shuffle; else -> Icons.Outlined.Repeat},listOf("顺序播放","列表循环","单曲循环","随机播放")[p.mode],tint=if(p.mode == 0) secondary else MaterialTheme.colorScheme.primary)}
             ExpressiveIconButton(onClick={model.previous()},enabled=p.currentId != null,modifier=Modifier.size(52.dp),tactile=true) {Icon(Icons.Outlined.SkipPrevious,"上一首",Modifier.size(32.dp))}
             FilledIconButton(onClick={model.toggle();haptic()},enabled=p.currentId != null && p.connected,modifier=Modifier.size(64.dp).pressScale(playPress,.94f),shape=CircleShape,interactionSource=playPress) {
                 Crossfade(targetState=p.playing,animationSpec=tween(120),label="play-pause") {playing ->
@@ -151,7 +160,7 @@ import java.io.File
             ExpressiveIconButton(onClick={model.next()},enabled=p.currentId != null,modifier=Modifier.size(52.dp),tactile=true) {Icon(Icons.Outlined.SkipNext,"下一首",Modifier.size(32.dp))}
             ExpressiveIconButton(onClick=onQueue) {Icon(Icons.Outlined.QueueMusic,"播放队列")}
         }
-        Text(listOf("顺序播放","列表循环","单曲循环","随机播放")[p.mode],Modifier.fillMaxWidth().padding(top=4.dp),fontSize=10.sp,color=muted,textAlign=TextAlign.Center)
+        Text(listOf("顺序播放","列表循环","单曲循环","随机播放")[p.mode],Modifier.fillMaxWidth().padding(top=4.dp),fontSize=10.sp,color=secondary,textAlign=TextAlign.Center)
     }
 }
 @Composable private fun PlaybackSeekBar(p: PlaybackState,duration: Long,drag: Float?,onChange:(Float)->Unit,onFinished:()->Unit) {
@@ -165,101 +174,130 @@ import java.io.File
     }
     val radius by animateFloatAsState(if(dragging) 7f else 5f,tween(160),label="seek-thumb")
     val accent=MaterialTheme.colorScheme.primary
+    val trackColor=LocalContentColor.current.copy(alpha=.18f)
     Slider(value=drag ?: progress.value,onValueChange=onChange,onValueChangeFinished=onFinished,valueRange=0f..duration.toFloat(),enabled=p.currentId != null,
         modifier=Modifier.testTag("playback-seek").fillMaxWidth().height(44.dp),interactionSource=interaction,
         thumb={ Canvas(Modifier.size(20.dp)) {drawCircle(if(p.currentId != null) accent else muted.copy(alpha=.35f),radius.dp.toPx())} },
         track={ state -> Canvas(Modifier.fillMaxWidth().height(3.dp)) {
             val start=Offset(0f,size.height/2);val end=Offset(size.width,size.height/2)
-            drawLine(muted.copy(alpha=.18f),start,end,strokeWidth=size.height,cap=StrokeCap.Round)
+            drawLine(trackColor,start,end,strokeWidth=size.height,cap=StrokeCap.Round)
             val fraction=(state.value/duration.toFloat()).coerceIn(0f,1f)
             if(fraction > 0f) drawLine(accent,start,Offset(size.width*fraction,end.y),strokeWidth=size.height,cap=StrokeCap.Round)
         } })
 }
-@Composable private fun LyricsPage(lines: List<LyricLine>,text: String,settings: Settings,active: Boolean,p: PlaybackState,model: MusicModel,onImport:()->Unit,onStyle:()->Unit) {
-    val list=rememberLazyListState()
-    var follow by remember(text) { mutableStateOf(true) }
-    var current by remember(text) { mutableIntStateOf(Lrc.current(lines,model.playbackPosition())) }
-    var touched by remember { mutableLongStateOf(0) }
-    val scope=rememberCoroutineScope()
-    fun browse() {follow=false;touched=android.os.SystemClock.elapsedRealtime()}
-    LaunchedEffect(touched) { if(touched > 0) snapshotFlow {list.isScrollInProgress}.collectLatest { scrolling ->
-        if(!scrolling) {delay(4000);follow=true}
-    } }
-    val measurer=rememberTextMeasurer()
+@Composable private fun LyricsPage(lines: List<LyricLine>,text: String,settings: Settings,visible: Boolean,p: PlaybackState,model: MusicModel) {
     val density=LocalDensity.current
+    val measurer=rememberTextMeasurer()
     val lifecycle=LocalLifecycleOwner.current.lifecycle
-    val lyricStyle=MaterialTheme.typography.bodyLarge.copy(fontSize=settings.lyricSize.sp,fontFamily=lyricFont(settings.lyricFont),lineHeight=(settings.lyricSize*1.35f).sp,
-        fontWeight=FontWeight.Normal,textAlign=TextAlign.Center)
-    val typeface by LocalFontFamilyResolver.current.resolve(lyricStyle.fontFamily,lyricStyle.fontWeight ?: FontWeight.Normal)
-    BoxWithConstraints(Modifier.testTag("player-lyrics-page").fillMaxSize().background(pageColor)) {
-    val lyricWidth=with(density) {(maxWidth-48.dp).roundToPx().coerceAtLeast(1)}
-    val heights=remember(lines,lyricWidth,lyricStyle,settings.lyricGap,typeface,density) { mutableMapOf<Int,Int>() }
-    fun height(index: Int): Int = heights.getOrPut(index) {
-        measurer.measure(AnnotatedString(lines[index].text.ifBlank {"·"}),lyricStyle,constraints=Constraints(maxWidth=lyricWidth)).size.height+
-            with(density) {(settings.lyricGap.dp/2+6.dp).roundToPx()*2}
-    }
-    suspend fun align(motion: LyricMotion) {
-        if(motion.from !in lines.indices) return
-        var info=list.layoutInfo
-        var from=info.visibleItemsInfo.find {it.index == motion.from}
-        var to=info.visibleItemsInfo.find {it.index == motion.to}
-        if(from == null && to == null) {
-            // A seek or return from manual browsing goes straight to the new anchor.
-            list.scrollToItem(motion.from,height(motion.from)/2)
-            info=list.layoutInfo
-            from=info.visibleItemsInfo.find {it.index == motion.from} ?: return
-            to=info.visibleItemsInfo.find {it.index == motion.to}
-        }
-        from?.let {heights[it.index]=it.size}
-        to?.let {heights[it.index]=it.size}
-        // Wrapped/translated rows can be taller than the viewport. Either visible anchor
-        // gives the same absolute trajectory without repeatedly jumping back to the old row.
-        val origin=from?.let {it.offset+it.size/2f} ?: (to!!.offset+to.size/2f-(height(motion.from)+to.size)/2f)
-        val target=if(motion.to == motion.from) origin else to?.let {it.offset+it.size/2f}
-            ?: (origin+(from!!.size+height(motion.to))/2f)
-        val delta=origin+(target-origin)*motion.fraction-(info.viewportEndOffset+info.viewportStartOffset)/2f
-        if(kotlin.math.abs(delta) > .1f) list.scrollBy(delta)
-    }
-    Column(Modifier.fillMaxSize()) {
-        Row(Modifier.fillMaxWidth().padding(horizontal=16.dp),verticalAlignment=Alignment.CenterVertically) {
-            TextButton(onClick=onImport) {Icon(Icons.Outlined.Description,null,Modifier.size(18.dp)); Text("导入歌词",fontSize=12.sp)}
-            Spacer(Modifier.weight(1f))
-            if(!follow && current >= 0) TextButton(onClick={follow=true;if(!settings.dynamicLyrics) scope.launch {
-                val index=Lrc.current(lines,model.playbackPosition()).coerceAtLeast(0)
-                align(LyricMotion(index,index,index,0f,0,0))
-            } }) {Text("回到当前",fontSize=12.sp)}
-            ExpressiveIconButton(onClick=onStyle) {Icon(Icons.Outlined.TextFields,"歌词字体、字号与行间距")}
-        }
-        BoxWithConstraints(Modifier.weight(1f).fillMaxWidth()) {
-            val viewportHeight=with(density) {maxHeight.roundToPx()}
-            LaunchedEffect(lines,active,p.currentId,p.playing,p.speed,p.seekRevision,follow,settings.dynamicLyrics,heights,viewportHeight,lifecycle) {
-                if(!active || lines.isEmpty()) return@LaunchedEffect
-                lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                    snapshotFlow {list.layoutInfo.totalItemsCount}.first {it == lines.size}
-                    suspend fun frame() {
-                        val motion=Lrc.motion(lines,model.playbackPosition(),p.speed)
-                        current=motion.current
-                        if(follow && settings.dynamicLyrics) align(motion)
+    val style=MaterialTheme.typography.bodyLarge.copy(fontSize=settings.lyricSize.sp,fontFamily=lyricFont(settings.lyricFont),
+        lineHeight=(settings.lyricSize*1.35f).sp,fontWeight=FontWeight.Normal,textAlign=TextAlign.Center,textMotion=TextMotion.Animated)
+    val typeface by LocalFontFamilyResolver.current.resolve(style.fontFamily,FontWeight.Normal)
+    val latestVisible by rememberUpdatedState(visible)
+    val latestPlayback by rememberUpdatedState(p)
+    val latestDynamic by rememberUpdatedState(settings.dynamicLyrics)
+    BoxWithConstraints(Modifier.testTag("player-lyrics-page").fillMaxSize().background(Color(0xFF171C1A))) {
+        if(lines.isEmpty()) Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(32.dp),horizontalAlignment=Alignment.CenterHorizontally,verticalArrangement=Arrangement.Center) {
+            Text(text.ifBlank {"还没有歌词\n在设置 → 歌词样式中导入当前歌曲歌词"},style=style,color=Color(0xFFD3D8D5).copy(alpha=.6f))
+        } else {
+            val width=with(density) {(maxWidth-48.dp).roundToPx().coerceAtLeast(1)}
+            // Measure the same fixed text layout used below. Scaling affects drawing only;
+            // wrapped/translated rows keep their height throughout the transition.
+            val heights=remember(lines,width,style,settings.lyricGap,typeface,density) {
+                val padding=with(density) {(settings.lyricGap.dp/2+6.dp).roundToPx()*2}
+                lines.map {measurer.measure(AnnotatedString(it.text.ifBlank {"·"}),style,constraints=Constraints(maxWidth=width)).size.height+padding}
+            }
+            val centers=remember(heights) {
+                var top=0f
+                heights.map {height -> (top+height/2f).also {top+=height}}
+            }
+            // Rebuild only for a new song or text layout. Initial placement is already
+            // centered before the page appears, rather than correcting a visible old row.
+            key(lines,p.currentId,width,style,settings.lyricGap,typeface) {
+                val initial=Lrc.current(lines,model.playbackPosition())
+                val scroll=rememberScrollState(initial=centers.getOrElse(initial) {0f}.toInt())
+                var current by remember {mutableIntStateOf(initial)}
+                val visual=remember {mutableStateOf(LyricFrame(if(initial >= 0) mapOf(initial to 1f) else emptyMap(),scroll.value.toFloat(),false))}
+                var follow by remember {mutableStateOf(true)}
+                var fingerDown by remember {mutableStateOf(false)}
+                var touched by remember {mutableLongStateOf(0)}
+                var seekRequest by remember {mutableLongStateOf(0)}
+                fun browse(down: Boolean) {follow=false;fingerDown=down;touched=android.os.SystemClock.elapsedRealtime()}
+                LaunchedEffect(follow,touched) {
+                    if(!follow) snapshotFlow {scroll.isScrollInProgress || fingerDown}.collectLatest {busy ->
+                        if(!busy) {delay(1500);follow=true}
                     }
-                    frame()
-                    if(p.playing) while(isActive) {
-                        withFrameNanos { }
-                        frame()
+                }
+                LaunchedEffect(scroll,lines,lifecycle) {
+                    lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                        snapshotFlow {scroll.maxValue}.first {it != Int.MAX_VALUE}
+                        // Finish an interrupted presentation after foreground restoration.
+                        var transition: LyricTransition?=LyricTransition(visual.value.weights,scroll.value.toFloat(),current,
+                            if(follow) centers.getOrElse(current) {0f} else scroll.value.toFloat(),android.os.SystemClock.elapsedRealtime())
+                        var lastIndex=current
+                        var lastSeek=latestPlayback.seekRevision
+                        var lastRequest=seekRequest
+                        var lastPosition=model.playbackPosition()
+                        var lastClock=android.os.SystemClock.elapsedRealtime()
+                        var wasVisible=latestVisible
+                        var wasFollowing=follow
+                        while(isActive) {
+                            val now=android.os.SystemClock.elapsedRealtime()
+                            val position=model.playbackPosition()
+                            val index=Lrc.current(lines,position)
+                            val state=latestPlayback
+                            val elapsed=(now-lastClock).coerceAtLeast(0)
+                            val expected=if(state.playing) elapsed*state.speed else 0f
+                            val seeking=seekRequest != lastRequest || state.seekRevision != lastSeek || kotlin.math.abs(position-lastPosition-expected) > 120f
+                            val entering=latestVisible && !wasVisible
+                            if(seeking || entering || !latestVisible) follow=true
+                            val returning=follow && !wasFollowing
+                            val followChanged=follow != wasFollowing
+                            val changed=index != lastIndex
+                            if(changed || seeking || entering || returning || followChanged) {
+                                val weights=transition?.sample(now)?.weights ?: visual.value.weights
+                                val target=if(follow && (latestDynamic || seeking || entering || returning)) centers.getOrElse(index) {0f} else scroll.value.toFloat()
+                                // Natural playback uses the exact LRC boundary, including a
+                                // late display frame. Seek/return starts at the actual picture.
+                                val late=if(changed && state.playing && !seeking && !entering && !returning && index >= 0)
+                                    ((position-lines[index].startTime)/state.speed.coerceAtLeast(.01f)).toLong().coerceIn(0,300) else 0L
+                                transition=LyricTransition(weights,scroll.value.toFloat(),index,target,now-late)
+                                current=index
+                            }
+                            transition?.let {motion ->
+                                val frame=motion.sample(now)
+                                visual.value=frame
+                                if(follow) {
+                                    val delta=frame.offset-scroll.value
+                                    if(kotlin.math.abs(delta) > .1f) try {scroll.scrollBy(delta)} catch(e: kotlinx.coroutines.CancellationException) {
+                                        // A user gesture wins the scroll mutex; lifecycle
+                                        // cancellation must still terminate this frame loop.
+                                        if(!isActive) throw e
+                                    }
+                                }
+                                if(!frame.running) transition=null
+                            }
+                            lastIndex=index;lastSeek=state.seekRevision;lastRequest=seekRequest;lastPosition=position;lastClock=now;wasVisible=latestVisible;wasFollowing=follow
+                            // A paused seek still finishes its presentation animation. Hidden
+                            // or settled paused pages do not request a continuous frame clock.
+                            if(latestVisible && state.playing || transition != null) withFrameNanos {} else delay(50)
+                        }
+                    }
+                }
+                Column(Modifier.testTag("lyrics-list").fillMaxSize().pointerInput(text) {
+                    awaitEachGesture {awaitFirstDown(requireUnconsumed=false);browse(true);waitForUpOrCancellation();browse(false)}
+                }.verticalScroll(scroll).padding(horizontal=24.dp,vertical=maxHeight/2),horizontalAlignment=Alignment.CenterHorizontally) {
+                    lines.forEachIndexed {index,line ->
+                        val weight=remember(index) {derivedStateOf(structuralEqualityPolicy()) {visual.value.weights[index] ?: 0f}}
+                        Box(Modifier.fillMaxWidth().height(with(density) {heights[index].toDp()}).testTag(if(index == current) "current-lyric" else "lyric-$index")
+                            .clickable {model.seek(line.startTime);seekRequest++;follow=true},contentAlignment=Alignment.Center) {
+                            BasicText(line.text.ifBlank {"·"},Modifier.fillMaxWidth().graphicsLayer {
+                                scaleX=1f+.05f*weight.value;scaleY=scaleX;alpha=.6f+.4f*weight.value
+                            },style=style,color={lerp(Color(0xFFD3D8D5),Color.White,weight.value)})
+                        }
                     }
                 }
             }
-            if(lines.isEmpty()) Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(32.dp),horizontalAlignment=Alignment.CenterHorizontally,verticalArrangement=Arrangement.Center) {
-                Text(text.ifBlank {"还没有歌词\n可以导入同名 LRC，或选择本地歌词文件"},fontSize=settings.lyricSize.sp,fontFamily=lyricFont(settings.lyricFont),lineHeight=(settings.lyricSize*1.35f+settings.lyricGap).sp,textAlign=TextAlign.Center,color=muted)
-            } else LazyColumn(state=list,modifier=Modifier.testTag("lyrics-list").fillMaxSize().pointerInput(text) {
-                awaitEachGesture {awaitFirstDown(requireUnconsumed=false);browse();waitForUpOrCancellation();browse()}
-            },contentPadding=PaddingValues(horizontal=24.dp,vertical=maxHeight/2),horizontalAlignment=Alignment.CenterHorizontally) {
-                itemsIndexed(lines,key={index,_->index}) {index,line ->
-                    Text(line.text.ifBlank {"·"},Modifier.testTag(if(index == current) "current-lyric" else "lyric-$index").fillMaxWidth().clickable {browse();model.seek(line.time)}.padding(vertical=settings.lyricGap.dp/2+6.dp),
-                        style=lyricStyle,color=if(index == current) MaterialTheme.colorScheme.primary else ink.copy(alpha=.43f))
-                }
-            }
         }
-    }
     }
 }
 

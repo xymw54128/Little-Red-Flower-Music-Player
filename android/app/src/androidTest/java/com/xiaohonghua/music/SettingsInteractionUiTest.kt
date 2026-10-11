@@ -39,6 +39,29 @@ class SettingsInteractionUiTest {
         }
         return slider
     }
+    @Test fun lyricImportIsDisabledWithoutCurrentSong() {
+        var imports=0
+        compose.setContent {MaterialTheme {
+            LyricSettings(Settings(),onImport={imports++}) {}
+        }}
+        compose.onNodeWithText("先播放一首歌曲，再导入对应歌词。").assertIsDisplayed()
+        compose.onNodeWithTag("import-current-lyrics").assertIsNotEnabled()
+        compose.runOnIdle {assertEquals(0,imports)}
+    }
+    @Test fun lyricImportUsesCurrentSongAndOnlyInvokesImportAction() {
+        var imports=0
+        val saves=mutableListOf<Settings>()
+        val current=song.copy(title="测试歌曲",artist="测试歌手")
+        compose.setContent {MaterialTheme {
+            LyricSettings(Settings(),song=current,onImport={imports++}) {saves+=it}
+        }}
+        compose.onNodeWithText("测试歌曲 - 测试歌手").assertIsDisplayed()
+        compose.onNodeWithTag("import-current-lyrics").assertIsEnabled().performClick()
+        compose.runOnIdle {
+            assertEquals(1,imports)
+            assertTrue(saves.isEmpty())
+        }
+    }
     @Test fun lyricDragPreviewsImmediatelyAndPersistsOnlyOnceOnRelease() {
         val stored=mutableStateOf(Settings())
         val saves=mutableListOf<Settings>()

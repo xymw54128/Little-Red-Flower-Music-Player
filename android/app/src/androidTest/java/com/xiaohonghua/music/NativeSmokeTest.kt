@@ -79,7 +79,7 @@ class NativeSmokeTest {
         File(folder,"$name.png").outputStream().use {compose.onRoot().captureToImage().asAndroidBitmap().compress(Bitmap.CompressFormat.PNG,100,it)}
     }
     private fun lyricsCentered() {
-        compose.waitUntil(30_000) {
+        compose.waitUntil(3_000) {
             val viewport=compose.onNodeWithTag("lyrics-list").getUnclippedBoundsInRoot()
             val line=compose.onNodeWithTag("current-lyric").getUnclippedBoundsInRoot()
             kotlin.math.abs((line.top.value+line.bottom.value-viewport.top.value-viewport.bottom.value)/2) < 3
@@ -131,12 +131,27 @@ class NativeSmokeTest {
         }
         compose.runOnIdle {model.repository.lyrics(flac.id,wrapped);model.seek(12000)}
         compose.waitUntil(30_000) {compose.onAllNodesWithText("第 12 行，较长的歌词应当自动换行，并保持整行歌词居中显示\nTranslation 12").fetchSemanticsNodes().isNotEmpty()}
+        compose.onNodeWithTag("current-lyric").assertTextEquals("第 12 行，较长的歌词应当自动换行，并保持整行歌词居中显示\nTranslation 12")
         lyricsCentered()
+        // Paused slider seeking and leaving/re-entering the page retain the exact row.
+        compose.onNodeWithTag("playback-seek").performSemanticsAction(SemanticsActions.SetProgress) {it(18000f)}
+        compose.waitUntil(30_000) {kotlin.math.abs(model.playback.value.position-18000) < 200}
+        compose.onNodeWithTag("current-lyric").assertTextEquals("第 18 行，较长的歌词应当自动换行，并保持整行歌词居中显示\nTranslation 18")
+        lyricsCentered()
+        assertFalse(model.playback.value.playing)
+        compose.onNodeWithTag("player-page-cover").performClick()
+        compose.onNodeWithTag("player-page-lyrics").performClick()
+        compose.onNodeWithTag("current-lyric").assertTextEquals("第 18 行，较长的歌词应当自动换行，并保持整行歌词居中显示\nTranslation 18")
+        lyricsCentered()
+        compose.onNodeWithText("${flac.title} - ${flac.artist}").assertIsDisplayed()
+        compose.onNodeWithText("导入歌词").assertDoesNotExist()
+        compose.onNodeWithContentDescription("歌词字体、字号与行间距").assertDoesNotExist()
+        compose.onNodeWithContentDescription("添加到歌单").assertDoesNotExist()
         compose.onNodeWithTag("lyrics-list").performTouchInput {swipeUp(durationMillis=450)}
-        compose.onNodeWithText("回到当前").performClick()
+        compose.onNodeWithText("回到当前").assertDoesNotExist()
+        // The deadline rejects the previous four-second idle delay without wall-clock sleeps.
         lyricsCentered()
         compose.onNodeWithTag("lyrics-list").performTouchInput {swipeDown(durationMillis=450)}
-        compose.waitUntil(30_000) {compose.onAllNodesWithText("回到当前").fetchSemanticsNodes().isEmpty()}
         lyricsCentered()
         snapshot("lyrics")
         compose.onNodeWithTag("player-pages").performTouchInput {swipeRight(durationMillis=450)}
@@ -152,6 +167,7 @@ class NativeSmokeTest {
         compose.onNodeWithText("歌单名称").performTextInput("原生验证歌单")
         compose.onNodeWithText("确定").performClick()
         compose.waitUntil(30_000) {model.library.value.playlists.any {it.name == "原生验证歌单"}}
+        compose.onNodeWithText("已创建「原生验证歌单」并添加歌曲").assertDoesNotExist()
         val savedPlaylist=model.library.value.playlists.first {it.name == "原生验证歌单"}
         assertEquals(listOf(first.id),savedPlaylist.songIds)
         compose.runOnIdle {
@@ -180,6 +196,7 @@ class NativeSmokeTest {
         compose.onNodeWithTag("nav-settings").performClick()
         compose.onNodeWithTag("app-author").performScrollTo().assertTextEquals("作者：浪雨林兴云魔王")
         compose.onNodeWithText("歌词样式").performScrollTo().performClick()
+        compose.onNodeWithTag("import-current-lyrics").assertIsEnabled()
         compose.onNodeWithText("等宽字体").performClick()
         for((font,label) in lyricFontOptions.takeLast(3)) {
             compose.onNodeWithText(label).performClick()

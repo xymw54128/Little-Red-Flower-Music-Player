@@ -113,6 +113,7 @@ class MainNavigationUiTest {
         compose.onNodeWithTag("favorite-${song.id}").assertIsNotSelected().performClick()
         compose.waitUntil(30_000) {song.id in model.library.value.playlists.first {it.isFavorites}.songIds}
         compose.onNodeWithTag("favorite-${song.id}").assertIsSelected()
+        compose.onNodeWithText("已加入「我喜欢」").assertDoesNotExist()
         assertNull(model.playback.value.currentId)
         assertTrue(model.playback.value.queue.isEmpty())
         assertFalse(model.playback.value.playing)
@@ -265,7 +266,7 @@ class MainNavigationUiTest {
         home("settings")
     }
 
-    @Test fun tappingArtworkAndReturningThroughLyricStyleDoesNotCycle() {
+    @Test fun cleanLyricsAndSettingsImportKeepPlayerReturnRoutesAndPausedSeekCentered() {
         val model=ready()
         val song=model.library.value.songs.first()
         val photo=Bitmap.createBitmap(16,16,Bitmap.Config.ARGB_8888).apply {eraseColor(android.graphics.Color.RED)}
@@ -284,26 +285,53 @@ class MainNavigationUiTest {
         compose.onNodeWithTag("player-artwork").performClick()
         compose.onNodeWithTag("player-lyrics-page").assertIsDisplayed()
         compose.onNodeWithTag("player-page-background").assertDoesNotExist()
-        compose.onNodeWithContentDescription("歌词字体、字号与行间距").performClick()
+        compose.onNodeWithText("${song.title} - ${song.artist}").assertIsDisplayed()
+        compose.onNodeWithText("导入歌词").assertDoesNotExist()
+        compose.onNodeWithText("回到当前").assertDoesNotExist()
+        compose.onNodeWithContentDescription("歌词字体、字号与行间距").assertDoesNotExist()
+        compose.onNodeWithContentDescription("添加到歌单").assertDoesNotExist()
+        fun centered(text: String) {
+            compose.waitUntil(3_000) {
+                val viewport=compose.onNodeWithTag("lyrics-list").getUnclippedBoundsInRoot()
+                val line=compose.onNodeWithTag("current-lyric").getUnclippedBoundsInRoot()
+                kotlin.math.abs((line.top.value+line.bottom.value-viewport.top.value-viewport.bottom.value)/2) < 3 &&
+                    compose.onAllNodes(hasTestTag("current-lyric") and hasText(text)).fetchSemanticsNodes().size == 1
+            }
+            compose.onNodeWithTag("current-lyric").assertTextEquals(text)
+        }
+        centered("导航测试第一行")
+        // Seeking while paused must complete the same centering transition as playback.
+        compose.runOnIdle {model.seek(1_300)}
+        centered("导航测试第二行")
+        assertFalse(model.playback.value.playing)
+        compose.onNodeWithTag("player-page-cover").performClick()
+        compose.onNodeWithTag("player-page-lyrics").performClick()
+        centered("导航测试第二行")
+        compose.onNodeWithContentDescription("收起播放器").performClick()
+        home("library")
+        compose.onNodeWithTag("nav-settings").performClick()
+        home("settings")
+        compose.onNodeWithText("歌词样式").performScrollTo().performClick()
+        compose.onNodeWithTag("page-lyric-style").assertIsDisplayed()
+        compose.onNodeWithTag("import-current-lyrics").assertIsEnabled()
+        compose.onNodeWithContentDescription("返回").performClick()
+        home("settings")
+        // Opening the player from a settings child returns to that child, then settings.
+        compose.onNodeWithText("歌词样式").performScrollTo().performClick()
+        compose.onNodeWithTag("mini-player").performClick()
+        compose.onNodeWithTag("player-page-lyrics").performClick()
+        centered("导航测试第二行")
+        compose.onNodeWithContentDescription("收起播放器").performClick()
         compose.onNodeWithTag("page-lyric-style").assertIsDisplayed()
         compose.onNodeWithContentDescription("返回").performClick()
-        compose.onNodeWithTag("player-lyrics-page").assertIsDisplayed()
-        compose.onNodeWithContentDescription("收起播放器").performClick()
-        home("library")
-        // Opening the mini-player from its own child should pop that child, not create a loop.
-        compose.onNodeWithTag("mini-player").performClick()
-        compose.onNodeWithTag("player-pages").performTouchInput {swipeLeft(durationMillis=450)}
-        compose.onNodeWithContentDescription("歌词字体、字号与行间距").performClick()
-        compose.onNodeWithTag("page-lyric-style").assertIsDisplayed()
-        compose.onNodeWithTag("mini-player").performClick()
-        compose.onNodeWithContentDescription("收起播放器").performClick()
-        home("library")
-        // A retained album group must not intercept Back from the player's child page.
+        home("settings")
+        // A retained album group still receives the player collapse action.
+        compose.onNodeWithTag("nav-library").performClick()
         compose.onNodeWithText("专辑").performClick()
         compose.onNodeWithText(song.album).performClick()
         compose.onNodeWithTag("mini-player").performClick()
-        compose.onNodeWithContentDescription("歌词字体、字号与行间距").performClick()
-        compose.onNodeWithContentDescription("返回").performClick()
+        compose.onNodeWithTag("player-page-lyrics").performClick()
+        centered("导航测试第二行")
         compose.onNodeWithContentDescription("收起播放器").performClick()
         compose.onNodeWithContentDescription("返回").performClick()
         compose.onNodeWithText("歌曲").assertIsDisplayed()

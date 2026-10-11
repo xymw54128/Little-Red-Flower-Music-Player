@@ -101,15 +101,62 @@ data class Settings(
     val x: Float = .5f,
     val y: Float = .5f,
 )
-data class LyricLine(val time: Long, val text: String)
-data class LyricMotion(val current: Int, val from: Int, val to: Int, val fraction: Float, val start: Long, val end: Long)
+data class LyricLine(val time: Long, val text: String, val endTime: Long = Long.MAX_VALUE) {
+    val startTime: Long get() = time
+}
+
+data class LyricFrame(val weights: Map<Int,Float>, val offset: Float, val running: Boolean)
+
+// One wall-clock start drives both styles and centering. Replacing a transition
+// with its sampled frame preserves the visible state during a seek or dense LRC.
+class LyricTransition(
+    fromWeights: Map<Int,Float>,
+    private val fromOffset: Float,
+    private val targetIndex: Int,
+    private val targetOffset: Float,
+    private val startedAtMillis: Long,
+    private val styleDurationMillis: Long = 250L,
+    private val scrollDurationMillis: Long = 300L,
+) {
+    private val initialWeights = fromWeights.toMap()
+    private val targetWeights = if(targetIndex < 0) emptyMap() else mapOf(targetIndex to 1f)
+
+    fun sample(now: Long): LyricFrame {
+        // Subtract as doubles so an extreme seek/clock sample cannot overflow Long.
+        val elapsed = (now.toDouble()-startedAtMillis.toDouble()).coerceAtLeast(0.0)
+        val styleFraction = easeOut(elapsed,styleDurationMillis)
+        val scrollFraction = easeOut(elapsed,scrollDurationMillis)
+        val weights = when {
+            styleFraction == 0f -> initialWeights.toMap()
+            styleFraction == 1f -> targetWeights
+            else -> (initialWeights.keys+targetWeights.keys).associateWith { index ->
+                val initial = initialWeights[index] ?: 0f
+                initial+((targetWeights[index] ?: 0f)-initial)*styleFraction
+            }.filterValues {it > 0f}
+        }
+        val offset = when(scrollFraction) {
+            0f -> fromOffset
+            1f -> targetOffset
+            else -> fromOffset+(targetOffset-fromOffset)*scrollFraction
+        }
+        val running = (initialWeights != targetWeights && elapsed < styleDurationMillis) ||
+            (fromOffset != targetOffset && elapsed < scrollDurationMillis)
+        return LyricFrame(weights,offset,running)
+    }
+
+    private fun easeOut(elapsed: Double, duration: Long): Float {
+        if(duration <= 0) return 1f
+        val remaining = 1.0-(elapsed/duration).coerceIn(0.0,1.0)
+        return (1.0-remaining*remaining*remaining).toFloat()
+    }
+}
 
 object Lrc {
     private val timestamp = Regex("\\[(\\d{1,3}):(\\d{2})(?:[.:](\\d{1,3}))?]")
     private val offset = Regex("\\[offset:([+-]?\\d+)]", RegexOption.IGNORE_CASE)
-    fun parse(text: String): List<LyricLine> {
+    fun parse(text: String, duration: Long? = null): List<LyricLine> {
         val shift = offset.find(text)?.groupValues?.get(1)?.toLongOrNull() ?: 0
-        return text.lineSequence().flatMap { line ->
+        val parsed = text.lineSequence().flatMap { line ->
             val matches = timestamp.findAll(line).toList()
             val words = timestamp.replace(line, "").trim()
             matches.asSequence().mapNotNull { m ->
@@ -122,6 +169,9 @@ object Lrc {
         }.sortedBy { it.time }.groupBy { it.time }.map { (time, lines) ->
             LyricLine(time, lines.map { it.text }.distinct().joinToString("\n"))
         }
+        return parsed.mapIndexed { index, line ->
+            line.copy(endTime=parsed.getOrNull(index+1)?.time ?: duration?.coerceAtLeast(line.time) ?: Long.MAX_VALUE)
+        }
     }
     fun current(lines: List<LyricLine>, position: Long): Int {
         var low = 0
@@ -132,23 +182,6 @@ object Lrc {
             if (lines[middle].time <= position) { found = middle; low = middle + 1 } else high = middle - 1
         }
         return found
-    }
-    fun motion(lines: List<LyricLine>, position: Long, speed: Float = 1f): LyricMotion {
-        val index=current(lines,position)
-        if(index < 0 || index == lines.lastIndex) {
-            val anchor=if(lines.isEmpty()) -1 else index.coerceAtLeast(0)
-            return LyricMotion(index,anchor,anchor,0f,position,position)
-        }
-        val gap=lines[index+1].time-lines[index].time
-        val rate=speed.takeIf {it.isFinite() && it > 0f} ?: 1f
-        // Reserve more than a 60 Hz frame for presentation; very dense timestamps
-        // shorten both the animation and margin instead of queuing late transitions.
-        val margin=minOf(kotlin.math.ceil(24.0*rate).toLong(),(gap/2).coerceAtLeast(1))
-        val end=lines[index+1].time-margin
-        val duration=minOf((480*rate).toLong(),(gap*.55).toLong(),end-lines[index].time).coerceAtLeast(0)
-        val start=end-duration
-        val t=if(duration == 0L) 1f else ((position-start).toDouble()/duration).coerceIn(0.0,1.0).toFloat()
-        return LyricMotion(index,index,index+1,t*t*(3-2*t),start,end)
     }
 }
 

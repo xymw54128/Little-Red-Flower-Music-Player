@@ -1,0 +1,17 @@
+{
+  "name": "little-red-flower-cocos-lyrics-example",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Cocos Creator 3.8 独立歌词组件；不参与 Android 工程构建",
+  "scripts": {
+    "test": "node --test core.test.cjs",
+    "check": "node check.cjs"
+  },
+  "engines": {
+    "node": ">=24"
+  },
+  "devDependencies": {
+    "@cocos/creator-types": "3.8.6",
+    "typescript": "5.8.3"
+  }
+}
