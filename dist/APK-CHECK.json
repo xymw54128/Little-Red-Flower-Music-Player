@@ -1,14 +1,14 @@
 {
-  "date": "2026-10-11T08:07:29.479Z",
-  "apk": "D:\\music player app\\dist\\小红花-1.0.2.apk",
+  "date": "2026-10-11T08:43:11.280Z",
+  "apk": "D:\\music player app\\dist\\小红花-1.0.3.apk",
   "buildType": "release",
   "debuggable": false,
   "testComponentsAbsent": true,
   "networkPermissionAbsent": true,
-  "size": 43746459,
-  "sha256": "ecf004f00f33a256c55605cbc710cbffc7c81e5476d086ee433a8ae274efc28b",
+  "size": 43795611,
+  "sha256": "f36b274bb34048e57b2711f746e09d17cef43d104933624521e0f51db37caa4e",
   "metadata": [
-    "package: name='com.xiaohonghua.music' versionCode='9' versionName='1.0.2' platformBuildVersionName='16' platformBuildVersionCode='36' compileSdkVersion='36' compileSdkVersionCodename='16'",
+    "package: name='com.xiaohonghua.music' versionCode='10' versionName='1.0.3' platformBuildVersionName='16' platformBuildVersionCode='36' compileSdkVersion='36' compileSdkVersionCodename='16'",
     "minSdkVersion:'26'",
     "targetSdkVersion:'36'",
     "application-label:'小红花'",
@@ -31,6 +31,10 @@
     },
     {
       "version": "1.0.1",
+      "sameSigningCertificate": true
+    },
+    {
+      "version": "1.0.2",
       "sameSigningCertificate": true
     }
   ],
@@ -118,6 +122,12 @@
       "errors": 0
     },
     {
+      "name": "com.xiaohonghua.music.PlaylistUndoTest",
+      "tests": 12,
+      "failures": 0,
+      "errors": 0
+    },
+    {
       "name": "com.xiaohonghua.music.TagParserTest",
       "tests": 4,
       "failures": 0,
@@ -128,6 +138,6 @@
     "errors": 0,
     "warnings": 17
   },
-  "acceptance": "1.0.2 adds compact library search, a permanent favorites playlist, song hearts, main-page swipes, cover tap to lyrics, a plain lyric background and navigation fixes. These changes await phone acceptance.",
-  "nativeTests": "Instrumented tests compile successfully. Device execution status is recorded separately in ANDROID-1.0.2-UI-CHECK.json; compilation alone does not confirm runtime behavior or native frame performance."
+  "acceptance": "1.0.3 adds unified press feedback, favorite animation, spring transitions, reorder lift and boundary handling, inline playlist creation, nonblocking completion and safe playlist undo. Settings sliders preview locally and persist on release. These changes await phone acceptance.",
+  "nativeTests": "Instrumented tests compile successfully. Device execution status is recorded separately in ANDROID-1.0.3-UI-CHECK.json; compilation alone does not confirm runtime behavior or native frame performance."
 }

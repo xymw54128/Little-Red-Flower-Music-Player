@@ -6,20 +6,20 @@
 
 ## 下载与安装
 
-**[本地 Android 1.0.2 APK](dist/小红花-1.0.2.apk)** · [本地发布说明](dist/小红花-1.0.2-发布说明.md) · [安装与换机说明](dist/安装说明.md)
+**[本地 Android 1.0.3 APK](dist/小红花-1.0.3.apk)** · [本地发布说明](dist/小红花-1.0.3-发布说明.md) · [安装与换机说明](dist/安装说明.md)
 
-**1.0.2 仅本地生成，尚未发布到 GitHub。** 本地 APK 不包含在 Git 克隆中；公开下载仍为 **[Android 1.0.1 APK](https://github.com/xymw54128/Little-Red-Flower-Music-Player/releases/download/v1.0.1/Xiaohonghua-1.0.1.apk)** · [1.0.1 发布页面](https://github.com/xymw54128/Little-Red-Flower-Music-Player/releases/tag/v1.0.1)。
+**1.0.3 仅本地生成，尚未发布到 GitHub。** 本地 APK 不包含在 Git 克隆中；公开下载仍为 **[Android 1.0.1 APK](https://github.com/xymw54128/Little-Red-Flower-Music-Player/releases/download/v1.0.1/Xiaohonghua-1.0.1.apk)** · [1.0.1 发布页面](https://github.com/xymw54128/Little-Red-Flower-Music-Player/releases/tag/v1.0.1)。
 
 - Android 8.0 及以上，针对 Android 16 开发；支持 ARM64、ARMv7、x86、x86_64。
 - 包含离线中文字体。下载后在手机文件管理器中打开 APK，按系统提示允许该文件管理器安装应用。
-- Android 当前版本为 `1.0.2`，版本号 `9`；继续沿用既有签名，可覆盖安装旧版小红花，建议更新前导出备份。
+- Android 当前版本为 `1.0.3`，版本号 `10`；继续沿用既有签名，可覆盖安装旧版小红花，建议更新前导出备份。
 - 安装后在 **设置 → 歌曲文件夹** 导入音乐文件或授权音乐文件夹。
 - 应用运行不需要网络权限；首次下载源码构建所需的工具和依赖需要联网。
 
-APK SHA-256（[校验文件](dist/小红花-1.0.2.apk.sha256)）：
+APK SHA-256（[校验文件](dist/小红花-1.0.3.apk.sha256)）：
 
 ```text
-ecf004f00f33a256c55605cbc710cbffc7c81e5476d086ee433a8ae274efc28b
+f36b274bb34048e57b2711f746e09d17cef43d104933624521e0f51db37caa4e
 ```
 
 **[下载 iOS 1.0.1 源码工程](https://github.com/xymw54128/Little-Red-Flower-Music-Player/releases/download/v1.0.1/Xiaohonghua-iOS-1.0.1-source.zip)** · [iOS 构建说明](ios/README.md)
@@ -37,6 +37,9 @@ iOS 暂按 iPhone / iOS 17+ 制作，目前提供源码，**没有可安装的 I
 - 歌词字体、字号和行间距，主题色；封面播放页可调整背景照片的透明度、缩放和位置，歌词页固定使用主题纯色背景。
 - 后台播放与系统媒体控制，文件夹刷新及前台变化监测，JSON 备份与迁移。
 - 五瓣小红花启动动画；歌曲列表滚动时提供当前歌曲定位按钮。
+- 统一轻按回弹、收藏弹动、排序拾起与归位、非阻塞完成提示；删除歌单或移除歌曲支持撤销。设置滑条本地预览、松手保存；新建歌单在选择面板内连续完成。
+
+本轮交互方向参考 [Material 3 动效规范](https://m3.material.io/styles/motion/overview/specs)，完整依据与范围见 [1.0.3 交互说明](docs/design/1.0.3-interaction.md)。
 
 各平台的格式、权限与系统行为存在差异，具体范围见 [Android 说明](android/README.md) 和 [iOS 说明](ios/README.md)。Android 当前没有独立隐藏系统锁屏控件的应用开关；JSON 备份不包含原音乐与照片。
 
@@ -48,7 +51,7 @@ iOS 暂按 iPhone / iOS 17+ 制作，目前提供源码，**没有可安装的 I
 | [`ios/`](ios/README.md) | SwiftUI / UIKit / AVFoundation 原生 iPhone 工程及测试 |
 | [`ui/`](ui/README.md) | 可点击的网页 UI 原型，使用模拟播放时钟 |
 | [`docs/design/`](docs/design/) | 版本设计与实现范围 |
-| [`dist/`](dist/) | 发布说明、SHA-256、检查报告与资源预览；1.0.2 APK 仅保存在本地，公开 1.0.1 安装包在 GitHub Releases |
+| [`dist/`](dist/) | 发布说明、SHA-256、检查报告与资源预览；1.0.3 APK 仅保存在本地，公开 1.0.1 安装包在 GitHub Releases |
 | [`tools/`](tools/) | 原工作区的构建、打包与资源检查助手 |
 
 ### Android
@@ -89,7 +92,7 @@ python -m http.server 49173 --bind 127.0.0.1 --directory ui
 
 ## 验证状态与反馈
 
-Android 1.0.2：Release/Debug APK 构建和原生界面测试编译成功；25 项 JVM 单元测试通过，Android lint 为 0 错误、17 提醒。最终 APK 已验证版本、包名、签名、图标、字体、无调试/测试组件、无网络权限及 16 KB 对齐；签名与 1.0.1 和历史安装包一致。 原生 UI 测试未执行：当前电脑缺少模拟器硬件加速，Android 16 软件模拟器未完成启动并保持离线，亦无连接手机。实际页面手势、键盘、返回与动画流畅度仍需手机验收。 检查记录：[APK 报告](dist/小红花-1.0.2-CHECK.json) · [UI 执行状态](dist/ANDROID-1.0.2-UI-CHECK.json)。
+Android 1.0.3：Release/Debug APK 构建成功，37 项 JVM 单元测试通过，Android lint 为 0 错误、17 提醒；23 项原生界面测试编译成功。最终 APK 的包名、版本、签名、图标、离线字体、无调试/测试组件、无网络权限及 16 KB 对齐检查通过，签名与 1.0.2 及历史安装包一致。当前没有连接 Android 设备，原生 UI 测试未执行，也未测量手机帧率；实际手势、键盘、返回和动画手感仍需小米 15 验收。 检查记录：[APK 报告](dist/小红花-1.0.3-CHECK.json) · [UI 执行状态](dist/ANDROID-1.0.3-UI-CHECK.json)。
 
 历史开源准备期间，已在不含正式签名密钥的源码副本上成功构建 Debug 和未签名 Release，16 项 Debug 单元测试通过；核对了官方 1.0.1 APK 签名与原文件 SHA-256。该轮只调整开源构建和文档，未修改播放器运行功能。[开源构建检查记录](dist/OPEN-SOURCE-CHECK.json)。
 

@@ -3,6 +3,8 @@
 package com.xiaohonghua.music
 
 import androidx.compose.animation.core.*
+import androidx.compose.animation.Crossfade
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.*
 import androidx.compose.foundation.gestures.*
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -23,17 +25,24 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFontFamilyResolver
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.selected
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.rememberTextMeasurer
@@ -72,6 +81,7 @@ import java.io.File
     onBack:()->Unit,onQueue:()->Unit,onAdd:()->Unit,onLyrics:()->Unit,onStyle:()->Unit) {
     val pager=rememberPagerState {2}
     val scope=rememberCoroutineScope()
+    val artworkPress=remember {MutableInteractionSource()}
     val lyricText=library.manualLyrics[song?.id] ?: song?.lyrics.orEmpty()
     val lines=remember(lyricText) {Lrc.parse(lyricText)}
     val lyricIndex=remember(lines,model) {model.playback.map {Lrc.current(lines,it.position)}.distinctUntilChanged()}
@@ -85,9 +95,9 @@ import java.io.File
         })
         Column(Modifier.fillMaxSize()) {
             Row(Modifier.fillMaxWidth().padding(horizontal=8.dp,vertical=4.dp),verticalAlignment=Alignment.CenterVertically) {
-                IconButton(onClick=onBack) {Icon(Icons.Outlined.KeyboardArrowDown,"收起播放器")}
+                ExpressiveIconButton(onClick=onBack) {Icon(Icons.Outlined.KeyboardArrowDown,"收起播放器")}
                 Text(if(pager.currentPage == 1) "动态歌词" else "正在播放",Modifier.weight(1f),textAlign=TextAlign.Center,fontSize=13.sp,color=muted)
-                IconButton(onClick=onAdd,enabled=song != null) {Icon(Icons.Outlined.PlaylistAdd,"添加到歌单")}
+                ExpressiveIconButton(onClick=onAdd,enabled=song != null) {Icon(Icons.Outlined.PlaylistAdd,"添加到歌单")}
             }
             if(song == null) Column(Modifier.weight(1f).fillMaxWidth(),horizontalAlignment=Alignment.CenterHorizontally,verticalArrangement=Arrangement.Center) {
                 Icon(Icons.Outlined.LocalFlorist,null,Modifier.size(72.dp),tint=MaterialTheme.colorScheme.primary); Text("从音乐库选择一首歌曲",Modifier.padding(24.dp),color=muted)
@@ -96,7 +106,7 @@ import java.io.File
                 if(page == 0) BoxWithConstraints(Modifier.fillMaxSize()) {
                     val coverSize=minOf(maxWidth*.72f,maxHeight*.60f,290.dp)
                     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal=28.dp,vertical=16.dp),horizontalAlignment=Alignment.CenterHorizontally) {
-                        Cover(song,Modifier.testTag("player-artwork").size(coverSize).clickable(onClickLabel="查看歌词",onClick=::openLyrics))
+                        Cover(song,Modifier.testTag("player-artwork").size(coverSize).pressScale(artworkPress,.985f).clickable(interactionSource=artworkPress,indication=ripple(),onClickLabel="查看歌词",onClick=::openLyrics))
                         Text(song.title,Modifier.fillMaxWidth().padding(top=24.dp),fontSize=23.sp,fontWeight=FontWeight.SemiBold,textAlign=TextAlign.Center,maxLines=2,overflow=TextOverflow.Ellipsis)
                         Text("${song.artist} · ${song.album}",Modifier.testTag("player-artist-album").fillMaxWidth().padding(top=8.dp),fontSize=14.sp,color=muted,textAlign=TextAlign.Center,maxLines=2,overflow=TextOverflow.Ellipsis)
                         Text(listOfNotNull(song.format.takeIf {it.isNotBlank()},song.bitDepth.takeIf {it > 0}?.let {"$it bit"},song.sampleRate.takeIf {it > 0}?.let {"${it/1000f} kHz"}).joinToString(" · "),Modifier.padding(top=12.dp),fontSize=11.sp,color=muted,textAlign=TextAlign.Center)
@@ -105,7 +115,15 @@ import java.io.File
                 } else LyricsPage(lines,lyricText,library.settings,pager.currentPage == 1,p,model,onImport=onLyrics,onStyle=onStyle)
             }
             Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.Center) {
-                repeat(2) { index -> Box(Modifier.padding(4.dp).size(6.dp).clip(CircleShape).background(if(pager.currentPage == index) MaterialTheme.colorScheme.primary else muted.copy(alpha=.25f)).clickable {scope.launch {pager.animateScrollToPage(index,animationSpec=pageMotion)}}) }
+                repeat(2) { index ->
+                    val selected=pager.currentPage == index
+                    val dotWidth by animateDpAsState(if(selected) 18.dp else 6.dp,spring(dampingRatio=1f,stiffness=650f),label="player-page-dot")
+                    Box(Modifier.testTag(if(index == 0) "player-page-cover" else "player-page-lyrics").size(48.dp).clip(CircleShape)
+                        .semantics {this.selected=selected;contentDescription=if(index == 0) "播放封面" else "歌词"}
+                        .clickable(role=Role.Tab) {scope.launch {pager.animateScrollToPage(index,animationSpec=pageMotion)}},contentAlignment=Alignment.Center) {
+                        Box(Modifier.size(dotWidth,6.dp).clip(CircleShape).background(if(selected) MaterialTheme.colorScheme.primary else muted.copy(alpha=.25f)))
+                    }
+                }
             }
             PlayerControls(song?.duration ?: 0,model,onQueue)
         }
@@ -113,19 +131,25 @@ import java.io.File
 }
 @Composable private fun PlayerControls(fallbackDuration: Long,model: MusicModel,onQueue:()->Unit) {
     val p by model.playback.collectAsStateWithLifecycle()
+    val haptic=rememberActionHaptic()
+    val playPress=remember {MutableInteractionSource()}
     var drag by remember { mutableStateOf<Float?>(null) }
     LaunchedEffect(p.currentId) {drag=null}
     val duration=(if(p.duration > 0) p.duration else fallbackDuration).coerceAtLeast(1)
     Column(Modifier.fillMaxWidth().background(Brush.verticalGradient(listOf(pageColor.copy(alpha=0f),pageColor.copy(alpha=.90f)))).padding(horizontal=28.dp,vertical=8.dp)) {
         p.error?.let { Text(it,fontSize=12.sp,color=MaterialTheme.colorScheme.error,maxLines=2,modifier=Modifier.padding(bottom=8.dp)) }
-        PlaybackSeekBar(p,duration,drag,onChange={drag=it},onFinished={drag?.let {model.seek(it.toLong())};drag=null})
+        PlaybackSeekBar(p,duration,drag,onChange={drag=it},onFinished={drag?.let {model.seek(it.toLong());haptic()};drag=null})
         Row(Modifier.fillMaxWidth()) { Text(timeLabel((drag?.toLong() ?: p.position)),Modifier.weight(1f),fontSize=11.sp,color=muted); Text(timeLabel(duration),fontSize=11.sp,color=muted) }
         Row(Modifier.fillMaxWidth().padding(top=12.dp,bottom=4.dp),horizontalArrangement=Arrangement.SpaceBetween,verticalAlignment=Alignment.CenterVertically) {
-            IconButton(onClick={model.mode()},enabled=p.currentId != null) {Icon(when(p.mode) {2 -> Icons.Outlined.RepeatOne; 3 -> Icons.Outlined.Shuffle; else -> Icons.Outlined.Repeat},listOf("顺序播放","列表循环","单曲循环","随机播放")[p.mode],tint=if(p.mode == 0) muted else MaterialTheme.colorScheme.primary)}
-            IconButton(onClick={model.previous()},enabled=p.currentId != null,modifier=Modifier.size(52.dp)) {Icon(Icons.Outlined.SkipPrevious,"上一首",Modifier.size(32.dp))}
-            FilledIconButton(onClick={model.toggle()},enabled=p.currentId != null && p.connected,modifier=Modifier.size(64.dp),shape=CircleShape) {Icon(if(p.playing) Icons.Outlined.Pause else Icons.Outlined.PlayArrow,if(p.playing) "暂停" else "播放",Modifier.size(36.dp))}
-            IconButton(onClick={model.next()},enabled=p.currentId != null,modifier=Modifier.size(52.dp)) {Icon(Icons.Outlined.SkipNext,"下一首",Modifier.size(32.dp))}
-            IconButton(onClick=onQueue) {Icon(Icons.Outlined.QueueMusic,"播放队列")}
+            ExpressiveIconButton(onClick={model.mode()},enabled=p.currentId != null,tactile=true) {Icon(when(p.mode) {2 -> Icons.Outlined.RepeatOne; 3 -> Icons.Outlined.Shuffle; else -> Icons.Outlined.Repeat},listOf("顺序播放","列表循环","单曲循环","随机播放")[p.mode],tint=if(p.mode == 0) muted else MaterialTheme.colorScheme.primary)}
+            ExpressiveIconButton(onClick={model.previous()},enabled=p.currentId != null,modifier=Modifier.size(52.dp),tactile=true) {Icon(Icons.Outlined.SkipPrevious,"上一首",Modifier.size(32.dp))}
+            FilledIconButton(onClick={model.toggle();haptic()},enabled=p.currentId != null && p.connected,modifier=Modifier.size(64.dp).pressScale(playPress,.94f),shape=CircleShape,interactionSource=playPress) {
+                Crossfade(targetState=p.playing,animationSpec=tween(120),label="play-pause") {playing ->
+                    Icon(if(playing) Icons.Outlined.Pause else Icons.Outlined.PlayArrow,if(playing) "暂停" else "播放",Modifier.size(36.dp))
+                }
+            }
+            ExpressiveIconButton(onClick={model.next()},enabled=p.currentId != null,modifier=Modifier.size(52.dp),tactile=true) {Icon(Icons.Outlined.SkipNext,"下一首",Modifier.size(32.dp))}
+            ExpressiveIconButton(onClick=onQueue) {Icon(Icons.Outlined.QueueMusic,"播放队列")}
         }
         Text(listOf("顺序播放","列表循环","单曲循环","随机播放")[p.mode],Modifier.fillMaxWidth().padding(top=4.dp),fontSize=10.sp,color=muted,textAlign=TextAlign.Center)
     }
@@ -204,7 +228,7 @@ import java.io.File
                 val index=Lrc.current(lines,model.playbackPosition()).coerceAtLeast(0)
                 align(LyricMotion(index,index,index,0f,0,0))
             } }) {Text("回到当前",fontSize=12.sp)}
-            IconButton(onClick=onStyle) {Icon(Icons.Outlined.TextFields,"歌词字体、字号与行间距")}
+            ExpressiveIconButton(onClick=onStyle) {Icon(Icons.Outlined.TextFields,"歌词字体、字号与行间距")}
         }
         BoxWithConstraints(Modifier.weight(1f).fillMaxWidth()) {
             val viewportHeight=with(density) {maxHeight.roundToPx()}
@@ -241,43 +265,77 @@ import java.io.File
 
 @Composable internal fun OrderSheet(songs: List<Song>,onCancel:()->Unit,onSave:(List<String>)->Unit) {
     val draft=remember {mutableStateListOf<Song>().apply {addAll(songs)}}
+    var draggingId by remember {mutableStateOf<String?>(null)}
     ModalBottomSheet(onDismissRequest=onCancel) {
         SheetTitle("自定义顺序","按住右侧手柄拖动；保存后生效")
         LazyColumn(Modifier.fillMaxWidth().heightIn(max=420.dp),contentPadding=PaddingValues(horizontal=16.dp)) {
             itemsIndexed(draft,key={_,song->song.id}) {index,song ->
-                ReorderRow(song,index,draft.size,modifier=Modifier.animateItem(fadeInSpec=null,fadeOutSpec=null,placementSpec=tween(180)),onMove={direction -> val from=draft.indexOfFirst {it.id == song.id};val to=(from+direction).coerceIn(0,draft.lastIndex);if(from != to) draft.add(to,draft.removeAt(from)) })
+                ReorderRow(song,index,draft.size,modifier=Modifier.animateItem(fadeInSpec=null,fadeOutSpec=null,placementSpec=if(draggingId == song.id) null else spring(dampingRatio=1f,stiffness=500f)),
+                    onDraggingChanged={dragging -> draggingId=if(dragging) song.id else null},
+                    onMove={direction -> val from=draft.indexOfFirst {it.id == song.id};if(from >= 0) {val to=(from+direction).coerceIn(0,draft.lastIndex);if(from != to) draft.add(to,draft.removeAt(from))} })
             }
         }
         Row(Modifier.fillMaxWidth().padding(24.dp),horizontalArrangement=Arrangement.spacedBy(16.dp)) {OutlinedButton(onClick=onCancel,modifier=Modifier.weight(1f)) {Text("取消")};Button(onClick={onSave(draft.map {it.id})},modifier=Modifier.weight(1f)) {Text("保存顺序")}}
     }
 }
-@Composable internal fun ReorderRow(song: Song,index: Int,count: Int,onMove:(Int)->Unit,modifier: Modifier=Modifier,onClick:(()->Unit)?=null,onRemove:(()->Unit)?=null) {
+@Composable internal fun ReorderRow(song: Song,index: Int,count: Int,onMove:(Int)->Unit,modifier: Modifier=Modifier,onClick:(()->Unit)?=null,onRemove:(()->Unit)?=null,onDraggingChanged:(Boolean)->Unit={}) {
     val latestMove by rememberUpdatedState(onMove)
+    val latestIndex by rememberUpdatedState(index)
+    val latestCount by rememberUpdatedState(count)
+    val latestDragging by rememberUpdatedState(onDraggingChanged)
+    val haptic=rememberActionHaptic()
     var offset by remember {mutableFloatStateOf(0f)}
-    val threshold=with(androidx.compose.ui.platform.LocalDensity.current) {68.dp.toPx()}
-    Row(modifier.fillMaxWidth().heightIn(min=68.dp).zIndex(if(offset != 0f) 1f else 0f).graphicsLayer {translationY=offset}.then(if(onClick != null) Modifier.clickable(onClick=onClick) else Modifier),verticalAlignment=Alignment.CenterVertically) {
+    var dragging by remember {mutableStateOf(false)}
+    var raised by remember {mutableStateOf(false)}
+    var dragIndex by remember {mutableIntStateOf(index)}
+    val initialHeight=with(LocalDensity.current) {68.dp.toPx()}
+    var rowHeight by remember {mutableFloatStateOf(initialHeight)}
+    val latestHeight by rememberUpdatedState(rowHeight)
+    val restingOffset=animateFloatAsState(offset,if(dragging) snap() else spring(dampingRatio=1f,stiffness=550f),label="reorder-return")
+    val scale=animateFloatAsState(if(dragging) 1.015f else 1f,spring(dampingRatio=1f,stiffness=700f),label="reorder-scale")
+    val lift=animateFloatAsState(if(dragging) 3f else 0f,tween(140),label="reorder-lift")
+    val background=animateColorAsState(if(dragging) MaterialTheme.colorScheme.surfaceContainer else Color.Transparent,tween(140),label="reorder-background")
+    LaunchedEffect(dragging) {if(!dragging) {delay(260);raised=false}}
+    val rowShape=RoundedCornerShape(12.dp)
+    Row(modifier.testTag("reorder-${song.id}").fillMaxWidth().heightIn(min=68.dp).onSizeChanged {rowHeight=it.height.toFloat().coerceAtLeast(1f)}
+        .zIndex(if(raised) 1f else 0f).graphicsLayer {
+            translationY=if(dragging) offset else restingOffset.value;scaleX=scale.value;scaleY=scale.value;shadowElevation=lift.value.dp.toPx();shape=rowShape
+        }.drawBehind {drawRoundRect(background.value,cornerRadius=CornerRadius(12.dp.toPx()))}
+        .then(if(onClick != null) Modifier.clip(rowShape).clickable(onClick=onClick) else Modifier),verticalAlignment=Alignment.CenterVertically) {
         Text("${index+1}",Modifier.width(30.dp),fontSize=12.sp,color=muted,textAlign=TextAlign.Center)
         Column(Modifier.weight(1f).padding(horizontal=8.dp)) {Text(song.title,maxLines=1,overflow=TextOverflow.Ellipsis,fontSize=14.sp);Text(song.artist,maxLines=1,overflow=TextOverflow.Ellipsis,fontSize=11.sp,color=muted)}
-        Column {IconButton(onClick={latestMove(-1)},enabled=index > 0,modifier=Modifier.size(32.dp)) {Icon(Icons.Outlined.KeyboardArrowUp,"上移",Modifier.size(20.dp))};IconButton(onClick={latestMove(1)},enabled=index < count-1,modifier=Modifier.size(32.dp)) {Icon(Icons.Outlined.KeyboardArrowDown,"下移",Modifier.size(20.dp))}}
-        if(onRemove != null) IconButton(onClick=onRemove) {Icon(Icons.Outlined.Close,"移出队列",Modifier.size(18.dp))}
-        Box(Modifier.size(48.dp).pointerInput(song.id) {detectDragGesturesAfterLongPress(onDragEnd={offset=0f},onDragCancel={offset=0f}) {change,amount ->
+        Column {ExpressiveIconButton(onClick={latestMove(-1)},enabled=index > 0,modifier=Modifier.testTag("move-up-${song.id}").size(48.dp),tactile=true) {Icon(Icons.Outlined.KeyboardArrowUp,"上移",Modifier.size(20.dp))};ExpressiveIconButton(onClick={latestMove(1)},enabled=index < count-1,modifier=Modifier.testTag("move-down-${song.id}").size(48.dp),tactile=true) {Icon(Icons.Outlined.KeyboardArrowDown,"下移",Modifier.size(20.dp))}}
+        if(onRemove != null) ExpressiveIconButton(onClick=onRemove,tactile=true) {Icon(Icons.Outlined.Close,"移出队列",Modifier.size(18.dp))}
+        Box(Modifier.testTag("reorder-handle-${song.id}").size(48.dp).pointerInput(song.id) {detectDragGesturesAfterLongPress(
+            onDragStart={dragging=true;raised=true;dragIndex=latestIndex;offset=0f;latestDragging(true);haptic()},
+            onDragEnd={dragging=false;offset=0f;latestDragging(false)},onDragCancel={dragging=false;offset=0f;latestDragging(false)}) {change,amount ->
             change.consume();offset+=amount.y
-            while(offset >= threshold) {latestMove(1);offset-=threshold}
-            while(offset <= -threshold) {latestMove(-1);offset+=threshold}
+            val threshold=latestHeight
+            while(kotlin.math.abs(offset) >= threshold) {
+                val direction=if(offset > 0f) 1 else -1
+                if(dragIndex+direction !in 0 until latestCount) {offset=offset.coerceIn(-threshold*.2f,threshold*.2f);break}
+                latestMove(direction);dragIndex+=direction;offset-=direction*threshold;haptic()
+            }
+            if(dragIndex == 0 && offset < 0f) offset=offset.coerceAtLeast(-threshold*.2f)
+            if(dragIndex == latestCount-1 && offset > 0f) offset=offset.coerceAtMost(threshold*.2f)
         }},contentAlignment=Alignment.Center) {Icon(Icons.Outlined.DragHandle,"长按拖动排序",tint=MaterialTheme.colorScheme.primary)}
     }
 }
-@Composable internal fun QueueSheet(library: LibraryState,p: PlaybackState,model: MusicModel,onDismiss:()->Unit) {
+@Composable internal fun QueueSheet(library: LibraryState,p: PlaybackState,model: MusicModel,onFeedback:(String)->Unit={},onDismiss:()->Unit) {
     val byId=library.songs.associateBy {it.id}
+    var draggingId by remember {mutableStateOf<String?>(null)}
+    var changed by remember {mutableStateOf(false)}
     ModalBottomSheet(onDismissRequest=onDismiss) {SheetTitle("播放队列 · ${p.queue.size} 首","队列顺序独立于音乐库和歌单")
         LazyColumn(Modifier.heightIn(max=460.dp),contentPadding=PaddingValues(horizontal=16.dp,vertical=8.dp)) {
             itemsIndexed(p.queue,key={_,id->id}) {index,id -> byId[id]?.let {song -> ReorderRow(song,index,p.queue.size,
+                modifier=Modifier.animateItem(fadeInSpec=tween(140),fadeOutSpec=tween(120),placementSpec=if(draggingId == id) null else spring(dampingRatio=1f,stiffness=500f)),
+                onDraggingChanged={dragging -> draggingId=if(dragging) id else null},
                 onMove={direction -> val queue=model.playback.value.queue;val from=queue.indexOf(id);if(from >= 0) {
-                    val to=(from+direction).coerceIn(0,queue.lastIndex);if(from != to) model.queueMove(from,to)
+                    val to=(from+direction).coerceIn(0,queue.lastIndex);if(from != to) {model.queueMove(from,to);changed=true}
                 }},
                 onClick={val current=model.playback.value.queue.indexOf(id);if(current >= 0) model.queuePlay(current)},
-                onRemove={val current=model.playback.value.queue.indexOf(id);if(current >= 0) model.queueRemove(current)})} }
+                onRemove={val current=model.playback.value.queue.indexOf(id);if(current >= 0) {model.queueRemove(current);changed=true;onFeedback("已移出播放队列")}})} }
         }
-        TextButton(onClick=onDismiss,modifier=Modifier.fillMaxWidth().padding(16.dp)) {Text("完成")}
+        TextButton(onClick={onDismiss();if(changed) onFeedback("队列已更新")},modifier=Modifier.fillMaxWidth().padding(16.dp)) {Text("完成")}
     }
 }

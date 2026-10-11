@@ -2,6 +2,7 @@ package com.xiaohonghua.music
 
 import android.content.ContentValues
 import android.graphics.Bitmap
+import android.net.Uri
 import android.os.Build
 import android.provider.MediaStore
 import android.view.KeyEvent
@@ -178,6 +179,65 @@ class MainNavigationUiTest {
         compose.onNodeWithText("删除").performClick()
         home("playlists")
         assertFalse(model.library.value.playlists.any {it.id == playlist.id})
+    }
+
+    @Test fun playlistRemovalAndDeletionUndoPreserveFilesAndLaterEdits() {
+        val model=ready()
+        val songs=model.library.value.songs
+        val originalFiles=songs.associate {song -> song.id to context.contentResolver.openInputStream(Uri.parse(song.uri))!!.use {it.readBytes()}}
+        lateinit var playlist: Playlist
+        compose.runOnIdle {
+            model.repository.createPlaylist("撤销前面的歌单")
+            playlist=model.repository.createPlaylist("撤销测试歌单")
+            model.repository.playlist(playlist.copy(songIds=songs.map {it.id}.reversed(),randomIds=songs.map {it.id},coverPreset=6))
+            model.repository.createPlaylist("撤销后面的歌单")
+            assertNull(model.repository.deletePlaylist(FAVORITES_PLAYLIST_ID))
+        }
+        val playlistOrder=model.library.value.playlists.map {it.id}
+        compose.onNodeWithTag("nav-playlists").performClick()
+        home("playlists")
+        compose.onNodeWithTag("playlist-${playlist.id}").performScrollTo().performClick()
+        compose.onNodeWithContentDescription("重命名歌单").performClick()
+        compose.onNodeWithTag("playlist-name-field").performTextReplacement("已编辑的撤销测试歌单")
+        compose.onNodeWithText("确定").performClick()
+        compose.waitUntil(30_000) {model.library.value.playlists.first {it.id == playlist.id}.name == "已编辑的撤销测试歌单"}
+        assertEquals(playlistOrder,model.library.value.playlists.map {it.id})
+
+        val beforeRemoval=model.library.value.playlists.first {it.id == playlist.id}
+        val removedId=beforeRemoval.songIds.first()
+        compose.onNode(hasContentDescription("歌曲操作") and hasAnyAncestor(hasTestTag("song-$removedId"))).performClick()
+        compose.onNodeWithText("从歌单移除").performClick()
+        compose.waitUntil(30_000) {removedId !in model.library.value.playlists.first {it.id == playlist.id}.songIds}
+        lateinit var laterEdit: Playlist
+        compose.runOnIdle {
+            val current=model.library.value.playlists.first {it.id == playlist.id}
+            laterEdit=current.copy(name="撤销保留后来的编辑",coverPreset=7,sort=SortMode.ARTIST)
+            model.repository.playlist(laterEdit)
+        }
+        compose.onNodeWithText("撤销").assertIsDisplayed().performClick()
+        compose.waitUntil(30_000) {removedId in model.library.value.playlists.first {it.id == playlist.id}.songIds}
+        val restoredSongList=model.library.value.playlists.first {it.id == playlist.id}
+        assertEquals(laterEdit.copy(songIds=beforeRemoval.songIds,randomIds=beforeRemoval.randomIds),restoredSongList)
+        assertEquals(playlistOrder,model.library.value.playlists.map {it.id})
+
+        compose.onNodeWithContentDescription("删除歌单").performClick()
+        compose.onNodeWithText("删除").performClick()
+        home("playlists")
+        assertFalse(model.library.value.playlists.any {it.id == playlist.id})
+        compose.onNodeWithText("撤销").assertIsDisplayed().performClick()
+        compose.waitUntil(30_000) {model.library.value.playlists.any {it.id == playlist.id}}
+        assertEquals(playlistOrder,model.library.value.playlists.map {it.id})
+        assertEquals(restoredSongList,model.library.value.playlists.first {it.id == playlist.id})
+        assertEquals(restoredSongList,LibraryStore(context).playlists().first {it.id == playlist.id})
+        compose.onNodeWithTag("playlist-$FAVORITES_PLAYLIST_ID").performScrollTo().performClick()
+        compose.onNodeWithContentDescription("重命名歌单").assertDoesNotExist()
+        compose.onNodeWithContentDescription("删除歌单").assertDoesNotExist()
+        assertEquals(1,model.library.value.playlists.count {it.isFavorites})
+        for(song in songs) {
+            val bytes=context.contentResolver.openInputStream(Uri.parse(song.uri))!!.use {it.readBytes()}
+            assertArrayEquals("Undo must not change the original music file",originalFiles.getValue(song.id),bytes)
+        }
+        assertEquals(songs,model.library.value.songs)
     }
 
     @Test fun restoredChildCanReturnUsingBottomNavigation() {

@@ -3,23 +3,39 @@
 package com.xiaohonghua.music
 
 import androidx.compose.foundation.*
+import androidx.activity.compose.BackHandler
+import androidx.compose.animation.*
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsDraggedAsState
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.selection.selectable
+import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -31,7 +47,8 @@ import kotlinx.coroutines.withContext
     Column(Modifier.fillMaxWidth().padding(horizontal=24.dp,vertical=12.dp)) {Text(title,fontSize=22.sp,fontWeight=FontWeight.SemiBold);if(subtitle.isNotBlank()) Text(subtitle,fontSize=12.sp,color=muted,modifier=Modifier.padding(top=8.dp))}
 }
 @Composable internal fun SettingRow(icon: ImageVector,title: String,subtitle: String="",onClick:()->Unit) {
-    Row(Modifier.fillMaxWidth().clickable(onClick=onClick).padding(horizontal=24.dp,vertical=16.dp),verticalAlignment=Alignment.CenterVertically) {
+    val interaction=remember {MutableInteractionSource()}
+    Row(Modifier.fillMaxWidth().pressScale(interaction).clickable(interactionSource=interaction,indication=LocalIndication.current,onClick=onClick).padding(horizontal=24.dp,vertical=16.dp),verticalAlignment=Alignment.CenterVertically) {
         Icon(icon,null,tint=MaterialTheme.colorScheme.primary,modifier=Modifier.size(23.dp));Column(Modifier.padding(horizontal=16.dp).weight(1f)) {Text(title,fontSize=16.sp);if(subtitle.isNotBlank()) Text(subtitle,fontSize=12.sp,color=muted,modifier=Modifier.padding(top=5.dp))};Icon(Icons.Outlined.ChevronRight,null,tint=muted,modifier=Modifier.size(18.dp))
     }
 }
@@ -63,7 +80,7 @@ import kotlinx.coroutines.withContext
         library.folders.forEach {folder -> Surface(Modifier.fillMaxWidth().padding(vertical=6.dp),shape=RoundedCornerShape(16.dp),color=Color.White) {Row(Modifier.padding(16.dp),verticalAlignment=Alignment.CenterVertically) {
             Icon(Icons.Outlined.Folder,null,tint=MaterialTheme.colorScheme.primary)
             Column(Modifier.weight(1f).padding(start=12.dp)) {Text(folder.name,fontWeight=FontWeight.Medium);Text("${library.songs.count {folder.uri in it.sources}} 首歌曲",fontSize=12.sp,color=muted,modifier=Modifier.padding(top=6.dp));Text(UriLabel(folder.uri),fontSize=10.sp,color=muted,maxLines=2,overflow=TextOverflow.Ellipsis)}
-            IconButton(onClick={onRemove(folder)}) {Icon(Icons.Outlined.Close,"移除文件夹")}
+            ExpressiveIconButton(onClick={onRemove(folder)}) {Icon(Icons.Outlined.Close,"移除文件夹")}
         }} }
         if(library.folders.isEmpty()) Text("尚未添加文件夹\n单独导入的文件会保留在音乐库中。",Modifier.padding(vertical=24.dp),color=muted,fontSize=13.sp,lineHeight=22.sp)
         Text("最近同步",fontSize=15.sp,fontWeight=FontWeight.Medium,modifier=Modifier.padding(top=20.dp,bottom=12.dp))
@@ -72,19 +89,27 @@ import kotlinx.coroutines.withContext
 }
 private fun UriLabel(uri: String)=android.net.Uri.decode(uri.substringAfter("/tree/"))
 
-@Composable internal fun LyricSettings(settings: Settings,onChange:(Settings)->Unit) {
+@Composable internal fun LyricSettings(settings: Settings,onComplete:(String)->Unit={},onChange:(Settings)->Unit) {
     var licenses by remember {mutableStateOf(false)}
+    var draft by remember(settings) {mutableStateOf(settings)}
+    val haptic=rememberActionHaptic()
+    fun apply(value: Settings) {val changed=value != draft;draft=value;if(value != settings) onChange(value);if(changed) haptic()}
+    fun finish() {if(draft != settings) {onChange(draft);haptic();onComplete("已保存歌词样式")}}
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(24.dp)) {
         Text("字体",fontWeight=FontWeight.Medium)
-        lyricFontOptions.forEach { (key,label) -> Row(Modifier.fillMaxWidth().clickable {onChange(settings.copy(lyricFont=key))},verticalAlignment=Alignment.CenterVertically) {
-            RadioButton(settings.lyricFont == key,{onChange(settings.copy(lyricFont=key))});Text(label,fontFamily=lyricFont(key))
+        Column(Modifier.selectableGroup().padding(top=8.dp)) {lyricFontOptions.forEach { (key,label) ->
+            val selected=draft.lyricFont == key
+            val tint by animateColorAsState(if(selected) MaterialTheme.colorScheme.primary.copy(alpha=.08f) else Color.Transparent,tween(160),label="font-selection")
+            Row(Modifier.testTag("lyric-font-$key").fillMaxWidth().clip(RoundedCornerShape(14.dp)).background(tint).selectable(selected,role=Role.RadioButton,onClick={apply(draft.copy(lyricFont=key))}).padding(vertical=2.dp),verticalAlignment=Alignment.CenterVertically) {
+                RadioButton(selected,onClick=null);Text(label,fontFamily=lyricFont(key))
+            }
         } }
-        SettingSlider("字号","${settings.lyricSize.toInt()} sp",settings.lyricSize,18f..34f) {onChange(settings.copy(lyricSize=it))}
-        SettingSlider("行间距","${settings.lyricGap.toInt()} dp",settings.lyricGap,0f..48f) {onChange(settings.copy(lyricGap=it))}
-        Row(Modifier.fillMaxWidth().padding(vertical=12.dp),verticalAlignment=Alignment.CenterVertically) {Column(Modifier.weight(1f)) {Text("动态歌词");Text("按 LRC 时间戳高亮并平滑定位",fontSize=12.sp,color=muted,modifier=Modifier.padding(top=6.dp))};Switch(settings.dynamicLyrics,{onChange(settings.copy(dynamicLyrics=it))})}
+        SettingSlider("字号","${draft.lyricSize.toInt()} sp",draft.lyricSize,18f..34f,onFinished=::finish) {draft=draft.copy(lyricSize=it)}
+        SettingSlider("行间距","${draft.lyricGap.toInt()} dp",draft.lyricGap,0f..48f,onFinished=::finish) {draft=draft.copy(lyricGap=it)}
+        Row(Modifier.fillMaxWidth().padding(vertical=12.dp),verticalAlignment=Alignment.CenterVertically) {Column(Modifier.weight(1f)) {Text("动态歌词");Text("按 LRC 时间戳高亮并平滑定位",fontSize=12.sp,color=muted,modifier=Modifier.padding(top=6.dp))};Switch(draft.dynamicLyrics,{apply(draft.copy(dynamicLyrics=it))})}
         Text("效果预览",fontSize=12.sp,color=muted,modifier=Modifier.padding(top=20.dp,bottom=12.dp))
         Surface(Modifier.fillMaxWidth(),shape=RoundedCornerShape(20.dp),color=Color.White) {Column(Modifier.padding(24.dp),horizontalAlignment=Alignment.CenterHorizontally) {
-            listOf("风经过窗边","让音乐在这里开花","把这一刻慢慢留下").forEachIndexed {index,text -> Text(text,Modifier.fillMaxWidth().padding(vertical=settings.lyricGap.dp/2+6.dp),fontSize=settings.lyricSize.sp,fontFamily=lyricFont(settings.lyricFont),textAlign=TextAlign.Center,
+            listOf("风经过窗边","让音乐在这里开花","把这一刻慢慢留下").forEachIndexed {index,text -> Text(text,Modifier.fillMaxWidth().padding(vertical=draft.lyricGap.dp/2+6.dp),fontSize=draft.lyricSize.sp,fontFamily=lyricFont(draft.lyricFont),textAlign=TextAlign.Center,
                 color=if(index == 1) MaterialTheme.colorScheme.primary else muted.copy(alpha=.5f),fontWeight=FontWeight.Normal) }
         }}
         Text("手动浏览歌词后，4 秒无操作恢复定位。普通 LRC 提供逐行效果；没有逐字时间戳时不生成逐字动画。",Modifier.padding(top=16.dp),fontSize=12.sp,color=muted,lineHeight=20.sp)
@@ -103,31 +128,46 @@ private fun UriLabel(uri: String)=android.net.Uri.decode(uri.substringAfter("/tr
         confirmButton={TextButton(onClick=onDismiss) {Text("关闭")}})
 }
 @Composable internal fun ThemeSettings(settings: Settings,onChange:(Settings)->Unit) {
-    Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(24.dp)) {
+    val haptic=rememberActionHaptic()
+    Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).selectableGroup().padding(24.dp)) {
         Text("用一种颜色，陪伴音乐",fontSize=15.sp,color=muted,modifier=Modifier.padding(bottom=24.dp))
-        listOf("红花","森林","海蓝","陶土","暮紫").forEachIndexed {index,label -> Row(Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp)).clickable {onChange(settings.copy(theme=index))}.padding(16.dp),verticalAlignment=Alignment.CenterVertically) {
-            Box(Modifier.size(36.dp).clip(CircleShape).background(accents[index]));Text(label,Modifier.weight(1f).padding(start=16.dp));if(settings.theme == index) Icon(Icons.Outlined.Check,"已选择",tint=accents[index])
+        listOf("红花","森林","海蓝","陶土","暮紫").forEachIndexed {index,label ->
+            val selected=settings.theme == index
+            val tint by animateColorAsState(if(selected) accents[index].copy(alpha=.09f) else Color.Transparent,tween(180),label="theme-selection")
+            Row(Modifier.testTag("theme-$index").fillMaxWidth().clip(RoundedCornerShape(16.dp)).background(tint).selectable(selected,role=Role.RadioButton,onClick={if(!selected) {onChange(settings.copy(theme=index));haptic()}}).padding(16.dp),verticalAlignment=Alignment.CenterVertically) {
+            Box(Modifier.size(36.dp).clip(CircleShape).background(accents[index]));Text(label,Modifier.weight(1f).padding(start=16.dp))
+            Box(Modifier.size(24.dp),contentAlignment=Alignment.Center) {ThemeSelectionMark(selected,accents[index])}
         } }
     }
 }
-@Composable internal fun SettingSlider(label: String,valueLabel: String,value: Float,range: ClosedFloatingPointRange<Float>,onChange:(Float)->Unit) {
-    Row(Modifier.fillMaxWidth().padding(top=20.dp)) {Text(label,Modifier.weight(1f),fontWeight=FontWeight.Medium);Text(valueLabel,fontSize=12.sp,color=muted)}
-    Slider(value,onChange,valueRange=range)
+@Composable private fun ThemeSelectionMark(selected: Boolean,color: Color) {
+    AnimatedVisibility(selected,enter=fadeIn(tween(150))+scaleIn(tween(180),initialScale=.7f),exit=fadeOut(tween(100))) {Icon(Icons.Outlined.Check,"已选择",tint=color)}
 }
-@Composable internal fun BackgroundSettings(settings: Settings,song: Song?,onImport:()->Unit,onChange:(Settings)->Unit) {
+@Composable internal fun SettingSlider(label: String,valueLabel: String,value: Float,range: ClosedFloatingPointRange<Float>,onFinished:()->Unit={},onChange:(Float)->Unit) {
+    val interaction=remember {MutableInteractionSource()}
+    val dragging by interaction.collectIsDraggedAsState()
+    val color by animateColorAsState(if(dragging) MaterialTheme.colorScheme.primary else muted,tween(120),label="slider-value")
+    Row(Modifier.fillMaxWidth().padding(top=20.dp)) {Text(label,Modifier.weight(1f),fontWeight=FontWeight.Medium);Text(valueLabel,fontSize=12.sp,color=color)}
+    Slider(value,onChange,modifier=Modifier.testTag("setting-slider-$label"),onValueChangeFinished=onFinished,valueRange=range,interactionSource=interaction)
+}
+@Composable internal fun BackgroundSettings(settings: Settings,song: Song?,onImport:()->Unit,onComplete:(String)->Unit={},onChange:(Settings)->Unit) {
+    var draft by remember(settings) {mutableStateOf(settings)}
+    val haptic=rememberActionHaptic()
+    fun apply(value: Settings) {val changed=value != draft;draft=value;if(value != settings) onChange(value);if(changed) haptic()}
+    fun finish() {if(draft != settings) {onChange(draft);haptic();onComplete("已保存播放背景")}}
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(24.dp)) {
-        Box(Modifier.fillMaxWidth().height(240.dp).clip(RoundedCornerShape(20.dp))) {PlayerBackground(settings,song,Modifier.matchParentSize());Column(Modifier.align(Alignment.Center),horizontalAlignment=Alignment.CenterHorizontally) {Icon(Icons.Outlined.LocalFlorist,null,Modifier.size(48.dp),tint=MaterialTheme.colorScheme.primary);Text(song?.title ?: "音乐在这里开花",Modifier.padding(top=16.dp),fontSize=20.sp,fontWeight=FontWeight.SemiBold);Text("实时背景预览",Modifier.padding(top=8.dp),fontSize=12.sp,color=muted)}}
+        Box(Modifier.fillMaxWidth().height(240.dp).clip(RoundedCornerShape(20.dp))) {PlayerBackground(draft,song,Modifier.matchParentSize());Column(Modifier.align(Alignment.Center),horizontalAlignment=Alignment.CenterHorizontally) {Icon(Icons.Outlined.LocalFlorist,null,Modifier.size(48.dp),tint=MaterialTheme.colorScheme.primary);Text(song?.title ?: "音乐在这里开花",Modifier.padding(top=16.dp),fontSize=20.sp,fontWeight=FontWeight.SemiBold);Text("实时背景预览",Modifier.padding(top=8.dp),fontSize=12.sp,color=muted)}}
         Row(Modifier.fillMaxWidth().padding(top=12.dp),horizontalArrangement=Arrangement.spacedBy(8.dp)) {
-            FilterChip(settings.background == "plain",{onChange(settings.copy(background="plain"))},label={Text("纯色")})
-            FilterChip(settings.background == "artwork",{onChange(settings.copy(background="artwork"))},label={Text("歌曲封面")})
-            FilterChip(settings.background == "photo",{onImport()},label={Text("本地照片")})
+            FilterChip(draft.background == "plain",{apply(draft.copy(background="plain"))},label={Text("纯色")})
+            FilterChip(draft.background == "artwork",{apply(draft.copy(background="artwork"))},label={Text("歌曲封面")})
+            FilterChip(draft.background == "photo",{onImport()},label={Text("本地照片")})
         }
         Text("背景仅用于播放封面页，歌词页使用纯色。图片等比铺满，调整缩放后可移动构图。",fontSize=12.sp,color=muted,modifier=Modifier.padding(top=12.dp))
-        SettingSlider("图片不透明度","${(settings.opacity*100).toInt()}%",settings.opacity,0f..1f) {onChange(settings.copy(opacity=it))}
-        SettingSlider("缩放","${(settings.scale*100).toInt()}%",settings.scale,1f..2.5f) {onChange(settings.copy(scale=it))}
-        SettingSlider("水平位置","${(settings.x*100).toInt()}%",settings.x,0f..1f) {onChange(settings.copy(x=it))}
-        SettingSlider("垂直位置","${(settings.y*100).toInt()}%",settings.y,0f..1f) {onChange(settings.copy(y=it))}
-        OutlinedButton(onClick={onChange(settings.copy(opacity=.35f,scale=1f,x=.5f,y=.5f))},modifier=Modifier.fillMaxWidth().padding(top=12.dp)) {Text("重置构图")}
+        SettingSlider("图片不透明度","${(draft.opacity*100).toInt()}%",draft.opacity,0f..1f,onFinished=::finish) {draft=draft.copy(opacity=it)}
+        SettingSlider("缩放","${(draft.scale*100).toInt()}%",draft.scale,1f..2.5f,onFinished=::finish) {draft=draft.copy(scale=it)}
+        SettingSlider("水平位置","${(draft.x*100).toInt()}%",draft.x,0f..1f,onFinished=::finish) {draft=draft.copy(x=it)}
+        SettingSlider("垂直位置","${(draft.y*100).toInt()}%",draft.y,0f..1f,onFinished=::finish) {draft=draft.copy(y=it)}
+        OutlinedButton(onClick={val reset=draft.copy(opacity=.35f,scale=1f,x=.5f,y=.5f);if(reset != draft) {apply(reset);onComplete("已重置背景构图")}},modifier=Modifier.fillMaxWidth().padding(top=12.dp)) {Text("重置构图")}
     }
 }
 @Composable internal fun BackupPage(onExport:()->Unit,onRestore:()->Unit) {
@@ -141,24 +181,60 @@ private fun UriLabel(uri: String)=android.net.Uri.decode(uri.substringAfter("/tr
     }
 }
 @Composable internal fun NameDialog(title: String,initial: String="",onDismiss:()->Unit,onConfirm:(String)->Unit) {
-    var name by remember {mutableStateOf(initial)}
-    AlertDialog(onDismissRequest=onDismiss,title={Text(title)},text={OutlinedTextField(name,{if(it.length<=60) name=it},singleLine=true,label={Text("歌单名称")})},
-        confirmButton={TextButton(onClick={onConfirm(name.trim())},enabled=name.isNotBlank()) {Text("确定")}},dismissButton={TextButton(onClick=onDismiss) {Text("取消")}})
+    var name by rememberSaveable(initial) {mutableStateOf(initial)}
+    var submitted by rememberSaveable(initial) {mutableStateOf(false)}
+    val focus=remember {FocusRequester()}
+    val haptic=rememberActionHaptic()
+    fun submit() {if(name.isNotBlank() && !submitted) {submitted=true;haptic();onConfirm(name.trim())}}
+    LaunchedEffect(Unit) {focus.requestFocus()}
+    AlertDialog(onDismissRequest=onDismiss,title={Text(title)},text={OutlinedTextField(name,{if(it.length<=60) {name=it;submitted=false}},Modifier.testTag("playlist-name-field").focusRequester(focus),singleLine=true,label={Text("歌单名称")},keyboardOptions=KeyboardOptions(imeAction=ImeAction.Done),keyboardActions=KeyboardActions(onDone={submit()}))},
+        confirmButton={TextButton(onClick=::submit,enabled=name.isNotBlank() && !submitted) {Text("确定")}},dismissButton={TextButton(onClick=onDismiss) {Text("取消")}})
 }
 @Composable internal fun PlaylistPicker(song: Song,playlists: List<Playlist>,onDismiss:()->Unit,onAdd:(Playlist)->Unit,onCreate:(String)->Unit) {
-    var selected by remember {mutableStateOf<String?>(null)}
-    var create by remember {mutableStateOf(false)}
-    ModalBottomSheet(onDismissRequest=onDismiss) {SheetTitle("添加到歌单",song.title)
-        TextButton(onClick={create=true},modifier=Modifier.padding(horizontal=16.dp)) {Icon(Icons.Outlined.Add,null);Text("新建歌单并添加")}
-        LazyColumn(Modifier.heightIn(max=340.dp)) {items(playlists,key={it.id}) {list -> val exists=song.id in list.songIds
-            Row(Modifier.fillMaxWidth().clickable(enabled=!exists) {selected=list.id}.padding(horizontal=24.dp,vertical=8.dp),verticalAlignment=Alignment.CenterVertically) {
-                RadioButton(selected == list.id,{selected=list.id},enabled=!exists);PlaylistCover(list,Modifier.size(44.dp));Column(Modifier.weight(1f).padding(start=12.dp)) {Text(list.name,maxLines=1,overflow=TextOverflow.Ellipsis);Text(if(exists) "已在此歌单中" else "${list.songIds.size} 首歌曲",fontSize=12.sp,color=muted)}
+    var selected by rememberSaveable(song.id) {mutableStateOf<String?>(null)}
+    var create by rememberSaveable(song.id) {mutableStateOf(false)}
+    var name by rememberSaveable(song.id) {mutableStateOf("")}
+    var submitted by rememberSaveable(song.id) {mutableStateOf(false)}
+    val latestPlaylists by rememberUpdatedState(playlists)
+    val haptic=rememberActionHaptic()
+    val focus=remember {FocusRequester()}
+    val focusManager=LocalFocusManager.current
+    val keyboard=LocalSoftwareKeyboardController.current
+    fun showLists() {keyboard?.hide();focusManager.clearFocus();create=false;submitted=false}
+    fun submitName() {if(name.isNotBlank() && !submitted) {submitted=true;haptic();onCreate(name.trim())}}
+    ModalBottomSheet(onDismissRequest=onDismiss) {
+        BackHandler(create) {showLists()}
+        AnimatedContent(create,modifier=Modifier.fillMaxWidth().imePadding(),transitionSpec={
+            (fadeIn(tween(160,delayMillis=40))+slideInHorizontally(tween(220)) {if(targetState) it/12 else -it/12}) togetherWith
+                (fadeOut(tween(100))+slideOutHorizontally(tween(180)) {if(targetState) -it/12 else it/12})
+        },label="playlist-picker-step") {creating ->
+        if(creating) Column(Modifier.fillMaxWidth().padding(start=24.dp,end=24.dp,bottom=24.dp)) {
+            LaunchedEffect(Unit) {focus.requestFocus()}
+            Row(verticalAlignment=Alignment.CenterVertically) {
+                ExpressiveIconButton(onClick=::showLists) {Icon(Icons.Outlined.ArrowBack,"返回歌单选择")}
+                Text("新建歌单",fontSize=22.sp,fontWeight=FontWeight.SemiBold)
             }
-        }}
-        if(playlists.isEmpty()) Text("还没有歌单，创建一个即可添加歌曲。",Modifier.padding(24.dp),fontSize=13.sp,color=muted)
-        Button(onClick={playlists.find {it.id == selected}?.let(onAdd)},enabled=selected != null,modifier=Modifier.fillMaxWidth().padding(24.dp)) {Text("确认添加")}
+            Text("创建后加入「${song.title}」",fontSize=12.sp,color=muted,modifier=Modifier.padding(top=8.dp,bottom=20.dp))
+            OutlinedTextField(name,{if(it.length<=60) {name=it;submitted=false}},Modifier.testTag("playlist-picker-name").fillMaxWidth().focusRequester(focus),singleLine=true,label={Text("歌单名称")},keyboardOptions=KeyboardOptions(imeAction=ImeAction.Done),keyboardActions=KeyboardActions(onDone={submitName()}))
+            Button(onClick=::submitName,enabled=name.isNotBlank() && !submitted,modifier=Modifier.testTag("playlist-create-confirm").fillMaxWidth().padding(top=20.dp)) {Text("确定")}
+        } else Column(Modifier.fillMaxWidth()) {
+            SheetTitle("添加到歌单",song.title)
+            TextButton(onClick={create=true;submitted=false},modifier=Modifier.padding(horizontal=16.dp)) {Icon(Icons.Outlined.Add,null);Text("新建歌单并添加")}
+            LazyColumn(Modifier.selectableGroup().heightIn(max=340.dp)) {items(playlists,key={it.id}) {list ->
+                val exists=song.id in list.songIds
+                val chosen=selected == list.id && !exists
+                val tint by animateColorAsState(if(chosen) MaterialTheme.colorScheme.primary.copy(alpha=.08f) else Color.Transparent,tween(160),label="playlist-selection")
+                Row(Modifier.testTag("playlist-choice-${list.id}").fillMaxWidth().background(tint).selectable(chosen,enabled=!exists,role=Role.RadioButton,onClick={if(selected != list.id) {selected=list.id;haptic()}}).padding(horizontal=24.dp,vertical=8.dp),verticalAlignment=Alignment.CenterVertically) {
+                    RadioButton(chosen,onClick=null,enabled=!exists);PlaylistCover(list,Modifier.size(44.dp));Column(Modifier.weight(1f).padding(start=12.dp)) {Text(list.name,maxLines=1,overflow=TextOverflow.Ellipsis);Text(if(exists) "已在此歌单中" else "${list.songIds.size} 首歌曲",fontSize=12.sp,color=muted)}
+                    if(exists) Icon(Icons.Outlined.Check,"已添加",Modifier.size(18.dp),tint=muted)
+                }
+            }}
+            if(playlists.isEmpty()) Text("还没有歌单，创建一个即可添加歌曲。",Modifier.padding(24.dp),fontSize=13.sp,color=muted)
+            val target=playlists.find {it.id == selected && song.id !in it.songIds}
+            Button(onClick={if(!submitted) latestPlaylists.find {it.id == selected && song.id !in it.songIds}?.let {submitted=true;haptic();onAdd(it)}},enabled=target != null && !submitted,modifier=Modifier.testTag("playlist-add-confirm").fillMaxWidth().padding(24.dp)) {Text("确认添加")}
+        }
+        }
     }
-    if(create) NameDialog("新建歌单",onDismiss={create=false}) {create=false;onCreate(it)}
 }
 @Composable internal fun SongInfo(song: Song,onDismiss:()->Unit) {
     ModalBottomSheet(onDismissRequest=onDismiss) {SheetTitle("歌曲信息",song.title)

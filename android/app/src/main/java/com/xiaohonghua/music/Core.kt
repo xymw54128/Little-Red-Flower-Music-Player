@@ -54,6 +54,39 @@ fun toggleFavorite(playlists: List<Playlist>, songId: String): List<Playlist> = 
         playlist.copy(songIds=playlist.songIds-songId,randomIds=playlist.randomIds-songId)
     } else playlist.copy(songIds=playlist.songIds+songId,randomIds=(playlist.randomIds+songId).distinct())
 }
+data class DeletedPlaylist(val playlist: Playlist, val index: Int)
+data class RemovedPlaylistSong(val playlist: Playlist, val songId: String)
+
+fun restoreDeletedPlaylist(playlists: List<Playlist>, deleted: DeletedPlaylist, knownSongIds: Set<String>): List<Playlist> {
+    if(deleted.playlist.isFavorites || playlists.any {it.id == deleted.playlist.id}) return playlists
+    val songs=deleted.playlist.songIds.filter(knownSongIds::contains).distinct()
+    val members=songs.toSet()
+    val restored=deleted.playlist.copy(songIds=songs,randomIds=deleted.playlist.randomIds.filter(members::contains).distinct())
+    return playlists.toMutableList().apply {add(deleted.index.coerceIn(0,size),restored)}
+}
+
+fun restoreRemovedPlaylistSong(current: Playlist, removed: RemovedPlaylistSong, knownSongIds: Set<String>): Playlist {
+    val id=removed.songId
+    if(current.id != removed.playlist.id || id !in knownSongIds || id in current.songIds || id !in removed.playlist.songIds) return current
+    return current.copy(songIds=restoreSongPosition(current.songIds,removed.playlist.songIds,id),
+        randomIds=if(id in removed.playlist.randomIds) restoreSongPosition(current.randomIds,removed.playlist.randomIds,id) else current.randomIds)
+}
+
+private fun restoreSongPosition(current: List<String>, original: List<String>, id: String): List<String> {
+    if(id in current) return current
+    val originalIndex=original.indexOf(id)
+    if(originalIndex < 0) return current
+    val members=current.toSet()
+    val next=original.drop(originalIndex+1).firstOrNull(members::contains)
+    val previous=original.take(originalIndex).lastOrNull(members::contains)
+    // Anchor only the restored item; later reorders and other removals stay intact.
+    val index=when {
+        next != null -> current.indexOf(next)
+        previous != null -> current.indexOf(previous)+1
+        else -> originalIndex.coerceAtMost(current.size)
+    }
+    return current.toMutableList().apply {add(index,id)}
+}
 data class Folder(val uri: String, val name: String)
 data class Settings(
     val theme: Int = 0,

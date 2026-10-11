@@ -3,21 +3,29 @@
 package com.xiaohonghua.music
 
 import androidx.compose.foundation.*
+import androidx.compose.animation.Crossfade
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.selection.selectable
+import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import java.io.File
@@ -32,29 +40,34 @@ private val coverNames=listOf("红花","森林","海浪","月夜","暖阳","唱�
     val index=playlist.coverPreset.coerceIn(0,PLAYLIST_COVER_COUNT-1)
     val photo=playlist.coverPhoto.takeIf {it.matches(Regex("[a-f0-9-]{36}\\.jpg"))}
     val image=rememberImage(photo?.let {File(LocalContext.current.filesDir,"playlist-covers/$it").absolutePath}.orEmpty())
-    val color=coverColors[index]
+    val color by animateColorAsState(coverColors[index],tween(180),label="playlist-cover-color")
     BoxWithConstraints(modifier.testTag("playlist-cover-${playlist.id}").clip(RoundedCornerShape(14.dp)).background(color.copy(alpha=.12f)),contentAlignment=Alignment.Center) {
         if(image != null) Image(image,null,Modifier.fillMaxSize(),contentScale=ContentScale.Crop)
         else {
             Box(Modifier.fillMaxSize().background(Brush.linearGradient(listOf(color.copy(alpha=.07f),color.copy(alpha=.21f)))))
             Box(Modifier.size(maxWidth*.76f).offset(x=maxWidth*.25f,y=maxWidth*.32f).border(1.dp,color.copy(alpha=.13f),CircleShape))
-            Icon(coverIcons[index],null,Modifier.size(maxWidth*.44f),tint=color)
+            Crossfade(index,animationSpec=tween(160),label="playlist-cover-icon") {preset -> Icon(coverIcons[preset],null,Modifier.size(maxWidth*.44f),tint=color)}
         }
     }
 }
 
-@Composable internal fun PlaylistCoverSheet(playlist: Playlist,onDismiss:()->Unit,onPreset:(Int)->Unit,onPhoto:()->Unit) {
+@Composable internal fun PlaylistCoverSheet(playlist: Playlist,onDismiss:()->Unit,onPreset:(Int)->Unit,onPhoto:()->Unit,onComplete:(String)->Unit={}) {
+    val haptic=rememberActionHaptic()
+    var changed by remember(playlist.id) {mutableStateOf(false)}
+    fun select(index: Int) {if(playlist.coverPhoto.isNotEmpty() || playlist.coverPreset != index) {changed=true;onPreset(index);haptic()}}
     ModalBottomSheet(onDismissRequest=onDismiss) {
         SheetTitle("歌单封面",playlist.name)
-        Column(Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).padding(horizontal=24.dp),horizontalAlignment=Alignment.CenterHorizontally) {
+        Column(Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).selectableGroup().padding(horizontal=24.dp),horizontalAlignment=Alignment.CenterHorizontally) {
             PlaylistCover(playlist,Modifier.size(112.dp).padding(bottom=8.dp))
             Text("选择图案，或使用自己的照片",color=muted,fontSize=12.sp,modifier=Modifier.padding(vertical=12.dp))
             repeat(2) {row -> Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.spacedBy(12.dp)) {
                 repeat(4) {column ->
                     val index=row*4+column
-                    Column(Modifier.weight(1f).clip(RoundedCornerShape(16.dp)).clickable {onPreset(index)}.padding(vertical=8.dp),horizontalAlignment=Alignment.CenterHorizontally) {
-                        val selected=playlist.coverPhoto.isEmpty() && playlist.coverPreset == index
-                        Box(Modifier.fillMaxWidth().aspectRatio(1f).then(if(selected) Modifier.border(2.dp,MaterialTheme.colorScheme.primary,RoundedCornerShape(16.dp)) else Modifier).padding(4.dp)) {
+                    val selected=playlist.coverPhoto.isEmpty() && playlist.coverPreset == index
+                    val border by animateColorAsState(if(selected) MaterialTheme.colorScheme.primary else Color.Transparent,tween(160),label="cover-selection-border")
+                    val scale by animateFloatAsState(if(selected) 1f else .96f,tween(180),label="cover-selection-scale")
+                    Column(Modifier.testTag("playlist-cover-preset-$index").weight(1f).clip(RoundedCornerShape(16.dp)).selectable(selected,role=Role.RadioButton,onClick={select(index)}).padding(vertical=8.dp),horizontalAlignment=Alignment.CenterHorizontally) {
+                        Box(Modifier.fillMaxWidth().aspectRatio(1f).graphicsLayer {scaleX=scale;scaleY=scale}.border(2.dp,border,RoundedCornerShape(16.dp)).padding(4.dp)) {
                             PlaylistCover(playlist.copy(coverPreset=index,coverPhoto=""),Modifier.fillMaxSize())
                         }
                         Text(coverNames[index],fontSize=11.sp,color=if(selected) MaterialTheme.colorScheme.primary else muted,modifier=Modifier.padding(top=6.dp))
@@ -62,7 +75,8 @@ private val coverNames=listOf("红花","森林","海浪","月夜","暖阳","唱�
                 }
             } }
             OutlinedButton(onClick=onPhoto,modifier=Modifier.fillMaxWidth().padding(top=16.dp)) {Icon(Icons.Outlined.PhotoLibrary,null,Modifier.size(20.dp));Spacer(Modifier.width(8.dp));Text("从本地相册选择")}
-            TextButton(onClick={onPreset(defaultPlaylistCover(playlist.id))},modifier=Modifier.padding(top=4.dp,bottom=16.dp)) {Text("恢复默认封面")}
+            TextButton(onClick={select(defaultPlaylistCover(playlist.id))},modifier=Modifier.padding(top=4.dp)) {Text("恢复默认封面")}
+            Button(onClick={if(changed) onComplete("已更换歌单封面");onDismiss()},modifier=Modifier.testTag("playlist-cover-done").fillMaxWidth().padding(top=8.dp,bottom=24.dp)) {Text("完成")}
         }
     }
 }

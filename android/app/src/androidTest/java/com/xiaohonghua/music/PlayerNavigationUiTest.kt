@@ -2,9 +2,14 @@ package com.xiaohonghua.music
 
 import android.app.Application
 import android.os.Build
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelStore
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -84,6 +89,45 @@ class PlayerNavigationUiTest {
             assertEquals(1,backs)
             assertEquals(1,imports)
             assertEquals(1,styles)
+        }
+    }
+    @Test fun pageIndicatorsHaveFullTouchTargetsAndExposeSelectedPage() {
+        player()
+        compose.onNodeWithTag("player-page-cover").assertWidthIsEqualTo(48.dp).assertHeightIsEqualTo(48.dp).assertIsSelected()
+        compose.onNodeWithTag("player-page-lyrics").assertIsNotSelected().performClick()
+        compose.onNodeWithTag("player-page-lyrics").assertIsSelected()
+        compose.onNodeWithText("动态歌词").assertIsDisplayed()
+        compose.onNodeWithTag("player-page-cover").performClick().assertIsSelected()
+        compose.onNodeWithText("正在播放").assertIsDisplayed()
+    }
+    @Test fun longPressReorderRespectsBoundaryThenMovesByOneMeasuredRow() {
+        val tracks=(0..2).map {song.copy(id="reorder-$it",title="排序歌曲 $it")}
+        val draft=mutableStateListOf<Song>().apply {addAll(tracks)}
+        var moves=0
+        compose.setContent {MaterialTheme {
+            LazyColumn {
+                itemsIndexed(draft,key={_,track -> track.id}) {index,track ->
+                    ReorderRow(track,index,draft.size,onMove={direction ->
+                        val from=draft.indexOfFirst {it.id == track.id}
+                        val to=(from+direction).coerceIn(0,draft.lastIndex)
+                        if(from != to) {draft.add(to,draft.removeAt(from));moves++}
+                    })
+                }
+            }
+        }}
+        compose.onNodeWithTag("reorder-handle-reorder-0").performTouchInput {
+            down(center);advanceEventTime(650);moveBy(Offset(0f,-height*2f));up()
+        }
+        compose.runOnIdle {
+            assertEquals(tracks.map {it.id},draft.map {it.id})
+            assertEquals(0,moves)
+        }
+        compose.onNodeWithTag("reorder-handle-reorder-1").performTouchInput {
+            down(center);advanceEventTime(650);moveBy(Offset(0f,height*2.25f));up()
+        }
+        compose.runOnIdle {
+            assertEquals(listOf(tracks[0].id,tracks[2].id,tracks[1].id),draft.map {it.id})
+            assertEquals(1,moves)
         }
     }
 }

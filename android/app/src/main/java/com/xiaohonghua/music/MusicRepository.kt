@@ -8,6 +8,7 @@ import android.os.Looper
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.getAndUpdate
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -78,13 +79,19 @@ class MusicRepository private constructor(private val context: Context) {
         val folders = (state.value.folders.filter { it.uri != uri.toString() } + Folder(uri.toString(),name))
         store.saveFolders(folders); mutable.update { it.copy(folders=folders) }; observeFolders(); requestRefresh(true)
     }
-    fun removeFolder(folder: Folder) = scope.launch { scanMutex.withLock {
-        val folders = state.value.folders.filter { it.uri != folder.uri }
-        val songs = reconcileSongs(state.value.songs,emptyList(),folder.uri)
-        store.saveFolders(folders); store.replaceSongs(songs)
-        mutable.update { it.copy(folders=folders) }; publishSongs(songs,"已移除文件夹索引，原文件保留")
-        observeFolders()
-    } }
+    fun removeFolder(folder: Folder) = scope.launch {
+        try {scanMutex.withLock {
+            val folders = state.value.folders.filter { it.uri != folder.uri }
+            val songs = reconcileSongs(state.value.songs,emptyList(),folder.uri)
+            store.replaceSongs(songs); store.saveFolders(folders)
+            mutable.update { it.copy(folders=folders) }; publishSongs(songs,"已移除文件夹索引，原文件保留")
+            observeFolders()
+        }} catch(e: CancellationException) {throw e}
+        catch(e: Exception) {
+            val message="移除文件夹失败：${e.message ?: "请重试"}"
+            mutable.update {it.copy(status=message,events=(listOf(message)+it.events).take(20))}
+        }
+    }
     fun importFiles(uris: List<Uri>) = scope.launch { scanMutex.withLock {
         mutable.update { it.copy(busy=true,showScanProgress=true,status="正在读取音乐标签…") }
         try {
@@ -157,7 +164,8 @@ class MusicRepository private constructor(private val context: Context) {
             val known=old.songs.map {it.id}.toSet()
             val updated=value.copy(name=if(value.isFavorites) "我喜欢" else value.name,
                 songIds=value.songIds.filter(known::contains).distinct(),randomIds=value.randomIds.filter(known::contains).distinct())
-            old.copy(playlists=normalizeFavorites(old.playlists.filter { p -> p.id != updated.id }+updated,known))
+            val playlists=if(old.playlists.any {it.id == updated.id}) old.playlists.map {if(it.id == updated.id) updated else it} else old.playlists+updated
+            old.copy(playlists=normalizeFavorites(playlists,known))
         }
         store.savePlaylists(state.value.playlists)
     }
@@ -178,9 +186,36 @@ class MusicRepository private constructor(private val context: Context) {
         store.savePlaylists(state.value.playlists)
         return true
     }
-    fun deletePlaylist(id: String) {
-        if(id == FAVORITES_PLAYLIST_ID) return
-        mutable.update { it.copy(playlists=it.playlists.filter { p -> p.id != id }) }; store.savePlaylists(state.value.playlists)
+    fun deletePlaylist(id: String): DeletedPlaylist? {
+        if(id == FAVORITES_PLAYLIST_ID) return null
+        val before=mutable.getAndUpdate {it.copy(playlists=it.playlists.filter {p -> p.id != id})}
+        val index=before.playlists.indexOfFirst {it.id == id}
+        if(index < 0) return null
+        store.savePlaylists(state.value.playlists)
+        return DeletedPlaylist(before.playlists[index],index)
+    }
+    fun restorePlaylist(deleted: DeletedPlaylist): Boolean {
+        val before=mutable.getAndUpdate {old -> old.copy(playlists=restoreDeletedPlaylist(old.playlists,deleted,old.songs.map {it.id}.toSet()))}
+        val changed=restoreDeletedPlaylist(before.playlists,deleted,before.songs.map {it.id}.toSet()) != before.playlists
+        if(changed) store.savePlaylists(state.value.playlists)
+        return changed
+    }
+    fun removePlaylistSong(playlistId: String, songId: String): RemovedPlaylistSong? {
+        val before=mutable.getAndUpdate {old -> old.copy(playlists=old.playlists.map {playlist ->
+            if(playlist.id == playlistId && songId in playlist.songIds) playlist.copy(songIds=playlist.songIds-songId,randomIds=playlist.randomIds-songId) else playlist
+        })}
+        val playlist=before.playlists.find {it.id == playlistId && songId in it.songIds} ?: return null
+        store.savePlaylists(state.value.playlists)
+        return RemovedPlaylistSong(playlist,songId)
+    }
+    fun restorePlaylistSong(removed: RemovedPlaylistSong): Boolean {
+        val before=mutable.getAndUpdate {old -> old.copy(playlists=old.playlists.map {playlist ->
+            if(playlist.id == removed.playlist.id) restoreRemovedPlaylistSong(playlist,removed,old.songs.map {it.id}.toSet()) else playlist
+        })}
+        val playlist=before.playlists.find {it.id == removed.playlist.id} ?: return false
+        val changed=restoreRemovedPlaylistSong(playlist,removed,before.songs.map {it.id}.toSet()) != playlist
+        if(changed) store.savePlaylists(state.value.playlists)
+        return changed
     }
     fun sort(mode: SortMode, playlistId: String? = null) {
         if(playlistId != null) state.value.playlists.find { it.id == playlistId }?.let { playlist(it.copy(sort=mode,randomIds=if(mode == SortMode.RANDOM) it.songIds.shuffled() else it.randomIds)) }
