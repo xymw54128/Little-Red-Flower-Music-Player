@@ -33,6 +33,27 @@ const val PLAYLIST_COVER_COUNT = 8
 fun defaultPlaylistCover(id: String): Int = (id.hashCode() and Int.MAX_VALUE) % PLAYLIST_COVER_COUNT
 data class Playlist(val id: String, val name: String, val songIds: List<String> = emptyList(), val sort: SortMode = SortMode.CUSTOM,
     val randomIds: List<String> = emptyList(), val coverPreset: Int = defaultPlaylistCover(id), val coverPhoto: String = "")
+const val FAVORITES_PLAYLIST_ID = "favorites"
+val Playlist.isFavorites: Boolean get() = id == FAVORITES_PLAYLIST_ID
+
+fun normalizeFavorites(playlists: List<Playlist>, knownSongIds: Set<String>? = null): List<Playlist> {
+    val candidates = playlists.filter { it.isFavorites || it.name.trim() == "我喜欢" }
+    val adopted = candidates.firstOrNull { it.isFavorites } ?: candidates.firstOrNull() ?: Playlist(FAVORITES_PLAYLIST_ID,"我喜欢")
+    val ordered = listOf(adopted) + candidates.filter { it !== adopted }
+    val songIds = ordered.flatMap { it.songIds }.distinct().filter { knownSongIds == null || it in knownSongIds }
+    val members = songIds.toSet()
+    val photo = adopted.takeIf { it.coverPhoto.isNotEmpty() } ?: candidates.firstOrNull { it.coverPhoto.isNotEmpty() }
+    val favorite = adopted.copy(id=FAVORITES_PLAYLIST_ID,name="我喜欢",songIds=songIds,
+        randomIds=ordered.flatMap { it.randomIds }.distinct().filter(members::contains),
+        coverPreset=photo?.coverPreset ?: adopted.coverPreset,coverPhoto=photo?.coverPhoto.orEmpty())
+    return listOf(favorite) + playlists.filter { !it.isFavorites && it.name.trim() != "我喜欢" }
+}
+
+fun toggleFavorite(playlists: List<Playlist>, songId: String): List<Playlist> = normalizeFavorites(playlists).map { playlist ->
+    if(!playlist.isFavorites) playlist else if(songId in playlist.songIds) {
+        playlist.copy(songIds=playlist.songIds-songId,randomIds=playlist.randomIds-songId)
+    } else playlist.copy(songIds=playlist.songIds+songId,randomIds=(playlist.randomIds+songId).distinct())
+}
 data class Folder(val uri: String, val name: String)
 data class Settings(
     val theme: Int = 0,

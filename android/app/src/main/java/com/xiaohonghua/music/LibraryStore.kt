@@ -78,10 +78,11 @@ class LibraryStore(val context: Context) : SQLiteOpenHelper(context, "music.db",
                 playlist.copy(coverPreset=(0 until PLAYLIST_COVER_COUNT).minBy {preset -> list.count {it.coverPreset == preset}})
             }
         }
-        if(migrated) savePlaylists(list)
-        list
+        val normalized=normalizeFavorites(list)
+        if(migrated || normalized != list) savePlaylists(normalized)
+        normalized
     }
-    fun savePlaylists(list: List<Playlist>) { prefs.edit().putString("playlists", JSONArray(list.map { it.toJson() }).toString()).apply() }
+    fun savePlaylists(list: List<Playlist>) { prefs.edit().putString("playlists", JSONArray(normalizeFavorites(list).map { it.toJson() }).toString()).apply() }
     fun folders(): List<Folder> = array("folders").let { list -> (0 until list.length()).map { list.getJSONObject(it).let { Folder(it.getString("uri"), it.getString("name")) } } }
     fun saveFolders(list: List<Folder>) { prefs.edit().putString("folders", JSONArray(list.map { JSONObject().put("uri", it.uri).put("name", it.name) }).toString()).apply() }
     fun array(key: String): JSONArray = runCatching { JSONArray(prefs.getString(key, "[]")) }.getOrDefault(JSONArray())

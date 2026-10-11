@@ -43,7 +43,7 @@ import kotlinx.coroutines.withContext
         SettingRow(Icons.Outlined.TextFields,"歌词样式","字体、字号、行间距与动态滚动") {onPage("lyric-style")}
         GroupLabel("外观")
         SettingRow(Icons.Outlined.Palette,"主题颜色","红花、森林、海蓝、陶土、暮紫") {onPage("theme")}
-        SettingRow(Icons.Outlined.Wallpaper,"播放背景","封面或本地照片，调整透明度与构图") {onPage("background")}
+        SettingRow(Icons.Outlined.Wallpaper,"播放背景","仅播放封面页使用照片，歌词页保持纯色") {onPage("background")}
         GroupLabel("本地音乐")
         SettingRow(Icons.Outlined.FolderOpen,"歌曲文件夹","${library.folders.size} 个来源 · 刷新与增删改同步") {onPage("folders")}
         SettingRow(Icons.Outlined.Backup,"备份与恢复","保存歌单、排序、歌词与设置") {onPage("backup")}
@@ -52,9 +52,10 @@ import kotlinx.coroutines.withContext
         Text("作者：浪雨林兴云魔王",Modifier.testTag("app-author").padding(horizontal=24.dp),fontSize=14.sp,color=MaterialTheme.colorScheme.primary,fontFamily=lyricFont("kai"))
     }
 }
-@Composable internal fun FolderPage(library: LibraryState,onAdd:()->Unit,onRefresh:()->Unit,onRemove:(Folder)->Unit,onMonitor:(Boolean)->Unit) {
+@Composable internal fun FolderPage(library: LibraryState,onAdd:()->Unit,onRefresh:()->Unit,onRemove:(Folder)->Unit,onMonitor:(Boolean)->Unit,onFiles:(()->Unit)?=null) {
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(24.dp)) {
         Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.spacedBy(12.dp)) {Button(onClick=onAdd,modifier=Modifier.weight(1f)) {Icon(Icons.Outlined.CreateNewFolder,null,Modifier.size(18.dp));Text("添加文件夹")};OutlinedButton(onClick=onRefresh,enabled=!library.busy,modifier=Modifier.weight(1f)) {Icon(Icons.Outlined.Refresh,null,Modifier.size(18.dp));Text("刷新")}}
+        if(onFiles != null) OutlinedButton(onClick=onFiles,modifier=Modifier.testTag("import-music-files").fillMaxWidth().padding(top=8.dp)) {Icon(Icons.Outlined.AudioFile,null,Modifier.size(18.dp));Text("导入音乐文件")}
         if(library.showScanProgress) LinearProgressIndicator(Modifier.fillMaxWidth().padding(top=16.dp))
         Text(library.status.ifBlank {"共 ${library.songs.size} 首音乐"},fontSize=12.sp,color=muted,modifier=Modifier.padding(vertical=16.dp))
         Row(Modifier.fillMaxWidth(),verticalAlignment=Alignment.CenterVertically) {Column(Modifier.weight(1f)) {Text("监测文件夹变化",fontWeight=FontWeight.Medium);Text("应用前台或正在播放时自动检查",fontSize=12.sp,color=muted,modifier=Modifier.padding(top=6.dp))};Switch(library.settings.monitor,onMonitor)}
@@ -121,7 +122,7 @@ private fun UriLabel(uri: String)=android.net.Uri.decode(uri.substringAfter("/tr
             FilterChip(settings.background == "artwork",{onChange(settings.copy(background="artwork"))},label={Text("歌曲封面")})
             FilterChip(settings.background == "photo",{onImport()},label={Text("本地照片")})
         }
-        Text("等比铺满，不拉伸原图；调整缩放后可移动构图。",fontSize=12.sp,color=muted,modifier=Modifier.padding(top=12.dp))
+        Text("背景仅用于播放封面页，歌词页使用纯色。图片等比铺满，调整缩放后可移动构图。",fontSize=12.sp,color=muted,modifier=Modifier.padding(top=12.dp))
         SettingSlider("图片不透明度","${(settings.opacity*100).toInt()}%",settings.opacity,0f..1f) {onChange(settings.copy(opacity=it))}
         SettingSlider("缩放","${(settings.scale*100).toInt()}%",settings.scale,1f..2.5f) {onChange(settings.copy(scale=it))}
         SettingSlider("水平位置","${(settings.x*100).toInt()}%",settings.x,0f..1f) {onChange(settings.copy(x=it))}

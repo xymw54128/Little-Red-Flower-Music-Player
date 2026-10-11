@@ -1,14 +1,14 @@
 {
-  "date": "2026-10-09T12:30:33.649Z",
-  "apk": "D:\\music player app\\dist\\小红花-1.0.1.apk",
+  "date": "2026-10-11T07:58:48.943Z",
+  "apk": "D:\\music player app\\dist\\小红花-1.0.2.apk",
   "buildType": "release",
   "debuggable": false,
   "testComponentsAbsent": true,
   "networkPermissionAbsent": true,
-  "size": 43730075,
-  "sha256": "fd2c001a683fa80b3ba80404c6f182f3bb83c096921325db8844cc392c22cacf",
+  "size": 43746459,
+  "sha256": "881c85ab5cbd1e3ae2fc6fe7e583ee4b6aa2aa6a0cc05535ce4862374b6cf39f",
   "metadata": [
-    "package: name='com.xiaohonghua.music' versionCode='8' versionName='1.0.1' platformBuildVersionName='16' platformBuildVersionCode='36' compileSdkVersion='36' compileSdkVersionCodename='16'",
+    "package: name='com.xiaohonghua.music' versionCode='9' versionName='1.0.2' platformBuildVersionName='16' platformBuildVersionCode='36' compileSdkVersion='36' compileSdkVersionCodename='16'",
     "minSdkVersion:'26'",
     "targetSdkVersion:'36'",
     "application-label:'小红花'",
@@ -27,6 +27,10 @@
     },
     {
       "version": "1.0.0",
+      "sameSigningCertificate": true
+    },
+    {
+      "version": "1.0.1",
       "sameSigningCertificate": true
     }
   ],
@@ -96,6 +100,12 @@
       "errors": 0
     },
     {
+      "name": "com.xiaohonghua.music.FavoritesTest",
+      "tests": 9,
+      "failures": 0,
+      "errors": 0
+    },
+    {
       "name": "com.xiaohonghua.music.LaunchMotionTest",
       "tests": 3,
       "failures": 0,
@@ -118,6 +128,6 @@
     "errors": 0,
     "warnings": 17
   },
-  "acceptance": "1.0.0 was accepted by the user. 1.0.1 adds a previous-track control, scroll locator, native launch animation, silent background scan feedback and author credit. These new UI changes await device acceptance.",
-  "nativeTests": "Android instrumented tests are compiled, not executed by the agent. No Android device is connected; the 1.0.1 release APK has not been installed on a device by the agent. Motion sampling and resource previews do not measure native frame performance."
+  "acceptance": "1.0.2 adds compact library search, a permanent favorites playlist, song hearts, main-page swipes, cover tap to lyrics, a plain lyric background and navigation fixes. These changes await phone acceptance.",
+  "nativeTests": "Instrumented tests compile successfully. Device execution status is recorded separately in ANDROID-1.0.2-UI-CHECK.json; compilation alone does not confirm runtime behavior or native frame performance."
 }

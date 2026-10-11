@@ -16,10 +16,10 @@ import org.json.JSONObject
 import java.util.UUID
 
 data class LibraryState(
-    val songs: List<Song> = emptyList(), val playlists: List<Playlist> = emptyList(), val folders: List<Folder> = emptyList(),
+    val songs: List<Song> = emptyList(), val playlists: List<Playlist> = normalizeFavorites(emptyList()), val folders: List<Folder> = emptyList(),
     val settings: Settings = Settings(), val sort: SortMode = SortMode.TITLE, val custom: List<String> = emptyList(),
     val random: List<String> = emptyList(), val manualLyrics: Map<String,String> = emptyMap(),
-    val busy: Boolean = false, val status: String = "", val events: List<String> = emptyList(), val showScanProgress: Boolean = false,
+    val busy: Boolean = false, val status: String = "", val events: List<String> = emptyList(), val showScanProgress: Boolean = false, val ready: Boolean = false,
 )
 
 class MusicRepository private constructor(private val context: Context) {
@@ -42,9 +42,12 @@ class MusicRepository private constructor(private val context: Context) {
     }
     init {
         scope.launch {
-            mutable.value = LibraryState(store.songs(),store.playlists(),store.folders(),store.settings(),
+            val songs=store.songs()
+            val playlists=normalizeFavorites(store.playlists(),songs.map {it.id}.toSet())
+            store.savePlaylists(playlists)
+            mutable.value = LibraryState(songs,playlists,store.folders(),store.settings(),
                 runCatching { SortMode.valueOf(store.prefs.getString("sort","TITLE")!!) }.getOrDefault(SortMode.TITLE),
-                store.array("custom").strings(),store.array("random").strings(),store.manualLyrics())
+                store.array("custom").strings(),store.array("random").strings(),store.manualLyrics(),ready=true)
             observeFolders()
             updateMonitoring()
             if(foreground) requestRefresh(false,showProgress=false)
@@ -143,17 +146,29 @@ class MusicRepository private constructor(private val context: Context) {
     private fun publishSongs(songs: List<Song>, status: String, errors: List<String> = emptyList()) {
         val known = songs.map { it.id }.toSet()
         mutable.update { old -> old.copy(songs=songs,status=status,events=(errors.take(8)+listOf(status)+old.events).take(20),
-            playlists=old.playlists.map { it.copy(songIds=it.songIds.filter(known::contains),randomIds=it.randomIds.filter(known::contains)) },
+            playlists=normalizeFavorites(old.playlists.map { it.copy(songIds=it.songIds.filter(known::contains),randomIds=it.randomIds.filter(known::contains)) },known),
             custom=old.custom.filter(known::contains)+songs.filter { it.id !in old.custom }.map { it.id },
             random=old.random.filter(known::contains)+songs.filter { it.id !in old.random }.shuffled().map { it.id }) }
         store.savePlaylists(state.value.playlists)
         saveOrder()
     }
     fun playlist(value: Playlist) {
-        mutable.update { it.copy(playlists=it.playlists.filter { p -> p.id != value.id }+value) }
+        mutable.update { old ->
+            val known=old.songs.map {it.id}.toSet()
+            val updated=value.copy(name=if(value.isFavorites) "我喜欢" else value.name,
+                songIds=value.songIds.filter(known::contains).distinct(),randomIds=value.randomIds.filter(known::contains).distinct())
+            old.copy(playlists=normalizeFavorites(old.playlists.filter { p -> p.id != updated.id }+updated,known))
+        }
+        store.savePlaylists(state.value.playlists)
+    }
+    fun toggleFavorite(songId: String) {
+        mutable.update { old ->
+            if(old.songs.none {it.id == songId}) old else old.copy(playlists=toggleFavorite(old.playlists,songId))
+        }
         store.savePlaylists(state.value.playlists)
     }
     fun createPlaylist(name: String): Playlist {
+        if(name.trim() == "我喜欢") return state.value.playlists.first {it.isFavorites}
         val preset=(0 until PLAYLIST_COVER_COUNT).minBy {index -> state.value.playlists.count {it.coverPreset == index}}
         return Playlist(UUID.randomUUID().toString(),name.trim(),coverPreset=preset).also {playlist(it)}
     }
@@ -163,7 +178,10 @@ class MusicRepository private constructor(private val context: Context) {
         store.savePlaylists(state.value.playlists)
         return true
     }
-    fun deletePlaylist(id: String) { mutable.update { it.copy(playlists=it.playlists.filter { p -> p.id != id }) }; store.savePlaylists(state.value.playlists) }
+    fun deletePlaylist(id: String) {
+        if(id == FAVORITES_PLAYLIST_ID) return
+        mutable.update { it.copy(playlists=it.playlists.filter { p -> p.id != id }) }; store.savePlaylists(state.value.playlists)
+    }
     fun sort(mode: SortMode, playlistId: String? = null) {
         if(playlistId != null) state.value.playlists.find { it.id == playlistId }?.let { playlist(it.copy(sort=mode,randomIds=if(mode == SortMode.RANDOM) it.songIds.shuffled() else it.randomIds)) }
         else { mutable.update { it.copy(sort=mode,random=if(mode == SortMode.RANDOM) it.songs.shuffled().map(Song::id) else it.random) }; saveOrder() }
@@ -179,7 +197,7 @@ class MusicRepository private constructor(private val context: Context) {
     }
     fun backup(): String = state.value.let { s -> JSONObject().apply {
         put("kind","xiaohonghua-android"); put("version",1); put("songs",JSONArray(s.songs.map { it.toJson(true) }))
-        put("playlists",JSONArray(s.playlists.map { it.toJson(true) })); put("folders",JSONArray(s.folders.map { JSONObject().put("uri",it.uri).put("name",it.name) }))
+        put("playlists",JSONArray(normalizeFavorites(s.playlists,s.songs.map {it.id}.toSet()).map { it.toJson(true) })); put("folders",JSONArray(s.folders.map { JSONObject().put("uri",it.uri).put("name",it.name) }))
         put("settings",s.settings.toJson().put("background",if(s.settings.background == "artwork") "artwork" else "plain"))
         put("manualLyrics",JSONObject(s.manualLyrics)); put("sort",s.sort.name); put("custom",JSONArray(s.custom)); put("random",JSONArray(s.random))
     }.toString(2) }
@@ -193,14 +211,15 @@ class MusicRepository private constructor(private val context: Context) {
         require(songs.all { Uri.parse(it.uri).scheme == "content" && it.id.length in 1..128 }) { "备份中的音乐地址无效" }
         require(songs.map { it.id }.distinct().size == songs.size) { "备份中的歌曲编号重复" }
         val known=songs.map {it.id}.toSet()
-        val playlists = data.getJSONArray("playlists").let { a ->
+        val parsedPlaylists = data.getJSONArray("playlists").let { a ->
             require(a.length() <= 5000)
             (0 until a.length()).map { playlistFromJson(a.getJSONObject(it)).let { p ->
                 require(p.id.length in 1..128 && p.name.length in 1..60) { "歌单数据无效" }
                 p.copy(songIds=p.songIds.filter(known::contains).distinct(),randomIds=p.randomIds.filter(known::contains).distinct(),coverPhoto="")
             } }
         }
-        require(playlists.map {it.id}.distinct().size == playlists.size) { "歌单编号重复" }
+        require(parsedPlaylists.map {it.id}.distinct().size == parsedPlaylists.size) { "歌单编号重复" }
+        val playlists=normalizeFavorites(parsedPlaylists,known)
         val folders = data.getJSONArray("folders").let { a -> (0 until a.length()).map { a.getJSONObject(it).let { Folder(it.getString("uri"),it.getString("name")) } } }
         require(folders.all { Uri.parse(it.uri).scheme == "content" })
         val settings = settingsFromJson(data.getJSONObject("settings")).let { it.copy(background=if(it.background == "artwork") "artwork" else "plain") }
@@ -210,7 +229,7 @@ class MusicRepository private constructor(private val context: Context) {
         val random = data.getJSONArray("random").strings().filter(known::contains).distinct()
         // Parse and validate everything before replacing any current data.
         store.replaceSongs(songs); store.savePlaylists(playlists); store.saveFolders(folders); store.saveSettings(settings); store.saveManualLyrics(lyrics)
-        mutable.value = LibraryState(songs,playlists,folders,settings,sort,custom,random,lyrics,status="备份已恢复，请重新授权音乐文件夹")
+        mutable.value = LibraryState(songs,playlists,folders,settings,sort,custom,random,lyrics,status="备份已恢复，请重新授权音乐文件夹",ready=true)
         saveOrder(); observeFolders(); updateMonitoring()
     } }
     companion object {

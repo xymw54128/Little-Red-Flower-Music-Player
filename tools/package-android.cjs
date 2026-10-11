@@ -1,11 +1,12 @@
 const fs=require('node:fs');const path=require('node:path');const cp=require('node:child_process');const crypto=require('node:crypto');
 const config=JSON.parse(fs.readFileSync('.toolchain/env.json','utf8'));
+const version='1.0.2';const versionCode='9';
 const apk=path.resolve('android/app/build/outputs/apk/release/app-release.apk');
 const output=path.resolve('dist');fs.mkdirSync(output,{recursive:true});
 function check(exe,args) {const result=cp.spawnSync(exe,args,{encoding:'utf8',env:{...process.env,JAVA_HOME:config.javaHome}});if(result.error)throw result.error;if(result.status!==0)throw new Error(result.stdout+result.stderr);return result.stdout+result.stderr;}
 const signing=check(path.join(config.javaHome,'bin/java.exe'),['-jar',path.join(config.sdk,'build-tools/35.0.0/lib/apksigner.jar'),'verify','--verbose','--print-certs',apk]);
 const certificate=text=>text.match(/Signer #1 certificate SHA-256 digest: (\w+)/)?.[1];
-const upgradeCertificates=['0.1.0','0.1.5','1.0.0'].map(version=>{
+const upgradeCertificates=['0.1.0','0.1.5','1.0.0','1.0.1'].map(version=>{
   const previous=path.join(output,`小红花-${version}.apk`);
   if(!fs.existsSync(previous))throw new Error('Upgrade baseline APK missing: '+version);
   const oldSigning=check(path.join(config.javaHome,'bin/java.exe'),['-jar',path.join(config.sdk,'build-tools/35.0.0/lib/apksigner.jar'),'verify','--print-certs',previous]);
@@ -61,7 +62,7 @@ const elf=fs.readFileSync(path.join(elfRoot,lib));
 const offset=Number(elf.readBigUInt64LE(32));const entrySize=elf.readUInt16LE(54);const count=elf.readUInt16LE(56);const aligns=[];
 for(let i=0;i<count;i++){const pos=offset+i*entrySize;if(elf.readUInt32LE(pos)===1)aligns.push(Number(elf.readBigUInt64LE(pos+48)));}
 if(aligns.some(a=>a<16384))throw new Error('Native ARM64 library lacks 16KB segment alignment');
-const dest=path.join(output,'小红花-1.0.1.apk');
+const dest=path.join(output,`小红花-${version}.apk`);
 const testFolder=path.resolve('android/app/build/test-results/testReleaseUnitTest');
 const suites=fs.readdirSync(testFolder).filter(name=>name.endsWith('.xml')).map(name=>{
   const tag=fs.readFileSync(path.join(testFolder,name),'utf8').match(/<testsuite[^>]+>/)?.[0]||'';
@@ -71,10 +72,10 @@ const suites=fs.readdirSync(testFolder).filter(name=>name.endsWith('.xml')).map(
 if(!suites.length||suites.some(s=>s.failures||s.errors))throw new Error('Unit test report missing or failing');
 const lint=fs.readFileSync('android/app/build/intermediates/lint_intermediate_text_report/release/lintReportRelease/lint-results-release.txt','utf8').match(/(\d+) errors, (\d+) warnings/);
 if(!lint||Number(lint[1])!==0)throw new Error('Lint errors or missing report');
-if(!metadata.some(m=>m.includes("name='com.xiaohonghua.music'")&&m.includes("versionName='1.0.1'")&&m.includes("versionCode='8'")))throw new Error('APK identity or version mismatch');
+if(!metadata.some(m=>m.includes("name='com.xiaohonghua.music'")&&m.includes(`versionName='${version}'`)&&m.includes(`versionCode='${versionCode}'`)))throw new Error('APK identity or version mismatch');
 fs.copyFileSync(apk,dest);
-const report={date:new Date().toISOString(),apk:dest,buildType:'release',debuggable:false,testComponentsAbsent:true,networkPermissionAbsent:true,size:fs.statSync(dest).size,sha256:crypto.createHash('sha256').update(fs.readFileSync(dest)).digest('hex'),metadata,signing:signing.trim(),sameSigningCertificateAs010:sameSigningCertificate,upgradeCertificates,iconResources,launchIcon,headerIcons,fonts,zipAlign16k:true,arm64LoadSegmentAlignments:aligns,unitTests:suites,lint:{errors:Number(lint[1]),warnings:Number(lint[2])},acceptance:'1.0.0 was accepted by the user. 1.0.1 adds a previous-track control, scroll locator, native launch animation, silent background scan feedback and author credit. These new UI changes await device acceptance.',nativeTests:'Android instrumented tests are compiled, not executed by the agent. No Android device is connected; the 1.0.1 release APK has not been installed on a device by the agent. Motion sampling and resource previews do not measure native frame performance.'};
+const report={date:new Date().toISOString(),apk:dest,buildType:'release',debuggable:false,testComponentsAbsent:true,networkPermissionAbsent:true,size:fs.statSync(dest).size,sha256:crypto.createHash('sha256').update(fs.readFileSync(dest)).digest('hex'),metadata,signing:signing.trim(),sameSigningCertificateAs010:sameSigningCertificate,upgradeCertificates,iconResources,launchIcon,headerIcons,fonts,zipAlign16k:true,arm64LoadSegmentAlignments:aligns,unitTests:suites,lint:{errors:Number(lint[1]),warnings:Number(lint[2])},acceptance:'1.0.2 adds compact library search, a permanent favorites playlist, song hearts, main-page swipes, cover tap to lyrics, a plain lyric background and navigation fixes. These changes await phone acceptance.',nativeTests:'Instrumented tests compile successfully. Device execution status is recorded separately in ANDROID-1.0.2-UI-CHECK.json; compilation alone does not confirm runtime behavior or native frame performance.'};
 fs.writeFileSync(path.join(output,'APK-CHECK.json'),JSON.stringify(report,null,2));
-fs.writeFileSync(path.join(output,'小红花-1.0.1-CHECK.json'),JSON.stringify(report,null,2));
-fs.writeFileSync(path.join(output,'小红花-1.0.1.apk.sha256'),report.sha256+'  '+path.basename(dest)+'\n');
+fs.writeFileSync(path.join(output,`小红花-${version}-CHECK.json`),JSON.stringify(report,null,2));
+fs.writeFileSync(path.join(output,`小红花-${version}.apk.sha256`),report.sha256+'  '+path.basename(dest)+'\n');
 console.log(JSON.stringify({apk:dest,buildType:report.buildType,debuggable:report.debuggable,testComponentsAbsent:true,sizeMB:report.size/1048576,sha256:report.sha256,metadata,upgradeCertificates,iconResources,headerIcons,fonts,zipAlign16k:true,arm64LoadSegmentAlignments:aligns,unitTests:suites,lint:report.lint,acceptance:report.acceptance,nativeTests:report.nativeTests},null,2));

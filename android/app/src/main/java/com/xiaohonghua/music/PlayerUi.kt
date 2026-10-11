@@ -77,8 +77,12 @@ import java.io.File
     val lyricIndex=remember(lines,model) {model.playback.map {Lrc.current(lines,it.position)}.distinctUntilChanged()}
     val current by lyricIndex.collectAsStateWithLifecycle(initialValue=-1)
     val pageMotion=tween<Float>(360,easing=FastOutSlowInEasing)
-    Box(Modifier.fillMaxSize()) {
-        PlayerBackground(library.settings,song,Modifier.matchParentSize())
+    val showBackground by remember {derivedStateOf {pager.currentPage == 0 || pager.currentPageOffsetFraction != 0f}}
+    fun openLyrics() {scope.launch {pager.animateScrollToPage(1,animationSpec=pageMotion)}}
+    Box(Modifier.fillMaxSize().background(pageColor)) {
+        if(showBackground) PlayerBackground(library.settings,song,Modifier.testTag("player-page-background").matchParentSize().graphicsLayer {
+            alpha=(1f-pager.currentPage-pager.currentPageOffsetFraction).coerceIn(0f,1f)
+        })
         Column(Modifier.fillMaxSize()) {
             Row(Modifier.fillMaxWidth().padding(horizontal=8.dp,vertical=4.dp),verticalAlignment=Alignment.CenterVertically) {
                 IconButton(onClick=onBack) {Icon(Icons.Outlined.KeyboardArrowDown,"收起播放器")}
@@ -92,11 +96,11 @@ import java.io.File
                 if(page == 0) BoxWithConstraints(Modifier.fillMaxSize()) {
                     val coverSize=minOf(maxWidth*.72f,maxHeight*.60f,290.dp)
                     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal=28.dp,vertical=16.dp),horizontalAlignment=Alignment.CenterHorizontally) {
-                        Cover(song,Modifier.size(coverSize))
+                        Cover(song,Modifier.testTag("player-artwork").size(coverSize).clickable(onClickLabel="查看歌词",onClick=::openLyrics))
                         Text(song.title,Modifier.fillMaxWidth().padding(top=24.dp),fontSize=23.sp,fontWeight=FontWeight.SemiBold,textAlign=TextAlign.Center,maxLines=2,overflow=TextOverflow.Ellipsis)
                         Text("${song.artist} · ${song.album}",Modifier.testTag("player-artist-album").fillMaxWidth().padding(top=8.dp),fontSize=14.sp,color=muted,textAlign=TextAlign.Center,maxLines=2,overflow=TextOverflow.Ellipsis)
                         Text(listOfNotNull(song.format.takeIf {it.isNotBlank()},song.bitDepth.takeIf {it > 0}?.let {"$it bit"},song.sampleRate.takeIf {it > 0}?.let {"${it/1000f} kHz"}).joinToString(" · "),Modifier.padding(top=12.dp),fontSize=11.sp,color=muted,textAlign=TextAlign.Center)
-                        Text(lines.getOrNull(current)?.text ?: if(lyricText.isEmpty()) "左滑查看歌词" else "左滑进入歌词页",Modifier.fillMaxWidth().padding(top=24.dp).clickable {scope.launch {pager.animateScrollToPage(1,animationSpec=pageMotion)}},textAlign=TextAlign.Center,fontSize=library.settings.lyricSize.coerceAtMost(24f).sp,fontFamily=lyricFont(library.settings.lyricFont),color=MaterialTheme.colorScheme.primary,maxLines=2,overflow=TextOverflow.Ellipsis)
+                        Text(lines.getOrNull(current)?.text ?: "点击封面或左滑查看歌词",Modifier.testTag("player-lyric-preview").fillMaxWidth().padding(top=24.dp).clickable(onClickLabel="查看歌词",onClick=::openLyrics),textAlign=TextAlign.Center,fontSize=library.settings.lyricSize.coerceAtMost(24f).sp,fontFamily=lyricFont(library.settings.lyricFont),color=MaterialTheme.colorScheme.primary,maxLines=2,overflow=TextOverflow.Ellipsis)
                     }
                 } else LyricsPage(lines,lyricText,library.settings,pager.currentPage == 1,p,model,onImport=onLyrics,onStyle=onStyle)
             }
@@ -163,7 +167,7 @@ import java.io.File
     val lyricStyle=MaterialTheme.typography.bodyLarge.copy(fontSize=settings.lyricSize.sp,fontFamily=lyricFont(settings.lyricFont),lineHeight=(settings.lyricSize*1.35f).sp,
         fontWeight=FontWeight.Normal,textAlign=TextAlign.Center)
     val typeface by LocalFontFamilyResolver.current.resolve(lyricStyle.fontFamily,lyricStyle.fontWeight ?: FontWeight.Normal)
-    BoxWithConstraints(Modifier.fillMaxSize()) {
+    BoxWithConstraints(Modifier.testTag("player-lyrics-page").fillMaxSize().background(pageColor)) {
     val lyricWidth=with(density) {(maxWidth-48.dp).roundToPx().coerceAtLeast(1)}
     val heights=remember(lines,lyricWidth,lyricStyle,settings.lyricGap,typeface,density) { mutableMapOf<Int,Int>() }
     fun height(index: Int): Int = heights.getOrPut(index) {
@@ -268,8 +272,11 @@ import java.io.File
     ModalBottomSheet(onDismissRequest=onDismiss) {SheetTitle("播放队列 · ${p.queue.size} 首","队列顺序独立于音乐库和歌单")
         LazyColumn(Modifier.heightIn(max=460.dp),contentPadding=PaddingValues(horizontal=16.dp,vertical=8.dp)) {
             itemsIndexed(p.queue,key={_,id->id}) {index,id -> byId[id]?.let {song -> ReorderRow(song,index,p.queue.size,
-                onMove={direction -> val from=model.playback.value.queue.indexOf(id); val to=(from+direction).coerceIn(0,model.playback.value.queue.lastIndex);if(from >= 0 && from != to) model.queueMove(from,to)},
-                onClick={model.queuePlay(index)},onRemove={model.queueRemove(index)})} }
+                onMove={direction -> val queue=model.playback.value.queue;val from=queue.indexOf(id);if(from >= 0) {
+                    val to=(from+direction).coerceIn(0,queue.lastIndex);if(from != to) model.queueMove(from,to)
+                }},
+                onClick={val current=model.playback.value.queue.indexOf(id);if(current >= 0) model.queuePlay(current)},
+                onRemove={val current=model.playback.value.queue.indexOf(id);if(current >= 0) model.queueRemove(current)})} }
         }
         TextButton(onClick=onDismiss,modifier=Modifier.fillMaxWidth().padding(16.dp)) {Text("完成")}
     }

@@ -14,6 +14,8 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.withTimeout
 import org.junit.Assert.*
 import org.junit.Rule
 import org.junit.Test
@@ -28,6 +30,7 @@ class NativeSmokeTest {
     private val compose=createAndroidComposeRule<MainActivity>()
     private val instrumentation=InstrumentationRegistry.getInstrumentation()
     private val context=instrumentation.targetContext
+    private val assetGroup=java.util.UUID.randomUUID().toString()
     private var originalUris=emptyList<Uri>()
     private val fixture=object : ExternalResource() {
         override fun before() {
@@ -39,6 +42,23 @@ class NativeSmokeTest {
             store.prefs.edit().clear().commit()
             store.saveSettings(Settings(monitor=false))
             store.replaceSongs(songs)
+            // The repository survives Activity recreation and other tests in this process.
+            val repository=MusicRepository.get(context)
+            runBlocking {
+                withTimeout(30_000) {repository.state.first {it.ready}}
+                val backup=org.json.JSONObject(repository.backup()).apply {
+                    put("songs",org.json.JSONArray(songs.map {it.toJson(true)}))
+                    put("playlists",org.json.JSONArray())
+                    put("folders",org.json.JSONArray())
+                    put("manualLyrics",org.json.JSONObject())
+                    put("settings",Settings(monitor=false).toJson())
+                    put("sort",SortMode.TITLE.name)
+                    put("custom",org.json.JSONArray())
+                    put("random",org.json.JSONArray())
+                }
+                repository.restore(backup.toString())
+                repository.importFiles(originalUris).join()
+            }
             assertEquals(44100,songs[0].sampleRate);assertEquals(16,songs[0].bitDepth)
             assertEquals(96000,songs[1].sampleRate);assertEquals(24,songs[1].bitDepth)
         }
@@ -48,7 +68,7 @@ class NativeSmokeTest {
     private fun assets(relative: String): List<Uri> = listOf("tone.flac" to "test-tone.flac","tone-24bit-96k.flac" to "test-highres.flac","tone.wav" to "test-tone.wav").map { (asset,name) ->
         val uri=context.contentResolver.insert(MediaStore.Audio.Media.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY),ContentValues().apply {
             put(MediaStore.MediaColumns.DISPLAY_NAME,name);put(MediaStore.MediaColumns.MIME_TYPE,if(name.endsWith("flac")) "audio/flac" else "audio/wav")
-            put(MediaStore.MediaColumns.RELATIVE_PATH,relative);put(MediaStore.MediaColumns.IS_PENDING,1)
+            put(MediaStore.MediaColumns.RELATIVE_PATH,"$relative$assetGroup/");put(MediaStore.MediaColumns.IS_PENDING,1)
         })!!
         context.contentResolver.openOutputStream(uri)!!.use {out->instrumentation.context.assets.open(asset).use {it.copyTo(out)}}
         context.contentResolver.update(uri,ContentValues().apply {put(MediaStore.MediaColumns.IS_PENDING,0)},null,null)
@@ -68,6 +88,9 @@ class NativeSmokeTest {
     @Test fun audioUiSettingsAndMigration() {
         val model=ViewModelProvider(compose.activity)[MusicModel::class.java]
         compose.waitUntil(60_000) {model.library.value.songs.size == 3 && model.playback.value.connected && compose.onAllNodesWithTag("launch-animation").fetchSemanticsNodes().isEmpty()}
+        compose.runOnIdle {model.stopForRestore()}
+        compose.waitUntil(30_000) {model.playback.value.currentId == null && model.playback.value.queue.isEmpty()}
+        assertEquals(1,model.library.value.playlists.count {it.isFavorites})
         val songs=model.library.value.songs
         val flac=songs.first {it.format == "FLAC" && it.bitDepth == 16}
         val high=songs.first {it.bitDepth == 24}
@@ -128,9 +151,9 @@ class NativeSmokeTest {
         compose.onNodeWithText("新建歌单并添加").performClick()
         compose.onNodeWithText("歌单名称").performTextInput("原生验证歌单")
         compose.onNodeWithText("确定").performClick()
-        compose.waitUntil(30_000) {model.library.value.playlists.size == 1}
-        assertEquals(listOf(first.id),model.library.value.playlists.single().songIds)
-        val savedPlaylist=model.library.value.playlists.single()
+        compose.waitUntil(30_000) {model.library.value.playlists.any {it.name == "原生验证歌单"}}
+        val savedPlaylist=model.library.value.playlists.first {it.name == "原生验证歌单"}
+        assertEquals(listOf(first.id),savedPlaylist.songIds)
         compose.runOnIdle {
             val other=model.repository.createPlaylist("不同默认封面")
             assertNotEquals(savedPlaylist.coverPreset,other.coverPreset)
@@ -145,13 +168,16 @@ class NativeSmokeTest {
             val legacy=org.json.JSONArray().put(oldPlaylist).put(org.json.JSONObject(oldPlaylist.toString()).put("id","another-old-list"))
             coverStore.prefs.edit().putString("playlists",legacy.toString()).commit()
             val migrated=coverStore.playlists()
-            assertNotEquals(migrated[0].coverPreset,migrated[1].coverPreset)
-            assertEquals(listOf(first.id),migrated[0].songIds)
+            assertEquals(1,migrated.count {it.isFavorites})
+            val old=migrated.first {it.id == "old-list"}
+            val another=migrated.first {it.id == "another-old-list"}
+            assertNotEquals(old.coverPreset,another.coverPreset)
+            assertEquals(listOf(first.id),old.songIds)
             assertEquals(migrated,coverStore.playlists())
         } finally {coverStore.prefs.edit().putString("playlists",currentJson).commit()}
-        assertEquals(listOf(first.id),LibraryStore(context).playlists().single().songIds)
-        assertEquals(2,LibraryStore(context).playlists().single().coverPreset)
-        compose.onNodeWithText("设置").performClick()
+        assertEquals(listOf(first.id),LibraryStore(context).playlists().first {it.id == savedPlaylist.id}.songIds)
+        assertEquals(2,LibraryStore(context).playlists().first {it.id == savedPlaylist.id}.coverPreset)
+        compose.onNodeWithTag("nav-settings").performClick()
         compose.onNodeWithTag("app-author").performScrollTo().assertTextEquals("作者：浪雨林兴云魔王")
         compose.onNodeWithText("歌词样式").performScrollTo().performClick()
         compose.onNodeWithText("等宽字体").performClick()
@@ -185,16 +211,16 @@ class NativeSmokeTest {
         compose.runOnIdle {model.importPlaylistCover(savedPlaylist.id,photo) {result=it}}
         compose.waitUntil(30_000) {result.isNotBlank()}
         assertEquals("歌单封面已更新",result)
-        val photoPlaylist=model.library.value.playlists.single()
+        val photoPlaylist=model.library.value.playlists.first {it.id == savedPlaylist.id}
         assertEquals(listOf(first.id),photoPlaylist.songIds)
         assertTrue(File(context.filesDir,"playlist-covers/${photoPlaylist.coverPhoto}").isFile)
-        assertEquals(photoPlaylist,LibraryStore(context).playlists().single())
+        assertEquals(photoPlaylist,LibraryStore(context).playlists().first {it.id == savedPlaylist.id})
         compose.onAllNodes(SemanticsMatcher.keyIsDefined(SemanticsProperties.ProgressBarRangeInfo)).onFirst().performSemanticsAction(SemanticsActions.SetProgress) {it(.65f)}
         assertEquals(.65f,model.library.value.settings.opacity)
         snapshot("background")
         val backup=model.repository.backup()
         val oldIds=model.library.value.songs.map {it.id}.toSet()
-        val playlistId=model.library.value.playlists.single().id
+        val playlistId=savedPlaylist.id
         runBlocking {model.repository.restore(backup)}
         compose.runOnIdle {model.stopForRestore()}
         assertTrue(model.library.value.songs.all {!it.available})
@@ -202,10 +228,11 @@ class NativeSmokeTest {
         model.repository.importFiles(newUris)
         compose.waitUntil(60_000) {model.library.value.songs.all {it.available}}
         assertEquals(oldIds,model.library.value.songs.map {it.id}.toSet())
-        assertEquals(playlistId,model.library.value.playlists.single().id)
-        assertEquals(listOf(first.id),model.library.value.playlists.single().songIds)
-        assertEquals(2,model.library.value.playlists.single().coverPreset)
-        assertEquals("",model.library.value.playlists.single().coverPhoto)
+        val restoredPlaylist=model.library.value.playlists.first {it.id == playlistId}
+        assertEquals(listOf(first.id),restoredPlaylist.songIds)
+        assertEquals(2,restoredPlaylist.coverPreset)
+        assertEquals("",restoredPlaylist.coverPhoto)
+        assertEquals(1,model.library.value.playlists.count {it.isFavorites})
         assertTrue(model.library.value.songs.all {it.uri in newUris.map(Uri::toString)})
         assertEquals(36f,LibraryStore(context).settings().lyricGap)
         File(context.getExternalFilesDir(null),"native-test-results.txt").writeText("PASS: native FLAC 16bit/44.1kHz, FLAC 24bit/96kHz, WAV playback; seek; modes; swipe lyrics; playlist picker; font/size/gap/theme/photo; backup and new-provider-ID relinking.")
