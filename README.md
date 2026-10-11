@@ -6,7 +6,9 @@
 
 ## 下载与安装
 
-**[下载 Android 1.0.2 APK](https://github.com/xymw54128/Little-Red-Flower-Music-Player/releases/download/v1.0.2/Xiaohonghua-1.0.2.apk)** · [发布页面](https://github.com/xymw54128/Little-Red-Flower-Music-Player/releases/tag/v1.0.2) · [安装与换机说明](dist/安装说明.md)
+**[本地 Android 1.0.2 APK](dist/小红花-1.0.2.apk)** · [本地发布说明](dist/小红花-1.0.2-发布说明.md) · [安装与换机说明](dist/安装说明.md)
+
+**1.0.2 仅本地生成，尚未发布到 GitHub。** 本地 APK 不包含在 Git 克隆中；公开下载仍为 **[Android 1.0.1 APK](https://github.com/xymw54128/Little-Red-Flower-Music-Player/releases/download/v1.0.1/Xiaohonghua-1.0.1.apk)** · [1.0.1 发布页面](https://github.com/xymw54128/Little-Red-Flower-Music-Player/releases/tag/v1.0.1)。
 
 - Android 8.0 及以上，针对 Android 16 开发；支持 ARM64、ARMv7、x86、x86_64。
 - 包含离线中文字体。下载后在手机文件管理器中打开 APK，按系统提示允许该文件管理器安装应用。
@@ -17,7 +19,7 @@
 APK SHA-256（[校验文件](dist/小红花-1.0.2.apk.sha256)）：
 
 ```text
-881c85ab5cbd1e3ae2fc6fe7e583ee4b6aa2aa6a0cc05535ce4862374b6cf39f
+ecf004f00f33a256c55605cbc710cbffc7c81e5476d086ee433a8ae274efc28b
 ```
 
 **[下载 iOS 1.0.1 源码工程](https://github.com/xymw54128/Little-Red-Flower-Music-Player/releases/download/v1.0.1/Xiaohonghua-iOS-1.0.1-source.zip)** · [iOS 构建说明](ios/README.md)
@@ -46,7 +48,7 @@ iOS 暂按 iPhone / iOS 17+ 制作，目前提供源码，**没有可安装的 I
 | [`ios/`](ios/README.md) | SwiftUI / UIKit / AVFoundation 原生 iPhone 工程及测试 |
 | [`ui/`](ui/README.md) | 可点击的网页 UI 原型，使用模拟播放时钟 |
 | [`docs/design/`](docs/design/) | 版本设计与实现范围 |
-| [`dist/`](dist/) | 发布说明、SHA-256、检查报告与资源预览；安装包在 GitHub Releases |
+| [`dist/`](dist/) | 发布说明、SHA-256、检查报告与资源预览；1.0.2 APK 仅保存在本地，公开 1.0.1 安装包在 GitHub Releases |
 | [`tools/`](tools/) | 原工作区的构建、打包与资源检查助手 |
 
 ### Android

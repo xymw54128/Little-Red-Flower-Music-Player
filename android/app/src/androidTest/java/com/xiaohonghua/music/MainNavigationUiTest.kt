@@ -193,6 +193,18 @@ class MainNavigationUiTest {
         compose.onNodeWithTag("open-library-search").assertIsDisplayed()
     }
 
+    @Test fun openingAChildDuringMainPageAnimationReturnsToItsTargetPage() {
+        ready()
+        compose.mainClock.autoAdvance=false
+        compose.onNodeWithTag("nav-settings").performClick()
+        compose.mainClock.advanceTimeBy(200)
+        compose.onNodeWithText("歌词样式").performClick()
+        compose.mainClock.autoAdvance=true
+        compose.onNodeWithTag("page-lyric-style").assertIsDisplayed()
+        compose.onNodeWithContentDescription("返回").performClick()
+        home("settings")
+    }
+
     @Test fun tappingArtworkAndReturningThroughLyricStyleDoesNotCycle() {
         val model=ready()
         val song=model.library.value.songs.first()

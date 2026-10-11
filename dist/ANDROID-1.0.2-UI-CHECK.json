@@ -8,7 +8,7 @@
   "reason": "No physical phone is connected. The existing Android 16 x86_64 AOSP ATD emulator was started without acceleration, but remained offline and did not complete boot. The Android Emulator hypervisor driver is not installed. No app UI test or APK installation was possible.",
   "deviceSnapshot": "emulator-5554 offline",
   "compiledSuites": [
-    {"name": "MainNavigationUiTest", "tests": 4, "scope": "Main-page bidirectional swipes, bottom navigation, search, favorites, child and modal Back, playlist deletion, restored child navigation, player and lyric-style return paths"},
+    {"name": "MainNavigationUiTest", "tests": 5, "scope": "Main-page bidirectional swipes, bottom navigation, search, favorites, child and modal Back, playlist deletion, restored child navigation, rapid navigation during a main-page animation, player and lyric-style return paths"},
     {"name": "PlayerNavigationUiTest", "tests": 4, "scope": "Artwork tap, lyric preview tap, left/right pager swipes, plain lyrics background, queue and player callbacks"},
     {"name": "SongListUiTest", "tests": 3, "scope": "Current-song locator, centering, two-second fade and missing target"},
     {"name": "NativeSmokeTest", "tests": 1, "scope": "Synthetic FLAC/WAV playback, settings, playlist covers and backup migration with the permanent favorites playlist"}

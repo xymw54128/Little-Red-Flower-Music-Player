@@ -147,7 +147,7 @@ fun MusicApp(model: MusicModel,showStartup: Boolean = false) {
         if(screen == page) return
         keyboard?.hide();focusManager.clearFocus()
         if(page == "player" && history.lastOrNull() == "player") history=history.dropLast(1)
-        else history=history+screen
+        else history=history+(if(screen in mainPages) mainPages[homePager.targetPage] else screen)
         screen=page; sheet=null
     }
     fun back() {keyboard?.hide();focusManager.clearFocus(); when {

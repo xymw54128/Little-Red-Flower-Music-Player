@@ -4,7 +4,7 @@
 
 ## 安装与使用
 
-安装包：[下载小红花 1.0.2 APK](https://github.com/xymw54128/Little-Red-Flower-Music-Player/releases/download/v1.0.2/Xiaohonghua-1.0.2.apk)，包含内置中文字体。沿用旧版的应用 ID 与签名，直接覆盖安装，保留现有数据。本地安装包位于 `../dist/小红花-1.0.2.apk`；Git 克隆不包含 APK，请从 Release 下载。当前版本名 `1.0.2`，版本号 `9`，SHA-256：**881c85ab5cbd1e3ae2fc6fe7e583ee4b6aa2aa6a0cc05535ce4862374b6cf39f**。
+安装包：[本地小红花 1.0.2 APK](../dist/小红花-1.0.2.apk)，包含内置中文字体。沿用旧版的应用 ID 与签名，直接覆盖安装，保留现有数据。**1.0.2 仅本地生成，尚未发布到 GitHub。** Git 克隆不包含本地 APK；已公开的 [1.0.1 APK](https://github.com/xymw54128/Little-Red-Flower-Music-Player/releases/download/v1.0.1/Xiaohonghua-1.0.1.apk) 仍可下载。当前版本名 `1.0.2`，版本号 `9`，SHA-256：**ecf004f00f33a256c55605cbc710cbffc7c81e5476d086ee433a8ae274efc28b**。
 
 1. 将 APK 传到小米 15，在手机文件管理器中打开并安装。手机可能要求为文件管理器允许安装此应用。
 2. 打开小红花，在 **设置 → 歌曲文件夹** 选择音乐文件，或授权音乐文件夹。文件夹递归扫描，音乐原文件不复制、不修改。
@@ -135,4 +135,4 @@ node tools/package-android.cjs
 
 公开源码的标准入口：在本目录运行 `gradlew.bat :app:assembleDebug :app:testDebugUnitTest :app:lintDebug`（macOS / Linux 使用 `bash gradlew`）。没有正式密钥时，Debug 使用标准开发签名；`assembleRelease` 生成未签名包，需配置自己的签名后分发，不会自动使用新 Debug 密钥替代正式签名。自行构建的不同签名包不能覆盖官方 APK。需要正确的 JDK/SDK 路径；构建工具和依赖初次下载需要联网，播放器运行无需联网。原工作区的构建助手在缺失密钥时会拒绝 Release 构建，避免意外生成不同签名。
 
-SQLite 当前 schema 1；未来结构升级必须新增迁移，不能删库重建。GitHub 提供 APK 直接下载；商店上架仍需单独确定商店签名与更新迁移方案。
+SQLite 当前 schema 1；未来结构升级必须新增迁移，不能删库重建。GitHub 提供已公开的 1.0.1 APK 下载，1.0.2 本轮仅保存在本地；商店上架仍需单独确定商店签名与更新迁移方案。
