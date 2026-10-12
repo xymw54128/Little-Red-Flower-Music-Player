@@ -2,19 +2,109 @@
   {
     "file": "lxgw_wenkai.ttf",
     "family": "LXGW WenKai",
+    "bytes": 25575676,
     "glyphs": 46490,
-    "sampleMissingGlyphs": []
+    "CjkBasicCodepoints": 20992,
+    "coverage": {
+      "LatinLettersAndDigits": {
+        "required": 62,
+        "covered": 62
+      },
+      "JapaneseBasicKana": {
+        "required": 176,
+        "covered": 176
+      },
+      "ModernHangulSyllables": {
+        "required": 11172,
+        "covered": 11172
+      },
+      "Gb2312ChineseIdeographs": {
+        "required": 6763,
+        "covered": 6763
+      }
+    },
+    "sampleMissingGlyphs": [],
+    "rareCharacterFallback": "Android system fallback for codepoints absent from the bundled cmap"
   },
   {
-    "file": "source_han_serif_cn.otf",
-    "family": "Source Han Serif CN",
-    "glyphs": 30930,
-    "sampleMissingGlyphs": []
+    "file": "flower_serif.ttf",
+    "family": "Little Flower Serif",
+    "bytes": 17397452,
+    "glyphs": 42165,
+    "CjkBasicCodepoints": 20992,
+    "coverage": {
+      "LatinLettersAndDigits": {
+        "required": 62,
+        "covered": 62
+      },
+      "JapaneseBasicKana": {
+        "required": 176,
+        "covered": 176
+      },
+      "ModernHangulSyllables": {
+        "required": 11172,
+        "covered": 11172
+      },
+      "Gb2312ChineseIdeographs": {
+        "required": 6763,
+        "covered": 6763
+      }
+    },
+    "sampleMissingGlyphs": [],
+    "rareCharacterFallback": "Android system fallback for codepoints absent from the bundled cmap"
   },
   {
-    "file": "zhuque_fangsong.ttf",
-    "family": "Zhuque Fangsong (technical preview)",
-    "glyphs": 12882,
-    "sampleMissingGlyphs": []
+    "file": "flower_cute.ttf",
+    "family": "Little Flower Playful",
+    "bytes": 4476860,
+    "glyphs": 22148,
+    "CjkBasicCodepoints": 10069,
+    "coverage": {
+      "LatinLettersAndDigits": {
+        "required": 62,
+        "covered": 62
+      },
+      "JapaneseBasicKana": {
+        "required": 176,
+        "covered": 176
+      },
+      "ModernHangulSyllables": {
+        "required": 11172,
+        "covered": 11172
+      },
+      "Gb2312ChineseIdeographs": {
+        "required": 6763,
+        "covered": 6763
+      }
+    },
+    "sampleMissingGlyphs": [],
+    "rareCharacterFallback": "Android system fallback for codepoints absent from the bundled cmap"
+  },
+  {
+    "file": "flower_handdrawn.ttf",
+    "family": "Little Flower Rounded",
+    "bytes": 16502376,
+    "glyphs": 23816,
+    "CjkBasicCodepoints": 10837,
+    "coverage": {
+      "LatinLettersAndDigits": {
+        "required": 62,
+        "covered": 62
+      },
+      "JapaneseBasicKana": {
+        "required": 176,
+        "covered": 176
+      },
+      "ModernHangulSyllables": {
+        "required": 11172,
+        "covered": 11172
+      },
+      "Gb2312ChineseIdeographs": {
+        "required": 6763,
+        "covered": 6763
+      }
+    },
+    "sampleMissingGlyphs": [],
+    "rareCharacterFallback": "Android system fallback for codepoints absent from the bundled cmap"
   }
 ]

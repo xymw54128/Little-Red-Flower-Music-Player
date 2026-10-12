@@ -4,16 +4,19 @@ import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontLoadingStrategy
 
-internal val lyricFontOptions = listOf("system" to "系统无衬线", "serif" to "系统衬线", "mono" to "等宽字体",
-    "kai" to "楷体 · 霞鹜文楷", "song" to "宋体 · 思源宋体", "fangsong" to "仿宋 · 朱雀仿宋")
+internal val lyricFontOptions = listOf("system" to "系统无衬线", "kai" to "文楷", "song" to "宋体",
+    "cute" to "花间萌趣", "handdrawn" to "圆润手绘")
 private val kaiFont = FontFamily(Font(R.font.lxgw_wenkai,loadingStrategy=FontLoadingStrategy.Async))
-private val songFont = FontFamily(Font(R.font.source_han_serif_cn,loadingStrategy=FontLoadingStrategy.Async))
-private val fangsongFont = FontFamily(Font(R.font.zhuque_fangsong,loadingStrategy=FontLoadingStrategy.Async))
-internal fun lyricFont(name: String) = when(name) {
-    "serif" -> FontFamily.Serif
-    "mono" -> FontFamily.Monospace
+private val songFont = FontFamily(Font(R.font.flower_serif,loadingStrategy=FontLoadingStrategy.Async))
+private val cuteFont = FontFamily(Font(R.font.flower_cute,loadingStrategy=FontLoadingStrategy.Async))
+private val handdrawnFont = FontFamily(Font(R.font.flower_handdrawn,loadingStrategy=FontLoadingStrategy.Async))
+
+// One bundled face per choice is intentional: Android's NativePaint renderer sees
+// the same multilingual face as Compose instead of silently losing fallback fonts.
+internal fun lyricFont(name: String) = when(normalizeLyricFontName(name)) {
     "kai" -> kaiFont
     "song" -> songFont
-    "fangsong" -> fangsongFont
+    "cute" -> cuteFont
+    "handdrawn" -> handdrawnFont
     else -> FontFamily.SansSerif
 }

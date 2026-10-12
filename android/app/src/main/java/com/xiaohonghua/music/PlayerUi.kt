@@ -33,8 +33,6 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.input.pointer.PointerEventPass
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFontFamilyResolver
 import androidx.compose.ui.platform.testTag
@@ -65,22 +63,9 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.isActive
-import java.io.File
-
-@Composable internal fun PlayerBackground(settings: Settings,song: Song?,modifier: Modifier=Modifier) {
-    val context=LocalContext.current
-    val path=when(settings.background) { "photo" -> File(context.filesDir,"player-background.img").absolutePath; "artwork" -> song?.artwork.orEmpty(); else -> "" }
-    val image=rememberImage(path)
-    Box(modifier.clip(RoundedCornerShape(0.dp)).background(pageColor)) {
-        if(image != null) Image(image,null,Modifier.fillMaxSize().graphicsLayer { alpha=settings.opacity; scaleX=settings.scale; scaleY=settings.scale;
-            translationX=(settings.x-.5f)*size.width*(settings.scale-1f); translationY=(settings.y-.5f)*size.height*(settings.scale-1f) },
-            contentScale=ContentScale.Crop,alignment=androidx.compose.ui.BiasAlignment(2*settings.x-1,2*settings.y-1))
-        Box(Modifier.fillMaxSize().background(pageColor.copy(alpha=.20f)))
-    }
-}
 
 @Composable internal fun PlayerScreen(song: Song?,library: LibraryState,p: PlaybackState,model: MusicModel,
-    onBack:()->Unit,onQueue:()->Unit,onAdd:()->Unit,onSleep:()->Unit={}) {
+    onBack:()->Unit,onQueue:()->Unit,onAdd:()->Unit) {
     val pager=rememberPagerState {2}
     val scope=rememberCoroutineScope()
     val artworkPress=remember {MutableInteractionSource()}
@@ -90,7 +75,6 @@ import java.io.File
     val lyricIndex=remember(lines,model,lyricOffset) {model.playback.map {Lrc.current(lines,lyricPosition(it.position,lyricOffset))}.distinctUntilChanged()}
     val current by lyricIndex.collectAsStateWithLifecycle(initialValue=-1)
     val pageMotion=tween<Float>(360,easing=FastOutSlowInEasing)
-    val showBackground by remember {derivedStateOf {pager.currentPage == 0 || pager.currentPageOffsetFraction != 0f}}
     val lyricsVisible by remember {derivedStateOf {pager.currentPage == 1 || pager.currentPageOffsetFraction > 0f}}
     val surface=pageColor
     val foreground=ink
@@ -98,15 +82,11 @@ import java.io.File
     fun openLyrics() {scope.launch {pager.animateScrollToPage(1,animationSpec=pageMotion)}}
     CompositionLocalProvider(LocalContentColor provides foreground) {
     Box(Modifier.fillMaxSize().background(surface)) {
-        if(showBackground) PlayerBackground(library.settings,song,Modifier.testTag("player-page-background").matchParentSize().graphicsLayer {
-            alpha=(1f-pager.currentPage-pager.currentPageOffsetFraction).coerceIn(0f,1f)
-        })
         Column(Modifier.fillMaxSize()) {
             Row(Modifier.fillMaxWidth().padding(horizontal=8.dp,vertical=4.dp),verticalAlignment=Alignment.CenterVertically) {
                 ExpressiveIconButton(onClick=onBack) {Icon(Icons.Outlined.KeyboardArrowDown,"收起播放器")}
                 Text(if(pager.currentPage == 1) song?.let {"${it.title} - ${it.artist}"}.orEmpty() else "正在播放",Modifier.weight(1f).padding(horizontal=8.dp),textAlign=TextAlign.Center,fontSize=13.sp,color=secondary,maxLines=1,overflow=TextOverflow.Ellipsis)
                 if(pager.currentPage == 0) {
-                    ExpressiveIconButton(onClick=onSleep,modifier=Modifier.testTag("player-sleep-timer")) {Icon(Icons.Outlined.Bedtime,"睡眠计时")}
                     ExpressiveIconButton(onClick=onAdd,enabled=song != null) {Icon(Icons.Outlined.PlaylistAdd,"添加到歌单")}
                 }
                 else Spacer(Modifier.size(48.dp))

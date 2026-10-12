@@ -83,27 +83,6 @@ class SettingsInteractionUiTest {
             assertEquals(listOf("已保存歌词样式"),feedback)
         }
     }
-    @Test fun backgroundDragPreviewsImmediatelyAndPersistsOnlyOnceOnRelease() {
-        val stored=mutableStateOf(Settings())
-        val saves=mutableListOf<Settings>()
-        val feedback=mutableListOf<String>()
-        compose.setContent {MaterialTheme {
-            BackgroundSettings(stored.value,null,onImport={},onComplete={feedback+=it}) {saves+=it;stored.value=it}
-        }}
-        val slider=holdSlider("setting-slider-图片不透明度")
-        val preview=slider.fetchSemanticsNode().config[SemanticsProperties.ProgressBarRangeInfo].current
-        compose.runOnIdle {
-            assertTrue(preview > Settings().opacity)
-            assertEquals(0,saves.size)
-            assertEquals(0,feedback.size)
-        }
-        slider.performTouchInput {up()}
-        compose.runOnIdle {
-            assertEquals(1,saves.size)
-            assertEquals(preview,stored.value.opacity,.01f)
-            assertEquals(listOf("已保存播放背景"),feedback)
-        }
-    }
     @Test fun inlineCreationBackPreservesTheChosenPlaylist() {
         var dismisses=0
         var keyboard: SoftwareKeyboardController?=null

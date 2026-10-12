@@ -1,14 +1,10 @@
 package com.xiaohonghua.music
 
 import android.content.Context
-import android.database.ContentObserver
 import android.net.Uri
-import android.os.Handler
-import android.os.Looper
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.getAndUpdate
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.sync.Mutex
@@ -22,7 +18,7 @@ data class LibraryState(
     val settings: Settings = Settings(), val sort: SortMode = SortMode.TITLE, val custom: List<String> = emptyList(),
     val random: List<String> = emptyList(), val manualLyrics: Map<String,String> = emptyMap(),
     val busy: Boolean = false, val status: String = "", val events: List<String> = emptyList(), val showScanProgress: Boolean = false, val ready: Boolean = false,
-    val lyricOffsets: Map<String,Long> = emptyMap(), val recentPlayed: List<String> = emptyList(),
+    val lyricOffsets: Map<String,Long> = emptyMap(),
 )
 
 class MusicRepository private constructor(private val context: Context) {
@@ -31,23 +27,10 @@ class MusicRepository private constructor(private val context: Context) {
     private val scanMutex = Mutex()
     private val mutable = MutableStateFlow(LibraryState(settings=store.settings()))
     val state = mutable.asStateFlow()
-    @Volatile private var foreground = false
-    @Volatile private var playing = false
-    private var monitorJob: Job? = null
-    private var observationJob: Job? = null
-    private val observer = object : ContentObserver(Handler(Looper.getMainLooper())) {
-        override fun onChange(selfChange: Boolean) {
-            if (state.value.settings.monitor && (foreground || playing)) {
-                observationJob?.cancel()
-                observationJob = scope.launch { delay(600); refresh(false) }
-            }
-        }
-    }
     init {
         scope.launch {
             val songs=store.songs()
             val known=songs.map {it.id}.toSet()
-            if(songs.isEmpty()) store.prefs.edit().putBoolean("albumMetadataV1",true).apply()
             val playlists=normalizeFavorites(store.playlists().map {playlist ->
                 val members=playlist.songIds.filter(known::contains).distinct()
                 playlist.copy(songIds=members,randomIds=mergeSongOrder(playlist.randomIds,members))
@@ -57,36 +40,15 @@ class MusicRepository private constructor(private val context: Context) {
                 runCatching { SortMode.valueOf(store.prefs.getString("sort","TITLE")!!) }.getOrDefault(SortMode.TITLE),
                 mergeSongOrder(store.array("custom").strings(),songs.map {it.id}),
                 mergeSongOrder(store.array("random").strings(),songs.map {it.id}),store.manualLyrics().filterKeys(known::contains),ready=true,
-                lyricOffsets=store.lyricOffsets(known),recentPlayed=store.recentPlayed(known))
+                lyricOffsets=store.lyricOffsets(known))
             store.saveManualLyrics(state.value.manualLyrics)
             store.saveLyricOffsets(state.value.lyricOffsets)
-            store.saveRecentPlayed(state.value.recentPlayed)
-            observeFolders()
-            updateMonitoring()
-            if(foreground) requestRefresh(false,showProgress=false)
         }
     }
-    fun settings(value: Settings) { store.saveSettings(value); mutable.update { it.copy(settings=value) }; updateMonitoring() }
-    fun foreground(value: Boolean) { foreground=value; updateMonitoring(); if (value) requestRefresh(false,showProgress=false) }
-    fun playing(value: Boolean) { playing=value; updateMonitoring() }
-    private fun updateMonitoring() {
-        if (state.value.settings.monitor && (foreground || playing)) {
-            if (monitorJob?.isActive != true) monitorJob = scope.launch {
-                while (isActive) {
-                    // Foreground checks are quick; background playback needs fewer wakeups.
-                    delay(if(foreground) 15_000 else 60_000)
-                    refresh(false)
-                }
-            }
-        } else { monitorJob?.cancel(); monitorJob=null }
-    }
-    private fun observeFolders() {
-        context.contentResolver.unregisterContentObserver(observer)
-        state.value.folders.forEach { folder -> runCatching { context.contentResolver.registerContentObserver(Uri.parse(folder.uri),true,observer) } }
-    }
+    fun settings(value: Settings) { store.saveSettings(value); mutable.update { it.copy(settings=value) } }
     fun addFolder(uri: Uri, name: String) {
         val folders = (state.value.folders.filter { it.uri != uri.toString() } + Folder(uri.toString(),name))
-        store.saveFolders(folders); mutable.update { it.copy(folders=folders) }; observeFolders(); requestRefresh(true)
+        store.saveFolders(folders); mutable.update { it.copy(folders=folders) }; requestRefresh()
     }
     fun removeFolder(folder: Folder) = scope.launch {
         try {scanMutex.withLock {
@@ -94,7 +56,6 @@ class MusicRepository private constructor(private val context: Context) {
             val songs = reconcileSongs(state.value.songs,emptyList(),folder.uri)
             store.replaceSongs(songs); store.saveFolders(folders)
             mutable.update { it.copy(folders=folders) }; publishSongs(songs,"已移除文件夹索引，原文件保留")
-            observeFolders()
         }} catch(e: CancellationException) {throw e}
         catch(e: Exception) {
             val message="移除文件夹失败：${e.message ?: "请重试"}"
@@ -120,15 +81,12 @@ class MusicRepository private constructor(private val context: Context) {
             publishSongs(songs,"新增 $added 首，读取失败 ${errors.size} 首",errors)
         } finally { mutable.update { it.copy(busy=false,showScanProgress=false) } }
     } }
-    fun requestRefresh(force: Boolean = true,showProgress: Boolean = true) { scope.launch { refresh(force,showProgress) } }
-    private suspend fun refresh(force: Boolean,showProgress: Boolean = false) {
-        if (scanMutex.isLocked && !force) return
+    // Every user refresh rereads all tags, even when a provider reports unchanged timestamps.
+    fun requestRefresh(showProgress: Boolean = true) { scope.launch { refresh(showProgress) } }
+    private suspend fun refresh(showProgress: Boolean) {
         scanMutex.withLock {
             if(!state.value.ready) return
-            val upgrade=!store.prefs.getBoolean("albumMetadataV1",false) && state.value.songs.isNotEmpty()
-            val forceTags=force || upgrade
-            if(state.value.folders.isEmpty() && !forceTags) return
-            mutable.update { it.copy(busy=true,showScanProgress=showProgress || upgrade,status=if(forceTags) "正在刷新文件与全部标签…" else "正在检查文件夹…") }
+            mutable.update { it.copy(busy=true,showScanProgress=showProgress,status="正在刷新文件与全部标签…") }
             val errors = mutableListOf<String>()
             val failedSources = mutableSetOf<String>()
             val before = state.value.songs
@@ -138,15 +96,15 @@ class MusicRepository private constructor(private val context: Context) {
                 val scanner = LibraryScanner(context)
                 state.value.folders.forEach { folder ->
                     try {
-                        val result = scanner.folder(Uri.parse(folder.uri),songs,forceTags)
+                        val result = scanner.folder(Uri.parse(folder.uri),songs,true)
                         val fresh=relink(result.songs,songs)
                         rescanned += fresh.map {it.id}
                         songs = reconcileSongs(songs,fresh,folder.uri)
                         errors += result.errors
                     } catch (e: Exception) { failedSources += folder.uri; errors += "${folder.name}：${e.message ?: "请重新授权"}" }
                 }
-                if(forceTags) {
-                    // Explicit/one-time metadata refresh also covers individually imported files.
+                run {
+                    // Folder scans and standalone imports both receive a complete metadata read.
                     songs=songs.map {song ->
                         if("files" !in song.sources || song.id in rescanned) song else try {
                             val fresh=scanner.single(Uri.parse(song.uri)).copy(id=song.id,sources=song.sources)
@@ -167,8 +125,6 @@ class MusicRepository private constructor(private val context: Context) {
                 store.replaceSongs(songs)
                 val summary = "新增 ${(newIds-oldIds).size} · 移除 ${(oldIds-newIds).size} · 更新 $changed"
                 publishSongs(songs,summary,errors)
-                // A bad file must not trigger another full-library read on every quiet poll.
-                if(upgrade) store.prefs.edit().putBoolean("albumMetadataV1",true).apply()
             } finally { mutable.update { it.copy(busy=false,showScanProgress=false) } }
         }
     }
@@ -187,12 +143,10 @@ class MusicRepository private constructor(private val context: Context) {
             playlists=normalizeFavorites(old.playlists.map { it.copy(songIds=it.songIds.filter(known::contains),randomIds=it.randomIds.filter(known::contains)) },known),
             custom=old.custom.filter(known::contains)+songs.filter { it.id !in old.custom }.map { it.id },
             random=old.random.filter(known::contains)+songs.filter { it.id !in old.random }.shuffled().map { it.id },
-            manualLyrics=old.manualLyrics.filterKeys(known::contains),lyricOffsets=old.lyricOffsets.filterKeys(known::contains),
-            recentPlayed=old.recentPlayed.filter(known::contains).distinct().take(RECENT_PLAYED_LIMIT)) }
+            manualLyrics=old.manualLyrics.filterKeys(known::contains),lyricOffsets=old.lyricOffsets.filterKeys(known::contains)) }
         store.savePlaylists(state.value.playlists)
         store.saveManualLyrics(state.value.manualLyrics)
         store.saveLyricOffsets(state.value.lyricOffsets)
-        store.saveRecentPlayed(state.value.recentPlayed)
         saveOrder()
     }
     fun playlist(value: Playlist) {
@@ -200,7 +154,7 @@ class MusicRepository private constructor(private val context: Context) {
             val known=old.songs.map {it.id}.toSet()
             val updated=value.copy(name=if(value.isFavorites) "我喜欢" else value.name,
                 songIds=value.songIds.filter(known::contains).distinct(),
-                randomIds=mergeSongOrder(value.randomIds,value.songIds.filter(known::contains)),description=value.description.trim().take(PLAYLIST_DESCRIPTION_LIMIT))
+                randomIds=mergeSongOrder(value.randomIds,value.songIds.filter(known::contains)),description=value.description.trim().take(PLAYLIST_DESCRIPTION_LIMIT),coverPreset=normalizePlaylistCover(value.id,value.coverPreset))
             val playlists=if(old.playlists.any {it.id == updated.id}) old.playlists.map {if(it.id == updated.id) updated else it} else old.playlists+updated
             old.copy(playlists=normalizeFavorites(playlists,known))
         }
@@ -259,7 +213,7 @@ class MusicRepository private constructor(private val context: Context) {
     }
     fun playlistCover(id: String, preset: Int, photo: String = ""): Boolean {
         if(state.value.playlists.none {it.id == id}) return false
-        mutable.update {s -> s.copy(playlists=s.playlists.map {if(it.id == id) it.copy(coverPreset=preset.coerceIn(0,PLAYLIST_COVER_COUNT-1),coverPhoto=photo) else it})}
+        mutable.update {s -> s.copy(playlists=s.playlists.map {if(it.id == id) it.copy(coverPreset=normalizePlaylistCover(id,preset),coverPhoto=photo) else it})}
         store.savePlaylists(state.value.playlists)
         return true
     }
@@ -331,21 +285,11 @@ class MusicRepository private constructor(private val context: Context) {
         }
         store.saveLyricOffsets(state.value.lyricOffsets)
     }
-    @Synchronized fun recordPlayed(id: String) {
-        if(!state.value.ready) {scope.launch {state.first {it.ready};recordPlayed(id)};return}
-        mutable.update {old -> old.copy(recentPlayed=recentPlayedIds(old.recentPlayed,id,old.songs.map {it.id}.toSet()))}
-        store.saveRecentPlayed(state.value.recentPlayed)
-    }
-    @Synchronized fun clearRecentPlayed() {
-        if(!state.value.ready) {scope.launch {state.first {it.ready};clearRecentPlayed()};return}
-        mutable.update {it.copy(recentPlayed=emptyList())}
-        store.saveRecentPlayed(emptyList())
-    }
     fun backup(): String = state.value.let { s -> JSONObject().apply {
         put("kind","xiaohonghua-android"); put("version",1); put("songs",JSONArray(s.songs.map { it.toJson(true) }))
         put("playlists",JSONArray(normalizeFavorites(s.playlists,s.songs.map {it.id}.toSet()).map { it.toJson(true) })); put("folders",JSONArray(s.folders.map { JSONObject().put("uri",it.uri).put("name",it.name) }))
-        put("settings",s.settings.toJson().put("background",if(s.settings.background == "artwork") "artwork" else "plain"))
-        put("lyricOffsets",JSONObject(s.lyricOffsets)); put("recentPlayed",JSONArray(s.recentPlayed))
+        put("settings",s.settings.toJson())
+        put("lyricOffsets",JSONObject(s.lyricOffsets))
         put("manualLyrics",JSONObject(s.manualLyrics)); put("sort",s.sort.name); put("custom",JSONArray(s.custom)); put("random",JSONArray(s.random))
     }.toString(2) }
     suspend fun restore(text: String) = withContext(Dispatchers.IO) { scanMutex.withLock {
@@ -370,19 +314,17 @@ class MusicRepository private constructor(private val context: Context) {
         val playlists=normalizeFavorites(parsedPlaylists,known)
         val folders = data.getJSONArray("folders").let { a -> (0 until a.length()).map { a.getJSONObject(it).let { Folder(it.getString("uri"),it.getString("name")) } } }
         require(folders.all { Uri.parse(it.uri).scheme == "content" })
-        val settings = settingsFromJson(data.getJSONObject("settings")).let { it.copy(background=if(it.background == "artwork") "artwork" else "plain") }
+        val settings = settingsFromJson(data.getJSONObject("settings"))
         val lyrics = data.getJSONObject("manualLyrics").let { obj -> obj.keys().asSequence().filter(known::contains).associateWith { obj.getString(it) } }
         val offsets=lyricOffsetsFromJson(data.optJSONObject("lyricOffsets") ?: JSONObject(),known)
-        val recent=data.optJSONArray("recentPlayed").strings().filter(known::contains).distinct().take(RECENT_PLAYED_LIMIT)
         val sort = SortMode.valueOf(data.getString("sort"))
         val custom = data.getJSONArray("custom").strings().filter(known::contains).distinct()
         val random = data.getJSONArray("random").strings().filter(known::contains).distinct()
         // Parse and validate everything before replacing any current data.
         store.replaceSongs(songs); store.savePlaylists(playlists); store.saveFolders(folders); store.saveSettings(settings); store.saveManualLyrics(lyrics)
-        store.saveLyricOffsets(offsets); store.saveRecentPlayed(recent)
-        store.prefs.edit().putBoolean("albumMetadataV1",true).apply()
-        mutable.value = LibraryState(songs,playlists,folders,settings,sort,custom,random,lyrics,status="备份已恢复，请重新授权音乐文件夹",ready=true,lyricOffsets=offsets,recentPlayed=recent)
-        saveOrder(); observeFolders(); updateMonitoring()
+        store.saveLyricOffsets(offsets)
+        mutable.value = LibraryState(songs,playlists,folders,settings,sort,custom,random,lyrics,status="备份已恢复，请重新授权音乐文件夹",ready=true,lyricOffsets=offsets)
+        saveOrder()
     } }
     companion object {
         @Volatile private var instance: MusicRepository? = null

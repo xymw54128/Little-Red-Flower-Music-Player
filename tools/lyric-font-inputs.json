@@ -1,0 +1,93 @@
+[
+  {
+    "file": "happy.ttf",
+    "name": "ZCOOLKuaiLe-Regular.ttf",
+    "blob": "3cf6cd927ee910d46875de173efdaac4330e84ac",
+    "bytes": 1514968,
+    "sha256": "812a6fc1fe54b6d73a419245c32dfeba8aa33104d5be90d1cf6af082007cb71d",
+    "url": "https://raw.githubusercontent.com/google/fonts/bd8f81ddb5c74d5c8897b36ad88b440266245103/ofl/zcoolkuaile/ZCOOLKuaiLe-Regular.ttf",
+    "license": "https://raw.githubusercontent.com/google/fonts/bd8f81ddb5c74d5c8897b36ad88b440266245103/ofl/zcoolkuaile/OFL.txt",
+    "licenseSha256": "538078469839b4a2e7ad22bef4ebe41681a4e53749bb2a072144024f1d6d703d"
+  },
+  {
+    "file": "nanum.ttf",
+    "name": "NanumMyeongjo-Regular.ttf",
+    "blob": "8c1bb666acfac3668c6b433b8419cd70d9140045",
+    "bytes": 3058408,
+    "sha256": "7ed9e8653a8ed04285d51dc343ffea6eb3d9c73afc27383ea8929ee4ffd03205",
+    "url": "https://raw.githubusercontent.com/google/fonts/bd8f81ddb5c74d5c8897b36ad88b440266245103/ofl/nanummyeongjo/NanumMyeongjo-Regular.ttf",
+    "license": "https://raw.githubusercontent.com/google/fonts/bd8f81ddb5c74d5c8897b36ad88b440266245103/ofl/nanummyeongjo/OFL.txt",
+    "licenseSha256": "8eb1c1019fe7fe6d0b6e7d7bbbba1d9cbdd969d8c5f26455708f6cfb8a77284c"
+  },
+  {
+    "file": "hachi.ttf",
+    "name": "HachiMaruPop-Regular.ttf",
+    "blob": "1339bf206111860f1d3867146aa53662bdbd1919",
+    "bytes": 4385624,
+    "sha256": "78408910c8f1a2f174a279cbc1484b48b71780039eba3fe1be2bfcc5d4df3f98",
+    "url": "https://raw.githubusercontent.com/google/fonts/bd8f81ddb5c74d5c8897b36ad88b440266245103/ofl/hachimarupop/HachiMaruPop-Regular.ttf",
+    "license": "https://raw.githubusercontent.com/google/fonts/bd8f81ddb5c74d5c8897b36ad88b440266245103/ofl/hachimarupop/OFL.txt",
+    "licenseSha256": "8d3c434650e84f42ddb33e9b5929089ea51c39b231b798dacb33087d5f05d9f1"
+  },
+  {
+    "file": "singleday.ttf",
+    "name": "SingleDay-Regular.ttf",
+    "blob": "e870674a9a6f5d55444a918ec1f97bb044e2cc8d",
+    "bytes": 816524,
+    "sha256": "716ff67a4b0675b35c26d60a4bb83173f7d153ab754474ed36c3369593ca1ca8",
+    "url": "https://raw.githubusercontent.com/google/fonts/bd8f81ddb5c74d5c8897b36ad88b440266245103/ofl/singleday/SingleDay-Regular.ttf",
+    "license": "https://raw.githubusercontent.com/google/fonts/bd8f81ddb5c74d5c8897b36ad88b440266245103/ofl/singleday/OFL.txt",
+    "licenseSha256": "397e83b05703a4240be51e2c3a2be1d0d7693d7a2d8b1ff367c26a2b9afc013e"
+  },
+  {
+    "file": "yomogi.ttf",
+    "name": "Yomogi-Regular.ttf",
+    "blob": "9ed46e0cdfe749a01ee2bee03852bf39cfcf7c65",
+    "bytes": 4045904,
+    "sha256": "ec280f473a03187292905618f24fdb08a6dcbf8620b52637e3b589fe745259b9",
+    "url": "https://raw.githubusercontent.com/google/fonts/bd8f81ddb5c74d5c8897b36ad88b440266245103/ofl/yomogi/Yomogi-Regular.ttf",
+    "license": "https://raw.githubusercontent.com/google/fonts/bd8f81ddb5c74d5c8897b36ad88b440266245103/ofl/yomogi/OFL.txt",
+    "licenseSha256": "bc0330d5973ab1f200553f51b4cb4ef11b81187fdcd0249f7f83992726c02a48"
+  },
+  {
+    "file": "gowun.ttf",
+    "name": "GowunDodum-Regular.ttf",
+    "blob": "2d87cc83583a37bd7828c638eb9bab6df3cf596c",
+    "bytes": 7229088,
+    "sha256": "a6e457933227483a11758fd0947bc74422a106d46f0bf057fdaa5af94a30067d",
+    "url": "https://raw.githubusercontent.com/google/fonts/bd8f81ddb5c74d5c8897b36ad88b440266245103/ofl/gowundodum/GowunDodum-Regular.ttf",
+    "license": "https://raw.githubusercontent.com/google/fonts/bd8f81ddb5c74d5c8897b36ad88b440266245103/ofl/gowundodum/OFL.txt",
+    "licenseSha256": "a7c73f9521cd646bbdfb6684c99a62311bbd7bce11898dc11ef0b3c69eda1aca"
+  },
+  {
+    "file": "butter.ttf",
+    "name": "ZCOOLQingKeHuangYou-Regular.ttf",
+    "blob": "982a3b80143268592f573feb196791fbc2330e17",
+    "bytes": 8328684,
+    "sha256": "54f0c0df4308cd74cd0f2fd3494ae054dbc4a1fd6fa7d71f4807eb4cdd8b4136",
+    "url": "https://raw.githubusercontent.com/google/fonts/bd8f81ddb5c74d5c8897b36ad88b440266245103/ofl/zcoolqingkehuangyou/ZCOOLQingKeHuangYou-Regular.ttf",
+    "license": "https://raw.githubusercontent.com/google/fonts/bd8f81ddb5c74d5c8897b36ad88b440266245103/ofl/zcoolqingkehuangyou/OFL.txt",
+    "licenseSha256": "f1bce31b817dee01c1e4ef8bc45d8ecb95f01f4abbf0a985007cb3cd0fd8123d"
+  },
+  {
+    "file": "source_han_serif_original.otf",
+    "version": "2.003",
+    "url": "https://raw.githubusercontent.com/adobe-fonts/source-han-serif/7889f11bf31170b5d092a083b357c8c8130f89e0/SubsetOTF/CN/SourceHanSerifCN-Regular.otf",
+    "license": "https://raw.githubusercontent.com/adobe-fonts/source-han-serif/7889f11bf31170b5d092a083b357c8c8130f89e0/LICENSE.txt",
+    "sha256": "3754ea669c530e2473354f8f6d9f79680a44d7e26ec7d00eeabee4a7e0753c5d",
+    "bytes": 11626108,
+    "name": "SourceHanSerifCN-Regular.otf",
+    "blob": "a4feb5f2461886dbf9cfe575974f0a68940c6bf9",
+    "licenseSha256": "9ff5bb567e1b92c801fc1069e5fbf992ff8efccacb9db94e5959a5b3ba9bb903"
+  },
+  {
+    "file": "lxgw_wenkai.ttf",
+    "version": "1.522",
+    "url": "https://github.com/lxgw/LxgwWenKai/releases/download/v1.522/LXGWWenKai-Regular.ttf",
+    "license": "https://raw.githubusercontent.com/lxgw/LxgwWenKai/v1.522/OFL.txt",
+    "sha256": "39ad71264b588165b469e35e6afb162a378dacd1f95348160240ba9038ac3009",
+    "bytes": 25575676,
+    "licenseSha256": "c38b1994a5e48ac30ac7d1da7d0409fd8fd8127dfe28a13d6e787d5b1ef34a5e",
+    "scope": "Complete basic Japanese kana gaps only; existing bundled source reused"
+  }
+]

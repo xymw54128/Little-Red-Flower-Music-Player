@@ -44,7 +44,6 @@ class MusicModel(application: Application) : AndroidViewModel(application) {
     val library = repository.state
     private val mutablePlayback = MutableStateFlow(PlaybackState())
     val playback = mutablePlayback.asStateFlow()
-    val sleepTimer = PlaybackService.sleepTimer
     private var controller: MediaController? = null
     private var seekRevision = 0L
     private val future: ListenableFuture<MediaController>
@@ -103,17 +102,6 @@ class MusicModel(application: Application) : AndroidViewModel(application) {
         player.sendCustomCommand(SessionCommand(action,Bundle.EMPTY),Bundle().apply {putString("songId",song.id)})
         return true
     }
-    fun setSleepTimer(minutes: Int): Boolean {
-        val player=controller ?: return false
-        if(minutes !in listOf(15,30,45,60)) return false
-        player.sendCustomCommand(SessionCommand(SLEEP_TIMER_COMMAND,Bundle.EMPTY),Bundle().apply {putInt("minutes",minutes)})
-        return true
-    }
-    fun cancelSleepTimer(): Boolean {
-        val player=controller ?: return false
-        player.sendCustomCommand(SessionCommand(SLEEP_TIMER_COMMAND,Bundle.EMPTY),Bundle().apply {putInt("minutes",0)})
-        return true
-    }
     fun applySort(mode: SortMode, playlistId: String? = null) {
         if(repository.sort(mode,playlistId)) syncSourceOrder(playlistId)
     }
@@ -156,25 +144,10 @@ class MusicModel(application: Application) : AndroidViewModel(application) {
     fun queueRemove(id: String) { queuedIndex(id)?.let(::queueRemove) }
     fun queuePlay(id: String) { queuedIndex(id)?.let(::queuePlay) }
     private fun queuedIndex(id: String): Int? = controller?.let {player -> (0 until player.mediaItemCount).firstOrNull {player.getMediaItemAt(it).mediaId == id}}
-    fun stopForRestore() { cancelSleepTimer(); controller?.apply { stop(); clearMediaItems() } }
+    fun stopForRestore() { controller?.apply { stop(); clearMediaItems() } }
     fun importLyrics(id: String, uri: Uri, onResult: (String) -> Unit) = viewModelScope.launch {
         val result=runCatching { withContext(Dispatchers.IO) { TagReader(getApplication()).lyricText(uri) } }
         result.fold({ repository.lyrics(id,it); onResult("歌词已导入") },{ onResult(it.message ?: "歌词读取失败") })
-    }
-    fun importBackground(uri: Uri, onResult: (String) -> Unit) = viewModelScope.launch {
-        val result=runCatching { withContext(Dispatchers.IO) {
-            val context=getApplication<Application>()
-            val type=context.contentResolver.getType(uri)
-            require(type in listOf("image/jpeg","image/png","image/webp")) { "请选择 JPG、PNG 或 WebP 图片" }
-            val bytes=context.contentResolver.openInputStream(uri)!!.use { input -> input.readLimited(24*1024*1024+1) }
-            require(bytes.size <= 24*1024*1024) { "图片不能超过 24 MB" }
-            val options=android.graphics.BitmapFactory.Options().apply { inJustDecodeBounds=true }
-            android.graphics.BitmapFactory.decodeByteArray(bytes,0,bytes.size,options)
-            require(options.outWidth > 0 && options.outHeight > 0) { "图片格式无效" }
-            val file=File(context.filesDir,"player-background.img")
-            file.writeBytes(bytes)
-        } }
-        result.fold({ repository.settings(library.value.settings.copy(background="photo")); onResult("播放背景已更新") },{ onResult(it.message ?: "图片读取失败") })
     }
     fun importPlaylistCover(id: String, uri: Uri, onResult: (String) -> Unit) = viewModelScope.launch {
         val result=runCatching { withContext(Dispatchers.IO) {
@@ -220,7 +193,7 @@ class MusicModel(application: Application) : AndroidViewModel(application) {
     fun exportBackup(uri: Uri, onResult: (String)->Unit) = viewModelScope.launch {
         val text=repository.backup()
         val result=runCatching { withContext(Dispatchers.IO) { getApplication<Application>().contentResolver.openOutputStream(uri,"wt")!!.bufferedWriter().use { it.write(text) } } }
-        onResult(if(result.isSuccess) "备份已导出，音乐、背景与歌单照片请另行保存" else "导出失败：${result.exceptionOrNull()?.message}")
+        onResult(if(result.isSuccess) "备份已导出，音乐与歌单照片请另行保存" else "导出失败：${result.exceptionOrNull()?.message}")
     }
     fun restoreBackup(uri: Uri, onResult: (String)->Unit) = viewModelScope.launch {
         val result=runCatching {

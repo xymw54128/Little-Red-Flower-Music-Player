@@ -16,6 +16,4 @@ class MainActivity : ComponentActivity() {
         setTheme(R.style.AppTheme)
         setContent { MusicApp(model,showStartup=savedInstanceState == null) }
     }
-    override fun onStart() { super.onStart(); model.repository.foreground(true) }
-    override fun onStop() { model.repository.foreground(false); super.onStop() }
 }

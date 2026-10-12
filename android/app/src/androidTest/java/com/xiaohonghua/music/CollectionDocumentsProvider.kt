@@ -49,7 +49,7 @@ class CollectionDocumentsProvider : DocumentsProvider() {
     override fun isChildDocument(parentDocumentId: String,documentId: String): Boolean = parentDocumentId == "root" && documentId in setOf("audio","lyric")
     @Synchronized override fun openDocument(documentId: String,mode: String,cancellationSignal: CancellationSignal?): ParcelFileDescriptor {
         val file=when(documentId) {
-            "audio" -> {audioReads++;audio}
+            "audio","standalone" -> {audioReads++;audio}
             "lyric" -> {lyricReads++;if(!present || !readable) throw FileNotFoundException("暂时无法读取歌词");lyric}
             else -> throw FileNotFoundException(documentId)
         }
@@ -61,10 +61,10 @@ class CollectionDocumentsProvider : DocumentsProvider() {
     )).apply {
         ids.forEach {id -> addRow(columnNames.map {column -> when(column) {
             Document.COLUMN_DOCUMENT_ID -> id
-            Document.COLUMN_DISPLAY_NAME -> if(id == "root") "Collection test" else "song."+if(id == "audio") "flac" else "lrc"
-            Document.COLUMN_MIME_TYPE -> when(id) {"root" -> Document.MIME_TYPE_DIR;"audio" -> "audio/flac";else -> "text/plain"}
-            Document.COLUMN_SIZE -> if(id == "audio") audio.length() else lyric.length()
-            Document.COLUMN_LAST_MODIFIED -> if(id == "audio") 1000L else modified
+            Document.COLUMN_DISPLAY_NAME -> if(id == "root") "Collection test" else "song."+if(id in setOf("audio","standalone")) "flac" else "lrc"
+            Document.COLUMN_MIME_TYPE -> when(id) {"root" -> Document.MIME_TYPE_DIR;"audio","standalone" -> "audio/flac";else -> "text/plain"}
+            Document.COLUMN_SIZE -> if(id in setOf("audio","standalone")) audio.length() else lyric.length()
+            Document.COLUMN_LAST_MODIFIED -> if(id in setOf("audio","standalone")) 1000L else modified
             Document.COLUMN_FLAGS -> 0
             else -> null
         }}.toTypedArray())}

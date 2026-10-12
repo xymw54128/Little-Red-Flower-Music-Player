@@ -39,6 +39,9 @@ const val PLAYLIST_DESCRIPTION_LIMIT = 300
 const val LIBRARY_QUEUE_SOURCE = "library"
 const val FAVORITES_FLOWER_COVER = 18
 fun defaultPlaylistCover(id: String): Int = if(id == FAVORITES_PLAYLIST_ID) FAVORITES_FLOWER_COVER else 8+(id.hashCode() and Int.MAX_VALUE)%10
+// Keep the newer preset IDs stable; retired covers become a current flower.
+fun normalizePlaylistCover(id: String, preset: Int): Int =
+    if(preset in 8 until PLAYLIST_COVER_COUNT) preset else defaultPlaylistCover(id)
 
 // Upgrade only the old default. A chosen photo or another preset remains untouched.
 fun upgradeFavoriteFlower(playlist: Playlist): Playlist = if(playlist.isFavorites && playlist.coverPhoto.isEmpty() &&
@@ -142,12 +145,6 @@ data class Settings(
     val lyricSize: Float = 23f,
     val lyricGap: Float = 24f,
     val dynamicLyrics: Boolean = true,
-    val monitor: Boolean = true,
-    val background: String = "plain",
-    val opacity: Float = .35f,
-    val scale: Float = 1f,
-    val x: Float = .5f,
-    val y: Float = .5f,
     val nightMode: Boolean = false,
 )
 data class LyricLine(val time: Long, val text: String, val endTime: Long = Long.MAX_VALUE) {
@@ -298,7 +295,6 @@ fun albumSongs(songs: List<Song>): List<Song> {
 }
 
 const val MAX_LYRIC_OFFSET = 10_000L
-const val RECENT_PLAYED_LIMIT = 100
 
 // Positive calibration delays the displayed lyric. Negative positions keep the
 // first line unhighlighted until its calibrated timestamp, rather than clamping early.
@@ -320,9 +316,6 @@ fun mediaPosition(lyricTime: Long, offset: Long, duration: Long): Long {
     }
     return position.coerceIn(0,duration.coerceAtLeast(0))
 }
-
-fun recentPlayedIds(current: List<String>, id: String, known: Set<String>): List<String> =
-    (listOf(id)+current).filter(known::contains).distinct().take(RECENT_PLAYED_LIMIT)
 
 // Unknown provider timestamps are never safe for reusing a sibling LRC cache.
 fun lyricRevision(uri: String, size: Long, modified: Long): String =

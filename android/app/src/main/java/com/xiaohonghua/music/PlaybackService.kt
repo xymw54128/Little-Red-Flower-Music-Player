@@ -5,7 +5,6 @@ import android.content.Intent
 import android.os.Handler
 import android.os.Looper
 import android.os.Bundle
-import android.os.SystemClock
 import androidx.media3.common.AudioAttributes
 import androidx.media3.common.C
 import androidx.media3.common.MediaItem
@@ -15,20 +14,18 @@ import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.source.ShuffleOrder
 import androidx.media3.session.MediaSession
 import androidx.media3.session.MediaSessionService
+import androidx.media3.session.DefaultMediaNotificationProvider
 import androidx.media3.session.SessionCommand
 import androidx.media3.session.SessionResult
 import androidx.media3.session.SessionError
 import com.google.common.util.concurrent.Futures
 import com.google.common.util.concurrent.ListenableFuture
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import org.json.JSONArray
 
 private const val QUEUE_SOURCE_KEY = "queueSource"
 private const val QUEUE_SHUFFLE_ORDER_KEY = "queueShuffleOrder"
 internal const val QUEUE_NEXT_COMMAND = "com.xiaohonghua.music.QUEUE_NEXT"
 internal const val QUEUE_LAST_COMMAND = "com.xiaohonghua.music.QUEUE_LAST"
-internal const val SLEEP_TIMER_COMMAND = "com.xiaohonghua.music.SLEEP_TIMER"
 val Player.queueSource: String? get() = if(mediaItemCount == 0) null else getMediaItemAt(0).mediaMetadata.extras?.getString(QUEUE_SOURCE_KEY)
 
 fun Song.mediaItem(source: String? = null): MediaItem = MediaItem.Builder().setMediaId(id).setUri(uri).setMediaMetadata(
@@ -92,13 +89,6 @@ internal fun restoreQueueShuffleOrder(player: ExoPlayer,savedIds: List<String>) 
 
 @androidx.annotation.OptIn(androidx.media3.common.util.UnstableApi::class)
 class PlaybackService : MediaSessionService() {
-    companion object {
-        private val mutableSleepTimer=MutableStateFlow(SleepTimerState())
-        val sleepTimer=mutableSleepTimer.asStateFlow()
-    }
-    private val sleepDeadline=PlaybackSleepDeadline()
-    private val history=PlaybackHistoryTracker()
-    private val expireSleep=Runnable {checkSleepDeadline()}
     private var session: MediaSession? = null
     private lateinit var repository: MusicRepository
     private lateinit var player: ExoPlayer
@@ -108,6 +98,9 @@ class PlaybackService : MediaSessionService() {
     }
     override fun onCreate() {
         super.onCreate()
+        setMediaNotificationProvider(DefaultMediaNotificationProvider.Builder(this).build().apply {
+            setSmallIcon(R.drawable.ic_notification_flower)
+        })
         repository = MusicRepository.get(this)
         player = ExoPlayer.Builder(this).build().apply {
             setAudioAttributes(AudioAttributes.Builder().setUsage(C.USAGE_MEDIA).setContentType(C.AUDIO_CONTENT_TYPE_MUSIC).build(),true)
@@ -121,8 +114,7 @@ class PlaybackService : MediaSessionService() {
                 val defaults=super.onConnect(session,controller)
                 val commands=defaults.availableSessionCommands.buildUpon()
                     .add(SessionCommand(QUEUE_NEXT_COMMAND,Bundle.EMPTY))
-                    .add(SessionCommand(QUEUE_LAST_COMMAND,Bundle.EMPTY))
-                    .add(SessionCommand(SLEEP_TIMER_COMMAND,Bundle.EMPTY)).build()
+                    .add(SessionCommand(QUEUE_LAST_COMMAND,Bundle.EMPTY)).build()
                 return MediaSession.ConnectionResult.AcceptedResultBuilder(session)
                     .setAvailableSessionCommands(commands)
                     .setAvailablePlayerCommands(defaults.availablePlayerCommands).build()
@@ -134,15 +126,6 @@ class PlaybackService : MediaSessionService() {
                         val song=repository.state.value.songs.find {it.id == args.getString("songId")}
                         if(song != null && placeQueueSong(player,song,if(command.customAction == QUEUE_NEXT_COMMAND) QueuePlacement.NEXT else QueuePlacement.LAST)) SessionResult.RESULT_SUCCESS
                         else SessionError.ERROR_BAD_VALUE
-                    }
-                    SLEEP_TIMER_COMMAND -> {
-                        val minutes=args.getInt("minutes",0)
-                        if(minutes == 0) {cancelSleepTimer();SessionResult.RESULT_SUCCESS}
-                        else if(sleepDeadline.start(minutes,SystemClock.elapsedRealtime())) {
-                            mutableSleepTimer.value=sleepDeadline.state
-                            scheduleSleepDeadline()
-                            SessionResult.RESULT_SUCCESS
-                        } else SessionError.ERROR_BAD_VALUE
                     }
                     else -> return super.onCustomCommand(session,controller,command,args)
                 }
@@ -164,30 +147,11 @@ class PlaybackService : MediaSessionService() {
         }
         player.addListener(object : Player.Listener {
             override fun onEvents(player: Player,events: Player.Events) {
-                checkSleepDeadline()
-                history.observe(player.currentMediaItem?.mediaId,player.isPlaying)?.let(repository::recordPlayed)
-                repository.playing(player.isPlaying)
                 snapshot(events.contains(Player.EVENT_TIMELINE_CHANGED) || events.contains(Player.EVENT_SHUFFLE_MODE_ENABLED_CHANGED))
             }
         })
         snapshot(queueChanged=true)
         handler.postDelayed(persist,3000)
-    }
-    private fun scheduleSleepDeadline() {
-        handler.removeCallbacks(expireSleep)
-        if(sleepDeadline.state.active) handler.postDelayed(expireSleep,sleepDeadline.state.remainingMillis(SystemClock.elapsedRealtime()))
-    }
-    private fun cancelSleepTimer() {
-        sleepDeadline.cancel()
-        mutableSleepTimer.value=sleepDeadline.state
-        handler.removeCallbacks(expireSleep)
-    }
-    private fun checkSleepDeadline() {
-        if(sleepDeadline.expire(SystemClock.elapsedRealtime())) {
-            mutableSleepTimer.value=sleepDeadline.state
-            handler.removeCallbacks(expireSleep)
-            player.pause()
-        } else if(sleepDeadline.state.active) scheduleSleepDeadline()
     }
     private fun snapshot(queueChanged: Boolean = false) {
         if (!::player.isInitialized) return
@@ -200,8 +164,7 @@ class PlaybackService : MediaSessionService() {
     }
     override fun onGetSession(controllerInfo: MediaSession.ControllerInfo): MediaSession? = session
     override fun onDestroy() {
-        cancelSleepTimer()
-        handler.removeCallbacks(persist); snapshot(queueChanged=true); repository.playing(false)
+        handler.removeCallbacks(persist); snapshot(queueChanged=true)
         session?.run { player.release(); release() }; session=null
         super.onDestroy()
     }

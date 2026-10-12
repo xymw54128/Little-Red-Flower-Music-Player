@@ -57,13 +57,10 @@ import kotlinx.coroutines.withContext
 @Composable internal fun SettingsPage(library: LibraryState,onPage:(String)->Unit,onSystemLock:()->Unit) {
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(bottom=24.dp)) {
         GroupLabel("播放与歌词")
-        SettingRow(Icons.Outlined.Bedtime,"睡眠计时","到时暂停，退出界面后继续计时") {onPage("sleep-timer")}
-        SettingRow(Icons.Outlined.History,"最近播放","${library.recentPlayed.size} 首 · 仅记录本机实际播放") {onPage("recent")}
         SettingRow(Icons.Outlined.Lock,"系统锁屏音乐控件","前往手机通知设置管理锁屏显示",onSystemLock)
         SettingRow(Icons.Outlined.TextFields,"歌词样式","歌词导入、时间校准、字体与动态滚动") {onPage("lyric-style")}
         GroupLabel("外观")
         SettingRow(Icons.Outlined.Palette,"主题颜色","夜间主题 · 红花、森林、海蓝、陶土、暮紫") {onPage("theme")}
-        SettingRow(Icons.Outlined.Wallpaper,"播放背景","仅播放封面页使用照片，歌词页保持纯色") {onPage("background")}
         GroupLabel("本地音乐")
         SettingRow(Icons.Outlined.FolderOpen,"歌曲文件夹","${library.folders.size} 个来源 · 刷新与增删改同步") {onPage("folders")}
         SettingRow(Icons.Outlined.Backup,"备份与恢复","保存歌单、排序、歌词与设置") {onPage("backup")}
@@ -72,14 +69,13 @@ import kotlinx.coroutines.withContext
         Text("作者：浪雨林兴云魔王",Modifier.testTag("app-author").padding(horizontal=24.dp),fontSize=14.sp,color=MaterialTheme.colorScheme.primary,fontFamily=lyricFont("kai"))
     }
 }
-@Composable internal fun FolderPage(library: LibraryState,onAdd:()->Unit,onRefresh:()->Unit,onRemove:(Folder)->Unit,onMonitor:(Boolean)->Unit,onFiles:(()->Unit)?=null) {
+@Composable internal fun FolderPage(library: LibraryState,onAdd:()->Unit,onRefresh:()->Unit,onRemove:(Folder)->Unit,onFiles:(()->Unit)?=null) {
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(24.dp)) {
         Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.spacedBy(12.dp)) {Button(onClick=onAdd,modifier=Modifier.weight(1f)) {Icon(Icons.Outlined.CreateNewFolder,null,Modifier.size(18.dp));Text("添加文件夹")};OutlinedButton(onClick=onRefresh,enabled=!library.busy,modifier=Modifier.weight(1f)) {Icon(Icons.Outlined.Refresh,null,Modifier.size(18.dp));Text("刷新")}}
         if(onFiles != null) OutlinedButton(onClick=onFiles,modifier=Modifier.testTag("import-music-files").fillMaxWidth().padding(top=8.dp)) {Icon(Icons.Outlined.AudioFile,null,Modifier.size(18.dp));Text("导入音乐文件")}
         if(library.showScanProgress) LinearProgressIndicator(Modifier.fillMaxWidth().padding(top=16.dp))
         Text(library.status.ifBlank {"共 ${library.songs.size} 首音乐"},fontSize=12.sp,color=muted,modifier=Modifier.padding(vertical=16.dp))
-        Row(Modifier.fillMaxWidth(),verticalAlignment=Alignment.CenterVertically) {Column(Modifier.weight(1f)) {Text("监测文件夹变化",fontWeight=FontWeight.Medium);Text("前台每 15 秒、后台播放每 60 秒增量检查",fontSize=12.sp,color=muted,modifier=Modifier.padding(top=6.dp))};Switch(library.settings.monitor,onMonitor)}
-        Text("增量检查音乐与歌词增删改，未变化时复用标签；刷新会强制重读文件夹和单独导入的文件。若提供者未更新修改时间或大小，请手动刷新。应用隐藏且未播放时停止检查。",fontSize=12.sp,lineHeight=20.sp,color=muted,modifier=Modifier.padding(vertical=16.dp))
+        Text("仅手动刷新。每次刷新重新读取全部标签、封面和歌词，并检查文件增删改；包含文件夹和单独导入的歌曲。扫描期间请稍候。",fontSize=12.sp,lineHeight=20.sp,color=muted,modifier=Modifier.padding(vertical=16.dp))
         library.folders.forEach {folder -> Surface(Modifier.fillMaxWidth().padding(vertical=6.dp),shape=RoundedCornerShape(16.dp),color=MaterialTheme.colorScheme.surface) {Row(Modifier.padding(16.dp),verticalAlignment=Alignment.CenterVertically) {
             Icon(Icons.Outlined.Folder,null,tint=MaterialTheme.colorScheme.primary)
             Column(Modifier.weight(1f).padding(start=12.dp)) {Text(folder.name,fontWeight=FontWeight.Medium);Text("${library.songs.count {folder.uri in it.sources}} 首歌曲",fontSize=12.sp,color=muted,modifier=Modifier.padding(top=6.dp));Text(UriLabel(folder.uri),fontSize=10.sp,color=muted,maxLines=2,overflow=TextOverflow.Ellipsis)}
@@ -119,7 +115,7 @@ private fun UriLabel(uri: String)=android.net.Uri.decode(uri.substringAfter("/tr
         Row(Modifier.fillMaxWidth().padding(vertical=12.dp),verticalAlignment=Alignment.CenterVertically) {Column(Modifier.weight(1f)) {Text("动态歌词");Text("按 LRC 时间戳高亮并平滑定位",fontSize=12.sp,color=muted,modifier=Modifier.padding(top=6.dp))};Switch(draft.dynamicLyrics,{apply(draft.copy(dynamicLyrics=it))})}
         Text("效果预览",fontSize=12.sp,color=muted,modifier=Modifier.padding(top=20.dp,bottom=12.dp))
         Surface(Modifier.fillMaxWidth(),shape=RoundedCornerShape(20.dp),color=pageColor) {Column(Modifier.padding(24.dp),horizontalAlignment=Alignment.CenterHorizontally) {
-            listOf("风经过窗边","让音乐在这里开花","把这一刻慢慢留下").forEachIndexed {index,text -> Text(text,Modifier.fillMaxWidth().padding(vertical=draft.lyricGap.dp/2+6.dp).graphicsLayer {scaleX=if(index == 1) 1.05f else 1f;scaleY=scaleX},fontSize=draft.lyricSize.sp,fontFamily=lyricFont(draft.lyricFont),textAlign=TextAlign.Center,
+            listOf("让音乐在这里开花 0123456789","Music blooms · 音楽が咲く","음악이 피어나다 · 123").forEachIndexed {index,text -> Text(text,Modifier.fillMaxWidth().padding(vertical=draft.lyricGap.dp/2+6.dp).graphicsLayer {scaleX=if(index == 1) 1.05f else 1f;scaleY=scaleX},fontSize=draft.lyricSize.sp,fontFamily=lyricFont(draft.lyricFont),textAlign=TextAlign.Center,
                 color=if(index == 1) MaterialTheme.colorScheme.primary else muted.copy(alpha=.6f),fontWeight=FontWeight.Normal) }
         }}
         Text("手动浏览歌词后，1.5 秒无操作平滑回到当前歌词行。普通 LRC 提供逐行效果；没有逐字时间戳时不生成逐字动画。",Modifier.padding(top=16.dp),fontSize=12.sp,color=muted,lineHeight=20.sp)
@@ -130,8 +126,8 @@ private fun UriLabel(uri: String)=android.net.Uri.decode(uri.substringAfter("/tr
 @Composable private fun FontLicenseDialog(onDismiss:()->Unit) {
     val context=LocalContext.current
     val text by produceState("正在读取许可…",context) {value=withContext(Dispatchers.IO) {
-        listOf("霞鹜文楷 1.522" to "lxgw_wenkai.ttf","思源宋体 2.003" to "source_han_serif_cn.otf","朱雀仿宋 0.212" to "zhuque_fangsong.ttf").joinToString("\n\n") {(name,file) ->
-            name+"\n\n"+context.assets.open("font-licenses/$file.OFL.txt").bufferedReader().use {it.readText()}
+        lyricFontLicenses.joinToString("\n\n") {(name,file) ->
+            name+"\n\n"+context.assets.open("font-licenses/$file").bufferedReader().use {it.readText()}
         }
     }}
     AlertDialog(onDismissRequest=onDismiss,title={Text("开源字体许可")},text={Text(text,Modifier.heightIn(max=380.dp).verticalScroll(rememberScrollState()),fontSize=12.sp,lineHeight=18.sp)},
@@ -164,31 +160,11 @@ private fun UriLabel(uri: String)=android.net.Uri.decode(uri.substringAfter("/tr
     Row(Modifier.fillMaxWidth().padding(top=20.dp)) {Text(label,Modifier.weight(1f),fontWeight=FontWeight.Medium);Text(valueLabel,fontSize=12.sp,color=color)}
     Slider(value,onChange,modifier=Modifier.testTag("setting-slider-$label"),onValueChangeFinished=onFinished,valueRange=range,interactionSource=interaction)
 }
-@Composable internal fun BackgroundSettings(settings: Settings,song: Song?,onImport:()->Unit,onComplete:(String)->Unit={},onChange:(Settings)->Unit) {
-    var draft by remember(settings) {mutableStateOf(settings)}
-    val haptic=rememberActionHaptic()
-    fun apply(value: Settings) {val changed=value != draft;draft=value;if(value != settings) onChange(value);if(changed) haptic()}
-    fun finish() {if(draft != settings) {onChange(draft);haptic();onComplete("已保存播放背景")}}
-    Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(24.dp)) {
-        Box(Modifier.fillMaxWidth().height(240.dp).clip(RoundedCornerShape(20.dp))) {PlayerBackground(draft,song,Modifier.matchParentSize());Column(Modifier.align(Alignment.Center),horizontalAlignment=Alignment.CenterHorizontally) {Icon(Icons.Outlined.LocalFlorist,null,Modifier.size(48.dp),tint=MaterialTheme.colorScheme.primary);Text(song?.title ?: "音乐在这里开花",Modifier.padding(top=16.dp),fontSize=20.sp,fontWeight=FontWeight.SemiBold);Text("实时背景预览",Modifier.padding(top=8.dp),fontSize=12.sp,color=muted)}}
-        Row(Modifier.fillMaxWidth().padding(top=12.dp),horizontalArrangement=Arrangement.spacedBy(8.dp)) {
-            FilterChip(draft.background == "plain",{apply(draft.copy(background="plain"))},label={Text("纯色")})
-            FilterChip(draft.background == "artwork",{apply(draft.copy(background="artwork"))},label={Text("歌曲封面")})
-            FilterChip(draft.background == "photo",{onImport()},label={Text("本地照片")})
-        }
-        Text("背景仅用于播放封面页，歌词页使用纯色。图片等比铺满，调整缩放后可移动构图。",fontSize=12.sp,color=muted,modifier=Modifier.padding(top=12.dp))
-        SettingSlider("图片不透明度","${(draft.opacity*100).toInt()}%",draft.opacity,0f..1f,onFinished=::finish) {draft=draft.copy(opacity=it)}
-        SettingSlider("缩放","${(draft.scale*100).toInt()}%",draft.scale,1f..2.5f,onFinished=::finish) {draft=draft.copy(scale=it)}
-        SettingSlider("水平位置","${(draft.x*100).toInt()}%",draft.x,0f..1f,onFinished=::finish) {draft=draft.copy(x=it)}
-        SettingSlider("垂直位置","${(draft.y*100).toInt()}%",draft.y,0f..1f,onFinished=::finish) {draft=draft.copy(y=it)}
-        OutlinedButton(onClick={val reset=draft.copy(opacity=.35f,scale=1f,x=.5f,y=.5f);if(reset != draft) {apply(reset);onComplete("已重置背景构图")}},modifier=Modifier.fillMaxWidth().padding(top=12.dp)) {Text("重置构图")}
-    }
-}
 @Composable internal fun BackupPage(onExport:()->Unit,onRestore:()->Unit) {
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(24.dp),verticalArrangement=Arrangement.spacedBy(20.dp)) {
         Icon(Icons.Outlined.Backup,null,Modifier.size(48.dp),tint=MaterialTheme.colorScheme.primary)
         Text("把喜欢的顺序，一起带走",fontSize=21.sp,fontWeight=FontWeight.Medium)
-        Text("备份包含音乐索引、歌单、自定义排序、手动歌词、每首时间校准、最近播放、封面图案和设置（含夜间主题）。音乐文件、背景与歌单照片请另行复制；换手机后重新选择照片。",fontSize=14.sp,lineHeight=24.sp,color=muted)
+        Text("备份包含音乐索引、歌单、自定义排序、手动歌词、每首时间校准、封面图案和设置（含夜间主题）。音乐文件与歌单照片请另行复制；换手机后重新选择照片。",fontSize=14.sp,lineHeight=24.sp,color=muted)
         Button(onClick=onExport,modifier=Modifier.fillMaxWidth()) {Text("导出备份")}
         OutlinedButton(onClick=onRestore,modifier=Modifier.fillMaxWidth()) {Text("从备份恢复")}
         Text("更换手机：先复制音乐文件，恢复此备份，再选择对应文件夹授权。应用会按文件名和大小匹配；重名且相同大小的多个文件需要避免混用。\n\n版本升级：使用相同包名和签名直接覆盖安装，保留内部数据。卸载会清除应用数据，请先导出备份。",fontSize=12.sp,lineHeight=21.sp,color=muted)

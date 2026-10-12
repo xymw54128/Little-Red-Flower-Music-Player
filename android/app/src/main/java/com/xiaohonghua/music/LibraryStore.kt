@@ -29,22 +29,19 @@ fun songFromJson(j: JSONObject): Song = Song(j.getString("id"), j.getString("uri
 fun JSONArray?.strings(): List<String> = if (this == null) emptyList() else (0 until length()).map { getString(it) }
 fun Playlist.toJson(backup: Boolean = false): JSONObject = JSONObject().apply {
     put("id", id); put("name", name); put("songIds", JSONArray(songIds)); put("sort", sort.name); put("randomIds", JSONArray(randomIds))
-    put("coverPreset",coverPreset); put("coverPhoto",if(backup) "" else coverPhoto)
+    put("coverPreset",normalizePlaylistCover(id,coverPreset)); put("coverPhoto",if(backup) "" else coverPhoto)
     put("description",description.take(PLAYLIST_DESCRIPTION_LIMIT))
 }
 fun playlistFromJson(j: JSONObject): Playlist = Playlist(j.getString("id"), j.getString("name"), j.optJSONArray("songIds").strings(),
     runCatching { SortMode.valueOf(j.optString("sort")) }.getOrDefault(SortMode.CUSTOM), j.optJSONArray("randomIds").strings(),
-    j.optInt("coverPreset",defaultPlaylistCover(j.getString("id"))).coerceIn(0,PLAYLIST_COVER_COUNT-1),
+    normalizePlaylistCover(j.getString("id"),j.optInt("coverPreset",defaultPlaylistCover(j.getString("id")))),
     j.optString("coverPhoto").takeIf {it.matches(Regex("[a-f0-9-]{36}\\.jpg"))}.orEmpty(),j.optString("description").take(PLAYLIST_DESCRIPTION_LIMIT))
 fun Settings.toJson(): JSONObject = JSONObject().apply {
-    put("theme", theme); put("font", lyricFont); put("size", lyricSize); put("gap", lyricGap); put("dynamic", dynamicLyrics); put("monitor", monitor)
-    put("background", background); put("opacity", opacity); put("scale", scale); put("x", x); put("y", y); put("nightMode",nightMode)
+    put("theme", theme); put("font", lyricFont); put("size", lyricSize); put("gap", lyricGap); put("dynamic", dynamicLyrics); put("nightMode",nightMode)
 }
 private fun JSONObject.bounded(key: String,default: Float,min: Float,max: Float): Float = optDouble(key,default.toDouble()).toFloat().let { if(it.isFinite()) it.coerceIn(min,max) else default }
-fun settingsFromJson(j: JSONObject): Settings = Settings(j.optInt("theme").coerceIn(0,4), j.optString("font", "system").takeIf { it in lyricFontOptions.map {option->option.first} } ?: "system",
-    j.bounded("size",23f,18f,34f), j.bounded("gap",24f,0f,48f), j.optBoolean("dynamic",true), j.optBoolean("monitor",true),
-    j.optString("background","plain"), j.bounded("opacity",.35f,0f,1f), j.bounded("scale",1f,1f,2.5f),
-    j.bounded("x",.5f,0f,1f), j.bounded("y",.5f,0f,1f),j.optBoolean("nightMode",false))
+fun settingsFromJson(j: JSONObject): Settings = Settings(j.optInt("theme").coerceIn(0,4), normalizeLyricFontName(j.optString("font", "system")),
+    j.bounded("size",23f,18f,34f), j.bounded("gap",24f,0f,48f), j.optBoolean("dynamic",true),j.optBoolean("nightMode",false))
 
 fun lyricOffsetsFromJson(json: JSONObject, known: Set<String>): Map<String,Long> =
     json.keys().asSequence().filter(known::contains).mapNotNull {id ->
@@ -84,6 +81,7 @@ class LibraryStore(val context: Context) : SQLiteOpenHelper(context, "music.db",
         for(index in 0 until array.length()) {
             val json=array.getJSONObject(index)
             val playlist=playlistFromJson(json)
+            if(json.has("coverPreset") && json.optInt("coverPreset") != playlist.coverPreset) migrated=true
             list += if(json.has("coverPreset")) playlist else {
                 migrated=true
                 playlist.copy(coverPreset=if(playlist.isFavorites) FAVORITES_FLOWER_COVER else (8..17).minBy {preset -> list.count {it.coverPreset == preset}})
@@ -104,8 +102,6 @@ class LibraryStore(val context: Context) : SQLiteOpenHelper(context, "music.db",
         lyricOffsetsFromJson(JSONObject(prefs.getString("lyricOffsets","{}")!!),known)
     }.getOrDefault(emptyMap())
     fun saveLyricOffsets(values: Map<String,Long>) { prefs.edit().putString("lyricOffsets",JSONObject(values).toString()).apply() }
-    fun recentPlayed(known: Set<String>): List<String> = array("recentPlayed").strings().filter(known::contains).distinct().take(RECENT_PLAYED_LIMIT)
-    fun saveRecentPlayed(ids: List<String>) { prefs.edit().putString("recentPlayed",JSONArray(ids).toString()).apply() }
     fun saveManualLyrics(values: Map<String,String>) { prefs.edit().putString("manualLyrics",JSONObject(values).toString()).apply() }
 }
 

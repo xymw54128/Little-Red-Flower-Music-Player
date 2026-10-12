@@ -40,7 +40,7 @@ class NativeSmokeTest {
             val songs=originalUris.mapIndexed {index,uri -> TagReader(context).read(uri,names[index],size(uri),0,"files") }
             val store=LibraryStore(context)
             store.prefs.edit().clear().commit()
-            store.saveSettings(Settings(monitor=false))
+            store.saveSettings(Settings())
             store.replaceSongs(songs)
             // The repository survives Activity recreation and other tests in this process.
             val repository=MusicRepository.get(context)
@@ -51,7 +51,7 @@ class NativeSmokeTest {
                     put("playlists",org.json.JSONArray())
                     put("folders",org.json.JSONArray())
                     put("manualLyrics",org.json.JSONObject())
-                    put("settings",Settings(monitor=false).toJson())
+                    put("settings",Settings().toJson())
                     put("sort",SortMode.TITLE.name)
                     put("custom",org.json.JSONArray())
                     put("random",org.json.JSONArray())
@@ -174,7 +174,7 @@ class NativeSmokeTest {
             val other=model.repository.createPlaylist("不同默认封面")
             assertNotEquals(savedPlaylist.coverPreset,other.coverPreset)
             model.repository.deletePlaylist(other.id)
-            model.repository.playlistCover(savedPlaylist.id,2)
+            model.repository.playlistCover(savedPlaylist.id,8)
         }
         val oldPlaylist=org.json.JSONObject().put("id","old-list").put("name","旧歌单").put("songIds",org.json.JSONArray(listOf(first.id)))
         assertEquals(defaultPlaylistCover("old-list"),playlistFromJson(oldPlaylist).coverPreset)
@@ -190,9 +190,9 @@ class NativeSmokeTest {
             assertEquals(FAVORITES_FLOWER_COVER,updatedFavorite.coverPreset)
             assertEquals(oldFavorite.songIds,updatedFavorite.songIds)
             assertTrue(coverStore.prefs.getBoolean("favoriteFlowerCoverV1",false))
-            // After the one-time upgrade, choosing the old preset must persist.
+            // Removed presets always migrate to an available flower.
             coverStore.savePlaylists(listOf(updatedFavorite.copy(coverPreset=oldDefault)))
-            assertEquals(oldDefault,coverStore.playlists().single().coverPreset)
+            assertEquals(FAVORITES_FLOWER_COVER,coverStore.playlists().single().coverPreset)
             val legacy=org.json.JSONArray().put(oldPlaylist).put(org.json.JSONObject(oldPlaylist.toString()).put("id","another-old-list"))
             coverStore.prefs.edit().putString("playlists",legacy.toString()).commit()
             val migrated=coverStore.playlists()
@@ -204,21 +204,21 @@ class NativeSmokeTest {
             assertEquals(migrated,coverStore.playlists())
         } finally {coverStore.prefs.edit().putString("playlists",currentJson).putBoolean("favoriteFlowerCoverV1",previousFlowerMarker).commit()}
         assertEquals(listOf(first.id),LibraryStore(context).playlists().first {it.id == savedPlaylist.id}.songIds)
-        assertEquals(2,LibraryStore(context).playlists().first {it.id == savedPlaylist.id}.coverPreset)
+        assertEquals(8,LibraryStore(context).playlists().first {it.id == savedPlaylist.id}.coverPreset)
         compose.onNodeWithTag("nav-settings").performClick()
         compose.onNodeWithTag("app-author").performScrollTo().assertTextEquals("作者：浪雨林兴云魔王")
         compose.onNodeWithText("歌词样式").performScrollTo().performClick()
         compose.onNodeWithTag("import-current-lyrics").assertIsEnabled()
-        compose.onNodeWithText("等宽字体").performClick()
+        compose.onNodeWithTag("lyric-font-kai").performScrollTo().performClick()
         for((font,label) in lyricFontOptions.takeLast(3)) {
-            compose.onNodeWithText(label).performClick()
+            compose.onNodeWithTag("lyric-font-$font").performScrollTo().performClick()
             assertEquals(font,model.library.value.settings.lyricFont)
             assertEquals(font,LibraryStore(context).settings().lyricFont)
         }
-        compose.onNodeWithText("等宽字体").performClick()
-        compose.onAllNodes(SemanticsMatcher.keyIsDefined(SemanticsProperties.ProgressBarRangeInfo)).onFirst().performSemanticsAction(SemanticsActions.SetProgress) {it(30f)}
-        compose.onAllNodes(SemanticsMatcher.keyIsDefined(SemanticsProperties.ProgressBarRangeInfo))[1].performSemanticsAction(SemanticsActions.SetProgress) {it(36f)}
-        assertEquals("mono",model.library.value.settings.lyricFont)
+        compose.onNodeWithTag("lyric-font-kai").performScrollTo().performClick()
+        compose.onNodeWithTag("setting-slider-字号").performScrollTo().performSemanticsAction(SemanticsActions.SetProgress) {it(30f)}
+        compose.onNodeWithTag("setting-slider-行间距").performScrollTo().performSemanticsAction(SemanticsActions.SetProgress) {it(36f)}
+        assertEquals("kai",model.library.value.settings.lyricFont)
         assertEquals(30f,model.library.value.settings.lyricSize)
         assertEquals(36f,model.library.value.settings.lyricGap)
         snapshot("lyric-settings")
@@ -227,16 +227,11 @@ class NativeSmokeTest {
         compose.onNodeWithText("森林").performClick()
         assertEquals(1,model.library.value.settings.theme)
         compose.onNodeWithContentDescription("返回").performClick()
-        compose.onNodeWithText("播放背景").performClick()
         val photo=context.contentResolver.insert(MediaStore.Images.Media.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY),ContentValues().apply {
             put(MediaStore.MediaColumns.DISPLAY_NAME,"xiaohonghua-test.png");put(MediaStore.MediaColumns.MIME_TYPE,"image/png");put(MediaStore.MediaColumns.RELATIVE_PATH,"Pictures/Xiaohonghua-test/")
         })!!
         context.contentResolver.openOutputStream(photo)!!.use {out-> Bitmap.createBitmap(320,400,Bitmap.Config.ARGB_8888).apply {eraseColor(android.graphics.Color.rgb(172,196,181))}.compress(Bitmap.CompressFormat.PNG,100,out)}
         var result=""
-        compose.runOnIdle {model.importBackground(photo) {result=it}}
-        compose.waitUntil(30_000) {result.isNotBlank()}
-        assertEquals("photo",model.library.value.settings.background)
-        result=""
         compose.runOnIdle {model.importPlaylistCover(savedPlaylist.id,photo) {result=it}}
         compose.waitUntil(30_000) {result.isNotBlank()}
         assertEquals("歌单封面已更新",result)
@@ -244,9 +239,7 @@ class NativeSmokeTest {
         assertEquals(listOf(first.id),photoPlaylist.songIds)
         assertTrue(File(context.filesDir,"playlist-covers/${photoPlaylist.coverPhoto}").isFile)
         assertEquals(photoPlaylist,LibraryStore(context).playlists().first {it.id == savedPlaylist.id})
-        compose.onAllNodes(SemanticsMatcher.keyIsDefined(SemanticsProperties.ProgressBarRangeInfo)).onFirst().performSemanticsAction(SemanticsActions.SetProgress) {it(.65f)}
-        assertEquals(.65f,model.library.value.settings.opacity)
-        snapshot("background")
+        snapshot("playlist-photo")
         val backup=model.repository.backup()
         val oldIds=model.library.value.songs.map {it.id}.toSet()
         val playlistId=savedPlaylist.id
@@ -259,11 +252,11 @@ class NativeSmokeTest {
         assertEquals(oldIds,model.library.value.songs.map {it.id}.toSet())
         val restoredPlaylist=model.library.value.playlists.first {it.id == playlistId}
         assertEquals(listOf(first.id),restoredPlaylist.songIds)
-        assertEquals(2,restoredPlaylist.coverPreset)
+        assertEquals(8,restoredPlaylist.coverPreset)
         assertEquals("",restoredPlaylist.coverPhoto)
         assertEquals(1,model.library.value.playlists.count {it.isFavorites})
         assertTrue(model.library.value.songs.all {it.uri in newUris.map(Uri::toString)})
         assertEquals(36f,LibraryStore(context).settings().lyricGap)
-        File(context.getExternalFilesDir(null),"native-test-results.txt").writeText("PASS: native FLAC 16bit/44.1kHz, FLAC 24bit/96kHz, WAV playback; seek; modes; swipe lyrics; playlist picker; font/size/gap/theme/photo; backup and new-provider-ID relinking.")
+        File(context.getExternalFilesDir(null),"native-test-results.txt").writeText("PASS: native FLAC 16bit/44.1kHz, FLAC 24bit/96kHz, WAV playback; seek; modes; swipe lyrics; playlist picker; font/size/gap/theme/playlist-photo; backup and new-provider-ID relinking.")
     }
 }

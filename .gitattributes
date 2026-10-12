@@ -1,0 +1,4 @@
+# Preserve upstream OFL license text, including its original trailing spaces.
+android/app/src/main/assets/font-licenses/flower_cute.ttf.OFL.txt whitespace=-blank-at-eol
+android/app/src/main/assets/font-licenses/flower_handdrawn.ttf.OFL.txt whitespace=-blank-at-eol
+android/app/src/main/assets/font-licenses/flower_serif.ttf.OFL.txt whitespace=-blank-at-eol

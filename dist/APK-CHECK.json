@@ -1,14 +1,14 @@
 {
-  "date": "2026-10-12T15:42:29.168Z",
-  "apk": "D:\\music player app\\dist\\小红花-1.0.8.apk",
+  "date": "2026-10-12T17:13:59.589Z",
+  "apk": "D:\\music player app\\dist\\小红花-1.0.9.apk",
   "buildType": "release",
   "debuggable": false,
   "testComponentsAbsent": true,
   "networkPermissionAbsent": true,
-  "size": 43939599,
-  "sha256": "5a6f2e7dce928353bae68b2dd742a0ac0bd9907b8b45c161ee025cac2ca4c088",
+  "size": 45722987,
+  "sha256": "229371b5480ba0702f45014898209eb60b49476ece035c83b612737f507bc23b",
   "metadata": [
-    "package: name='com.xiaohonghua.music' versionCode='15' versionName='1.0.8' platformBuildVersionName='16' platformBuildVersionCode='36' compileSdkVersion='36' compileSdkVersionCodename='16'",
+    "package: name='com.xiaohonghua.music' versionCode='16' versionName='1.0.9' platformBuildVersionName='16' platformBuildVersionCode='36' compileSdkVersion='36' compileSdkVersionCodename='16'",
     "minSdkVersion:'26'",
     "targetSdkVersion:'36'",
     "application-label:'小红花'",
@@ -56,6 +56,10 @@
     {
       "version": "1.0.7",
       "sameSigningCertificate": true
+    },
+    {
+      "version": "1.0.8",
+      "sameSigningCertificate": true
     }
   ],
   "iconResources": {
@@ -66,6 +70,11 @@
   "launchIcon": {
     "path": "res/8Z.xml",
     "goldCenterOnly": true
+  },
+  "notificationIcon": {
+    "path": "res/le.xml",
+    "monochrome": true,
+    "foregroundOnly": true
   },
   "headerIcons": [
     {
@@ -131,8 +140,8 @@
       "vector": true
     },
     {
-      "drawable": "ic_cover_poppy",
-      "path": "res/WI.xml",
+      "drawable": "ic_cover_cornflower",
+      "path": "res/1B.xml",
       "vector": true
     },
     {
@@ -151,19 +160,27 @@
       "licenseBundled": true
     },
     {
-      "file": "source_han_serif_cn.otf",
-      "path": "res/pA.otf",
-      "version": "2.003",
-      "bytes": 11626108,
-      "sha256": "3754ea669c530e2473354f8f6d9f79680a44d7e26ec7d00eeabee4a7e0753c5d",
+      "file": "flower_serif.ttf",
+      "path": "res/Pn.ttf",
+      "version": "1.0 multilingual OFL derivative",
+      "bytes": 17397452,
+      "sha256": "ec1f58cca57d2700b28372fb9eaad612bdf77b00bf860a9b6fd897aa6c1c3369",
       "licenseBundled": true
     },
     {
-      "file": "zhuque_fangsong.ttf",
-      "path": "res/i0.ttf",
-      "version": "0.212 (upstream preview)",
-      "bytes": 8824084,
-      "sha256": "558c62730844fe54ba220146ed62f859d4e2880188d92d985f8921c6e3743bc4",
+      "file": "flower_cute.ttf",
+      "path": "res/HK.ttf",
+      "version": "1.0 multilingual OFL derivative",
+      "bytes": 4476860,
+      "sha256": "23b6b7d8ad168bfa9d6da1f5e0685e083a7dfb4b18ca9dbbb8c9f44cccc66f31",
+      "licenseBundled": true
+    },
+    {
+      "file": "flower_handdrawn.ttf",
+      "path": "res/pb.ttf",
+      "version": "1.0 multilingual OFL derivative",
+      "bytes": 16502376,
+      "sha256": "18f603aa53a3ad12cc09e7b92efd9ab59042c841409394d29949ce65ca08413f",
       "licenseBundled": true
     }
   ],
@@ -174,6 +191,12 @@
     16384
   ],
   "unitTests": [
+    {
+      "name": "com.xiaohonghua.music.AppThemeTest",
+      "tests": 3,
+      "failures": 0,
+      "errors": 0
+    },
     {
       "name": "com.xiaohonghua.music.CollectionMetadataTest",
       "tests": 4,
@@ -206,7 +229,13 @@
     },
     {
       "name": "com.xiaohonghua.music.LibraryCalibrationTest",
-      "tests": 4,
+      "tests": 3,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "name": "com.xiaohonghua.music.LyricFontNamesTest",
+      "tests": 2,
       "failures": 0,
       "errors": 0
     },
@@ -218,7 +247,13 @@
     },
     {
       "name": "com.xiaohonghua.music.Playback107LogicTest",
-      "tests": 6,
+      "tests": 3,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "name": "com.xiaohonghua.music.PlaylistCoverMigrationTest",
+      "tests": 3,
       "failures": 0,
       "errors": 0
     },
@@ -261,8 +296,8 @@
   ],
   "lint": {
     "errors": 0,
-    "warnings": 23
+    "warnings": 18
   },
-  "acceptance": "1.0.8 removes playlist cover tap-to-play from both overview and detail, and keeps bulk song selection scroll gestures inside its list instead of dragging the modal sheet. Native gesture regression is compiled; phone behavior and frame performance still require acceptance.",
-  "nativeTests": "Instrumented tests compile successfully. Device execution status is recorded separately in ANDROID-1.0.8-UI-CHECK.json; compilation alone does not confirm runtime behavior or native frame performance."
+  "acceptance": "1.0.9 removes eight legacy covers, adds a blue cornflower and notification flower, retires sleep/history/custom background/automatic monitoring, fully rereads tags on manual refresh, resets multilingual fonts and completes app theme container roles. Native UI and lock-screen behavior require device acceptance.",
+  "nativeTests": "Instrumented tests compile successfully. Device execution status is recorded separately in ANDROID-1.0.9-UI-CHECK.json; compilation alone does not confirm runtime behavior or native frame performance."
 }

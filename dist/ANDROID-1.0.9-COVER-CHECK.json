@@ -1,0 +1,57 @@
+{
+  "version": "1.0.9",
+  "source": "actual Android VectorDrawable paths",
+  "coverCount": 11,
+  "stablePresetIds": [
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18
+  ],
+  "resources": [
+    "ic_cover_peach",
+    "ic_cover_daisy",
+    "ic_cover_tulip",
+    "ic_cover_lily",
+    "ic_cover_iris",
+    "ic_cover_sunflower",
+    "ic_cover_camellia",
+    "ic_cover_hydrangea",
+    "ic_cover_lotus",
+    "ic_cover_cornflower",
+    "ic_cover_favorite"
+  ],
+  "removedCodeDrawnPresets": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+  ],
+  "notification": {
+    "drawable": "ic_notification_flower",
+    "transparentCorners": true,
+    "transparentCenter": true,
+    "whiteOnly": true,
+    "paintedPixels": 2337
+  },
+  "deviceScreenshot": false,
+  "apkPresence": {
+    "verified": true,
+    "report": "小红花-1.0.9-CHECK.json",
+    "notificationFlower": true,
+    "cornflower": true,
+    "retiredPoppyAbsent": true
+  },
+  "date": "2026-10-13"
+}

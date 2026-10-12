@@ -60,14 +60,14 @@ class PlayerNavigationUiTest {
         compose.onNodeWithTag("player-lyric-preview").performClick()
         compose.onNodeWithText("${song.title} - ${song.artist}").assertIsDisplayed()
     }
-    @Test fun lyricPageRemovesPhotoBackgroundAndRestoresItOnlyOnCoverPage() {
-        player(Settings(background="photo"))
-        compose.onNodeWithTag("player-page-background").assertExists()
+    @Test fun coverAndLyricsBothUsePlainThemeWithoutCustomBackground() {
+        player()
+        compose.onNodeWithTag("player-page-background").assertDoesNotExist()
         compose.onNodeWithTag("player-artwork").performClick()
         compose.onNodeWithTag("player-lyrics-page").assertIsDisplayed()
         compose.onNodeWithTag("player-page-background").assertDoesNotExist()
         compose.onNodeWithTag("player-pages").performTouchInput {swipeRight(durationMillis=450)}
-        compose.onNodeWithTag("player-page-background").assertExists()
+        compose.onNodeWithTag("player-page-background").assertDoesNotExist()
     }
     @Test fun queueAndCollapseControlsKeepTheirActionsOnEitherPlayerPage() {
         var queues=0
