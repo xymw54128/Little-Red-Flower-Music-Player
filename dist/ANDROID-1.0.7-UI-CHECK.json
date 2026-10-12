@@ -1,0 +1,121 @@
+{
+  "date": "2026-10-12",
+  "platform": "Android",
+  "version": "1.0.7",
+  "versionCode": 14,
+  "instrumentedTestsCompiled": true,
+  "instrumentedTestsExecuted": false,
+  "status": "compiled_not_executed",
+  "reason": "adb devices -l returned an empty device list in this run. Native tests compile; device behavior and frame performance were not measured.",
+  "deviceSnapshot": "List of devices attached: none",
+  "compiledSuites": [
+    {
+      "name": "CollectionPersistenceTest",
+      "tests": 4
+    },
+    {
+      "name": "LyricTimingUiTest",
+      "tests": 4
+    },
+    {
+      "name": "MainNavigationUiTest",
+      "tests": 10
+    },
+    {
+      "name": "NativeSmokeTest",
+      "tests": 1
+    },
+    {
+      "name": "Playback107Test",
+      "tests": 5
+    },
+    {
+      "name": "PlaybackOrderTest",
+      "tests": 2
+    },
+    {
+      "name": "PlayerNavigationUiTest",
+      "tests": 6
+    },
+    {
+      "name": "PlaylistDetailUiTest",
+      "tests": 3
+    },
+    {
+      "name": "PlaylistManagementUiTest",
+      "tests": 5
+    },
+    {
+      "name": "RecentPlaybackUiTest",
+      "tests": 2
+    },
+    {
+      "name": "ReorderUiTest",
+      "tests": 6
+    },
+    {
+      "name": "SettingsInteractionUiTest",
+      "tests": 9
+    },
+    {
+      "name": "SleepTimerUiTest",
+      "tests": 4
+    },
+    {
+      "name": "SongArtworkUiTest",
+      "tests": 2
+    },
+    {
+      "name": "SongListUiTest",
+      "tests": 3
+    },
+    {
+      "name": "SongSearchNativeTest",
+      "tests": 3
+    }
+  ],
+  "instrumentedTestCount": 69,
+  "unitTestsPassed": 95,
+  "lint": {
+    "errors": 0,
+    "warnings": 23
+  },
+  "nativeFramePerformanceMeasured": false,
+  "phoneAcceptancePending": true,
+  "real100GBLibraryTested": false,
+  "ios": "1.0.1 source retained; no iOS changes or Xcode build in this Android update.",
+  "capabilities": {
+    "pinyinSearchMinimumApi": 29,
+    "minimumSupportedApi": 26,
+    "olderAndroidSearch": "Original Chinese, English and filename search with normalization; no ICU pinyin conversion on API 26/27/28.",
+    "albumArtistDiscTrackMetadata": true,
+    "albumSourcePersistenceUsesUriEncoding": true,
+    "queueNextAndAppendPreservePositionAndModesByDesign": true,
+    "actualShuffleTraversalDisplayedAndPersisted": true,
+    "lyricOffsetRangeMillis": [
+      -10000,
+      10000
+    ],
+    "lyricOffsetStepMillis": 100,
+    "foregroundIncrementalScanIntervalMillis": 15000,
+    "backgroundPlaybackScanIntervalMillis": 60000,
+    "unchangedAudioAndKnownLrcRevisionCached": true,
+    "manualForceRefreshIncludesIndividualFiles": true,
+    "sleepTimerMinutes": [
+      15,
+      30,
+      45,
+      60
+    ],
+    "sleepDeadlineOwnedByService": true,
+    "sleepTimerClearedOnServiceDestruction": true,
+    "nightTheme": true,
+    "recentPlayedLimit": 100,
+    "recentRecordedOnlyWhenActuallyPlaying": true,
+    "listSubtitle": "Artist · Album",
+    "playlistCardDescription": true,
+    "songInfoArtworkOpensZoomViewer": true,
+    "backupIncludesCalibrationHistoryAndNightPreference": true
+  },
+  "git": "Local commit only; no push or GitHub release performed."
+}

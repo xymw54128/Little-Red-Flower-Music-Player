@@ -34,6 +34,7 @@ import androidx.lifecycle.repeatOnLifecycle
 
 @Composable
 internal fun LaunchScreen(destination: Offset?,onComplete:()->Unit) {
+    val launchBackground=pageColor
     val elapsed=remember {mutableLongStateOf(0L)}
     var viewport by remember {mutableStateOf(IntSize.Zero)}
     val density=LocalDensity.current
@@ -73,7 +74,7 @@ internal fun LaunchScreen(destination: Offset?,onComplete:()->Unit) {
     Box(Modifier.testTag("launch-animation").fillMaxSize().onSizeChanged {viewport=it}.pointerInput(Unit) {
         awaitPointerEventScope {while(true) awaitPointerEvent().changes.forEach {it.consume()}}
     }) {
-        Canvas(Modifier.fillMaxSize().graphicsLayer {alpha=LaunchMotion.background(elapsed.longValue)}) {drawRect(pageColor)}
+        Canvas(Modifier.fillMaxSize().graphicsLayer {alpha=LaunchMotion.background(elapsed.longValue)}) {drawRect(launchBackground)}
         Canvas(Modifier.size(288.dp).align(Alignment.Center).graphicsLayer {
             val progress=LaunchMotion.flight(elapsed.longValue)
             val start=Offset(viewport.width/2f,viewport.height/2f)

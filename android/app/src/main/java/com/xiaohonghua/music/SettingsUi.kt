@@ -57,10 +57,12 @@ import kotlinx.coroutines.withContext
 @Composable internal fun SettingsPage(library: LibraryState,onPage:(String)->Unit,onSystemLock:()->Unit) {
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(bottom=24.dp)) {
         GroupLabel("播放与歌词")
+        SettingRow(Icons.Outlined.Bedtime,"睡眠计时","到时暂停，退出界面后继续计时") {onPage("sleep-timer")}
+        SettingRow(Icons.Outlined.History,"最近播放","${library.recentPlayed.size} 首 · 仅记录本机实际播放") {onPage("recent")}
         SettingRow(Icons.Outlined.Lock,"系统锁屏音乐控件","前往手机通知设置管理锁屏显示",onSystemLock)
-        SettingRow(Icons.Outlined.TextFields,"歌词样式","歌词导入、字体、字号、行间距与动态滚动") {onPage("lyric-style")}
+        SettingRow(Icons.Outlined.TextFields,"歌词样式","歌词导入、时间校准、字体与动态滚动") {onPage("lyric-style")}
         GroupLabel("外观")
-        SettingRow(Icons.Outlined.Palette,"主题颜色","红花、森林、海蓝、陶土、暮紫") {onPage("theme")}
+        SettingRow(Icons.Outlined.Palette,"主题颜色","夜间主题 · 红花、森林、海蓝、陶土、暮紫") {onPage("theme")}
         SettingRow(Icons.Outlined.Wallpaper,"播放背景","仅播放封面页使用照片，歌词页保持纯色") {onPage("background")}
         GroupLabel("本地音乐")
         SettingRow(Icons.Outlined.FolderOpen,"歌曲文件夹","${library.folders.size} 个来源 · 刷新与增删改同步") {onPage("folders")}
@@ -76,9 +78,9 @@ import kotlinx.coroutines.withContext
         if(onFiles != null) OutlinedButton(onClick=onFiles,modifier=Modifier.testTag("import-music-files").fillMaxWidth().padding(top=8.dp)) {Icon(Icons.Outlined.AudioFile,null,Modifier.size(18.dp));Text("导入音乐文件")}
         if(library.showScanProgress) LinearProgressIndicator(Modifier.fillMaxWidth().padding(top=16.dp))
         Text(library.status.ifBlank {"共 ${library.songs.size} 首音乐"},fontSize=12.sp,color=muted,modifier=Modifier.padding(vertical=16.dp))
-        Row(Modifier.fillMaxWidth(),verticalAlignment=Alignment.CenterVertically) {Column(Modifier.weight(1f)) {Text("监测文件夹变化",fontWeight=FontWeight.Medium);Text("应用前台或正在播放时自动检查",fontSize=12.sp,color=muted,modifier=Modifier.padding(top=6.dp))};Switch(library.settings.monitor,onMonitor)}
-        Text("检测新增、删除和标签变化；刷新按钮会强制重新读取全部标签。应用关闭或系统休眠时不会持续扫描，再次进入会检查。",fontSize=12.sp,lineHeight=20.sp,color=muted,modifier=Modifier.padding(vertical=16.dp))
-        library.folders.forEach {folder -> Surface(Modifier.fillMaxWidth().padding(vertical=6.dp),shape=RoundedCornerShape(16.dp),color=Color.White) {Row(Modifier.padding(16.dp),verticalAlignment=Alignment.CenterVertically) {
+        Row(Modifier.fillMaxWidth(),verticalAlignment=Alignment.CenterVertically) {Column(Modifier.weight(1f)) {Text("监测文件夹变化",fontWeight=FontWeight.Medium);Text("前台每 15 秒、后台播放每 60 秒增量检查",fontSize=12.sp,color=muted,modifier=Modifier.padding(top=6.dp))};Switch(library.settings.monitor,onMonitor)}
+        Text("增量检查音乐与歌词增删改，未变化时复用标签；刷新会强制重读文件夹和单独导入的文件。若提供者未更新修改时间或大小，请手动刷新。应用隐藏且未播放时停止检查。",fontSize=12.sp,lineHeight=20.sp,color=muted,modifier=Modifier.padding(vertical=16.dp))
+        library.folders.forEach {folder -> Surface(Modifier.fillMaxWidth().padding(vertical=6.dp),shape=RoundedCornerShape(16.dp),color=MaterialTheme.colorScheme.surface) {Row(Modifier.padding(16.dp),verticalAlignment=Alignment.CenterVertically) {
             Icon(Icons.Outlined.Folder,null,tint=MaterialTheme.colorScheme.primary)
             Column(Modifier.weight(1f).padding(start=12.dp)) {Text(folder.name,fontWeight=FontWeight.Medium);Text("${library.songs.count {folder.uri in it.sources}} 首歌曲",fontSize=12.sp,color=muted,modifier=Modifier.padding(top=6.dp));Text(UriLabel(folder.uri),fontSize=10.sp,color=muted,maxLines=2,overflow=TextOverflow.Ellipsis)}
             ExpressiveIconButton(onClick={onRemove(folder)}) {Icon(Icons.Outlined.Close,"移除文件夹")}
@@ -90,7 +92,8 @@ import kotlinx.coroutines.withContext
 }
 private fun UriLabel(uri: String)=android.net.Uri.decode(uri.substringAfter("/tree/"))
 
-@Composable internal fun LyricSettings(settings: Settings,song: Song?=null,onImport:(()->Unit)?=null,onComplete:(String)->Unit={},onChange:(Settings)->Unit) {
+@Composable internal fun LyricSettings(settings: Settings,song: Song?=null,onImport:(()->Unit)?=null,onComplete:(String)->Unit={},offsetMillis:Long=0L,onOffset:((Long)->Unit)?=null,
+    lyricText:String=song?.lyrics.orEmpty(),playbackPosition:()->Long={0L},onChange:(Settings)->Unit) {
     var licenses by remember {mutableStateOf(false)}
     var draft by remember(settings) {mutableStateOf(settings)}
     val haptic=rememberActionHaptic()
@@ -102,6 +105,7 @@ private fun UriLabel(uri: String)=android.net.Uri.decode(uri.substringAfter("/tr
         OutlinedButton(onClick={onImport?.invoke()},enabled=song != null && onImport != null,modifier=Modifier.testTag("import-current-lyrics").fillMaxWidth().padding(top=12.dp,bottom=24.dp)) {
             Icon(Icons.Outlined.Description,null,Modifier.size(18.dp));Spacer(Modifier.width(8.dp));Text("导入当前歌曲歌词")
         }
+        LyricTimingControl(song,lyricText,offsetMillis,playbackPosition,onOffset)
         Text("字体",fontWeight=FontWeight.Medium)
         Column(Modifier.selectableGroup().padding(top=8.dp)) {lyricFontOptions.forEach { (key,label) ->
             val selected=draft.lyricFont == key
@@ -136,6 +140,10 @@ private fun UriLabel(uri: String)=android.net.Uri.decode(uri.substringAfter("/tr
 @Composable internal fun ThemeSettings(settings: Settings,onChange:(Settings)->Unit) {
     val haptic=rememberActionHaptic()
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).selectableGroup().padding(24.dp)) {
+        Row(Modifier.fillMaxWidth().padding(bottom=24.dp),verticalAlignment=Alignment.CenterVertically) {
+            Column(Modifier.weight(1f)) {Text("夜间主题",fontWeight=FontWeight.Medium);Text("柔和深色背景，保留花朵主题色",fontSize=12.sp,color=muted,modifier=Modifier.padding(top=6.dp))}
+            Switch(settings.nightMode,{onChange(settings.copy(nightMode=it));haptic()},modifier=Modifier.testTag("night-theme"))
+        }
         Text("用一种颜色，陪伴音乐",fontSize=15.sp,color=muted,modifier=Modifier.padding(bottom=24.dp))
         listOf("红花","森林","海蓝","陶土","暮紫").forEachIndexed {index,label ->
             val selected=settings.theme == index
@@ -180,7 +188,7 @@ private fun UriLabel(uri: String)=android.net.Uri.decode(uri.substringAfter("/tr
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(24.dp),verticalArrangement=Arrangement.spacedBy(20.dp)) {
         Icon(Icons.Outlined.Backup,null,Modifier.size(48.dp),tint=MaterialTheme.colorScheme.primary)
         Text("把喜欢的顺序，一起带走",fontSize=21.sp,fontWeight=FontWeight.Medium)
-        Text("备份包含音乐索引、歌单、自定义排序、手动歌词、封面图案和设置。音乐文件、背景与歌单照片请另行复制；换手机后重新选择照片。",fontSize=14.sp,lineHeight=24.sp,color=muted)
+        Text("备份包含音乐索引、歌单、自定义排序、手动歌词、每首时间校准、最近播放、封面图案和设置（含夜间主题）。音乐文件、背景与歌单照片请另行复制；换手机后重新选择照片。",fontSize=14.sp,lineHeight=24.sp,color=muted)
         Button(onClick=onExport,modifier=Modifier.fillMaxWidth()) {Text("导出备份")}
         OutlinedButton(onClick=onRestore,modifier=Modifier.fillMaxWidth()) {Text("从备份恢复")}
         Text("更换手机：先复制音乐文件，恢复此备份，再选择对应文件夹授权。应用会按文件名和大小匹配；重名且相同大小的多个文件需要避免混用。\n\n版本升级：使用相同包名和签名直接覆盖安装，保留内部数据。卸载会清除应用数据，请先导出备份。",fontSize=12.sp,lineHeight=21.sp,color=muted)
@@ -245,7 +253,8 @@ private fun UriLabel(uri: String)=android.net.Uri.decode(uri.substringAfter("/tr
 @Composable internal fun SongInfo(song: Song,onDismiss:()->Unit) {
     ModalBottomSheet(onDismissRequest=onDismiss) {SheetTitle("歌曲信息",song.title)
         Column(Modifier.fillMaxWidth().heightIn(max=480.dp).verticalScroll(rememberScrollState()).padding(24.dp),verticalArrangement=Arrangement.spacedBy(12.dp)) {
-            listOf("歌手" to song.artist,"专辑" to song.album,"曲目" to song.track.ifBlank {"未设置"},"格式" to song.format,
+            SongArtworkPreview(song,Modifier.align(Alignment.CenterHorizontally))
+            listOf("歌手" to song.artist,"专辑" to song.album,"专辑歌手" to song.albumDisplayArtist,"碟号" to song.disc.ifBlank {"未设置"},"曲目" to song.track.ifBlank {"未设置"},"格式" to song.format,
                 "时长" to timeLabel(song.duration),"采样率" to if(song.sampleRate > 0) "${song.sampleRate} Hz" else "未知",
                 "位深" to if(song.bitDepth > 0) "${song.bitDepth} bit" else "未知","文件大小" to "%.2f MB".format(song.size/1048576.0),
                 "文件名" to song.name,"文件地址" to android.net.Uri.decode(song.uri)).forEach {(key,value) -> Column {Text(key,fontSize=11.sp,color=muted);Text(value,fontSize=14.sp,modifier=Modifier.padding(top=4.dp))}}

@@ -51,7 +51,7 @@ internal data class ActionFeedback(override val message: String,override val act
 @Composable internal fun ActionSnackbar(data: SnackbarData) {
     val complete=(data.visuals as? ActionFeedback)?.completed == true
     Snackbar(modifier=Modifier.padding(horizontal=16.dp,vertical=8.dp),shape=RoundedCornerShape(20.dp),
-        containerColor=ink,contentColor=Color.White,actionContentColor=Color(0xFFF6D88C),
+        containerColor=Color(0xFF272B29),contentColor=Color.White,actionContentColor=Color(0xFFF6D88C),
         action=data.visuals.actionLabel?.let {label -> {TextButton(onClick=data::performAction) {Text(label,color=Color(0xFFF6D88C))}}}) {
         Row(verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.spacedBy(10.dp)) {
             Icon(if(complete) Icons.Outlined.CheckCircle else Icons.Outlined.Info,null,

@@ -6,12 +6,14 @@ import android.content.Context
 import android.net.Uri
 import android.os.Handler
 import android.os.Looper
+import android.os.Bundle
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.media3.common.C
 import androidx.media3.common.Player
 import androidx.media3.session.MediaController
 import androidx.media3.session.SessionToken
+import androidx.media3.session.SessionCommand
 import com.google.common.util.concurrent.ListenableFuture
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -22,13 +24,27 @@ import java.util.concurrent.Executor
 
 data class PlaybackState(val connected: Boolean = false, val currentId: String? = null, val queue: List<String> = emptyList(),
     val playing: Boolean = false, val position: Long = 0, val duration: Long = 0, val mode: Int = 0, val error: String? = null,
-    val speed: Float = 1f, val seekRevision: Long = 0, val queueSource: String? = null)
+    val speed: Float = 1f, val seekRevision: Long = 0, val queueSource: String? = null, val playOrder: List<String> = emptyList())
+
+/** A controller timeline carries the service shuffle traversal, unlike physical queue indices. */
+internal fun Player.queuePlayOrder(): List<String> {
+    val timeline=currentTimeline
+    if(timeline.isEmpty) return (0 until mediaItemCount).map {getMediaItemAt(it).mediaId}
+    return buildList {
+        var index=timeline.getFirstWindowIndex(shuffleModeEnabled)
+        while(index in 0 until mediaItemCount && size < timeline.windowCount) {
+            add(getMediaItemAt(index).mediaId)
+            index=timeline.getNextWindowIndex(index,Player.REPEAT_MODE_OFF,shuffleModeEnabled)
+        }
+    }
+}
 
 class MusicModel(application: Application) : AndroidViewModel(application) {
     val repository = MusicRepository.get(application)
     val library = repository.state
     private val mutablePlayback = MutableStateFlow(PlaybackState())
     val playback = mutablePlayback.asStateFlow()
+    val sleepTimer = PlaybackService.sleepTimer
     private var controller: MediaController? = null
     private var seekRevision = 0L
     private val future: ListenableFuture<MediaController>
@@ -52,8 +68,8 @@ class MusicModel(application: Application) : AndroidViewModel(application) {
                     val oldById = previous!!.associateBy {it.id}
                     for (i in player.mediaItemCount-1 downTo 0) {
                         val song = byId[player.getMediaItemAt(i).mediaId]
-                        if(song == null) player.removeMediaItem(i)
-                        else if(oldById[song.id] != song) player.replaceMediaItem(i,song.mediaItem(player.queueSource))
+                        if(song == null || (!song.available && song.id != player.currentMediaItem?.mediaId)) player.removeMediaItem(i)
+                        else if(song.available && oldById[song.id] != song) player.replaceMediaItem(i,song.mediaItem(player.queueSource))
                     }
                 }
                 previous=state.songs
@@ -63,18 +79,40 @@ class MusicModel(application: Application) : AndroidViewModel(application) {
     private fun updatePlayback(queueChanged: Boolean = false) {
         val player = controller ?: return
         // Position ticks must not walk a potentially thousands-song timeline.
-        val queue=if(queueChanged) (0 until player.mediaItemCount).map { player.getMediaItemAt(it).mediaId } else mutablePlayback.value.queue
+        val previous=mutablePlayback.value
+        val queue=if(queueChanged) (0 until player.mediaItemCount).map { player.getMediaItemAt(it).mediaId } else previous.queue
+        val shuffleChanged=player.shuffleModeEnabled != (previous.mode == 3)
+        val playOrder=if(queueChanged || shuffleChanged) {if(player.shuffleModeEnabled) player.queuePlayOrder() else queue} else previous.playOrder
         mutablePlayback.value=PlaybackState(true,player.currentMediaItem?.mediaId,queue,
             player.isPlaying,player.currentPosition.coerceAtLeast(0),player.duration.takeIf { it != C.TIME_UNSET && it > 0 } ?: 0,
             if(player.shuffleModeEnabled) 3 else when(player.repeatMode) { Player.REPEAT_MODE_ALL -> 1; Player.REPEAT_MODE_ONE -> 2; else -> 0 },player.playerError?.let { "此文件暂时无法播放：${it.errorCodeName}" },
-            player.playbackParameters.speed,seekRevision,player.queueSource)
+            player.playbackParameters.speed,seekRevision,player.queueSource,playOrder)
     }
     // Called on the UI thread's frame clock; no per-frame StateFlow emissions or timeline scans.
     fun playbackPosition(): Long = controller?.currentPosition?.coerceAtLeast(0) ?: playback.value.position
     fun play(songs: List<Song>, id: String? = null, playlistId: String? = null) {
-        val playable=songs.filter { it.available }
+        val playable=songs.filter { it.available }.distinctBy {it.id}
         if(playable.isEmpty()) return
         controller?.apply { setMediaItems(playable.map { it.mediaItem(playlistId ?: LIBRARY_QUEUE_SOURCE) },playable.indexOfFirst { it.id == id }.coerceAtLeast(0),0); prepare(); play() }
+    }
+    fun playNext(song: Song): Boolean = enqueue(song,QUEUE_NEXT_COMMAND)
+    fun appendQueue(song: Song): Boolean = enqueue(song,QUEUE_LAST_COMMAND)
+    private fun enqueue(song: Song,action: String): Boolean {
+        val player=controller ?: return false
+        if(!song.available || library.value.songs.none {it.id == song.id && it.available}) return false
+        player.sendCustomCommand(SessionCommand(action,Bundle.EMPTY),Bundle().apply {putString("songId",song.id)})
+        return true
+    }
+    fun setSleepTimer(minutes: Int): Boolean {
+        val player=controller ?: return false
+        if(minutes !in listOf(15,30,45,60)) return false
+        player.sendCustomCommand(SessionCommand(SLEEP_TIMER_COMMAND,Bundle.EMPTY),Bundle().apply {putInt("minutes",minutes)})
+        return true
+    }
+    fun cancelSleepTimer(): Boolean {
+        val player=controller ?: return false
+        player.sendCustomCommand(SessionCommand(SLEEP_TIMER_COMMAND,Bundle.EMPTY),Bundle().apply {putInt("minutes",0)})
+        return true
     }
     fun applySort(mode: SortMode, playlistId: String? = null) {
         if(repository.sort(mode,playlistId)) syncSourceOrder(playlistId)
@@ -118,7 +156,7 @@ class MusicModel(application: Application) : AndroidViewModel(application) {
     fun queueRemove(id: String) { queuedIndex(id)?.let(::queueRemove) }
     fun queuePlay(id: String) { queuedIndex(id)?.let(::queuePlay) }
     private fun queuedIndex(id: String): Int? = controller?.let {player -> (0 until player.mediaItemCount).firstOrNull {player.getMediaItemAt(it).mediaId == id}}
-    fun stopForRestore() { controller?.apply { stop(); clearMediaItems() } }
+    fun stopForRestore() { cancelSleepTimer(); controller?.apply { stop(); clearMediaItems() } }
     fun importLyrics(id: String, uri: Uri, onResult: (String) -> Unit) = viewModelScope.launch {
         val result=runCatching { withContext(Dispatchers.IO) { TagReader(getApplication()).lyricText(uri) } }
         result.fold({ repository.lyrics(id,it); onResult("歌词已导入") },{ onResult(it.message ?: "歌词读取失败") })

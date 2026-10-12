@@ -98,10 +98,8 @@ import androidx.compose.ui.unit.sp
     val orderedSongs=remember(songs) {songs.distinctBy {it.id}}
     val eligibleIds=remember(orderedSongs,excludedIds) {orderedSongs.map {it.id}.filterNot(excludedIds::contains).toSet()}
     val selection=remember(selectedIds,eligibleIds) {selectedIds.toSet().intersect(eligibleIds)}
-    val matching=remember(orderedSongs,query) {
-        val search=query.trim()
-        orderedSongs.filter {search.isEmpty() || it.title.contains(search,true) || it.artist.contains(search,true) || it.album.contains(search,true)}
-    }
+    val searchIndex=rememberSongSearchIndex(orderedSongs)
+    val matching=remember(orderedSongs,query,searchIndex) {searchIndex.filter(orderedSongs,query)}
     val matchingIds=remember(matching,eligibleIds) {matching.map {it.id}.filter(eligibleIds::contains).toSet()}
     val allSelected=matchingIds.isNotEmpty() && selection.containsAll(matchingIds)
     // Prune removed songs and new members without resetting the user's remaining choices.
@@ -133,7 +131,7 @@ import androidx.compose.ui.unit.sp
             }
             HorizontalDivider(color=muted.copy(alpha=.12f))
             if(matching.isEmpty()) Box(Modifier.weight(1f).fillMaxWidth().padding(24.dp),contentAlignment=Alignment.Center) {
-                Text(if(query.isBlank()) "这里还没有歌曲" else "没有找到匹配的歌曲",color=muted,fontSize=14.sp)
+                Text(if(query.isBlank()) "这里还没有歌曲" else if(!searchIndex.readyFor(orderedSongs)) "正在准备拼音搜索…" else "没有找到匹配的歌曲",color=muted,fontSize=14.sp)
             } else LazyColumn(Modifier.testTag("playlist-songs-list").weight(1f).fillMaxWidth(),contentPadding=PaddingValues(vertical=4.dp)) {
                 items(matching,key={it.id}) {song ->
                     val excluded=song.id in excludedIds

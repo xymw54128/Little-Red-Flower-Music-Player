@@ -19,11 +19,13 @@ fun Song.toJson(backup: Boolean = false): JSONObject = JSONObject().apply {
     put("artwork", if (backup) "" else artwork); put("sources", JSONArray(sources.toList())); put("available", available)
     put("lyricFile", lyricFile)
     put("artworkRevision", artworkRevision)
+    put("albumArtist",albumArtist); put("disc",disc); put("lyricRevision",if(backup) "" else lyricRevision)
 }
 fun songFromJson(j: JSONObject): Song = Song(j.getString("id"), j.getString("uri"), j.getString("name"), j.optString("title"),
     j.optString("artist", "未知歌手"), j.optString("album", "未知专辑"), j.optLong("duration"), j.optLong("size"), j.optLong("modified"),
     j.optString("format"), j.optInt("sampleRate"), j.optInt("bitDepth"), j.optString("track"), j.optString("lyrics"), j.optString("artwork"),
-    j.optJSONArray("sources").strings().toSet(), j.optBoolean("available", true), j.optString("lyricFile"), j.optString("artworkRevision"))
+    j.optJSONArray("sources").strings().toSet(), j.optBoolean("available", true), j.optString("lyricFile"), j.optString("artworkRevision"),
+    j.optString("albumArtist"),j.optString("disc"),j.optString("lyricRevision"))
 fun JSONArray?.strings(): List<String> = if (this == null) emptyList() else (0 until length()).map { getString(it) }
 fun Playlist.toJson(backup: Boolean = false): JSONObject = JSONObject().apply {
     put("id", id); put("name", name); put("songIds", JSONArray(songIds)); put("sort", sort.name); put("randomIds", JSONArray(randomIds))
@@ -36,13 +38,20 @@ fun playlistFromJson(j: JSONObject): Playlist = Playlist(j.getString("id"), j.ge
     j.optString("coverPhoto").takeIf {it.matches(Regex("[a-f0-9-]{36}\\.jpg"))}.orEmpty(),j.optString("description").take(PLAYLIST_DESCRIPTION_LIMIT))
 fun Settings.toJson(): JSONObject = JSONObject().apply {
     put("theme", theme); put("font", lyricFont); put("size", lyricSize); put("gap", lyricGap); put("dynamic", dynamicLyrics); put("monitor", monitor)
-    put("background", background); put("opacity", opacity); put("scale", scale); put("x", x); put("y", y)
+    put("background", background); put("opacity", opacity); put("scale", scale); put("x", x); put("y", y); put("nightMode",nightMode)
 }
 private fun JSONObject.bounded(key: String,default: Float,min: Float,max: Float): Float = optDouble(key,default.toDouble()).toFloat().let { if(it.isFinite()) it.coerceIn(min,max) else default }
 fun settingsFromJson(j: JSONObject): Settings = Settings(j.optInt("theme").coerceIn(0,4), j.optString("font", "system").takeIf { it in lyricFontOptions.map {option->option.first} } ?: "system",
     j.bounded("size",23f,18f,34f), j.bounded("gap",24f,0f,48f), j.optBoolean("dynamic",true), j.optBoolean("monitor",true),
     j.optString("background","plain"), j.bounded("opacity",.35f,0f,1f), j.bounded("scale",1f,1f,2.5f),
-    j.bounded("x",.5f,0f,1f), j.bounded("y",.5f,0f,1f))
+    j.bounded("x",.5f,0f,1f), j.bounded("y",.5f,0f,1f),j.optBoolean("nightMode",false))
+
+fun lyricOffsetsFromJson(json: JSONObject, known: Set<String>): Map<String,Long> =
+    json.keys().asSequence().filter(known::contains).mapNotNull {id ->
+        val value=json.opt(id)
+        val number=(value as? Number)?.toDouble()
+        if(number == null || !number.isFinite()) null else id to number.coerceIn(-MAX_LYRIC_OFFSET.toDouble(),MAX_LYRIC_OFFSET.toDouble()).toLong()
+    }.filter {it.second != 0L}.toMap()
 
 class LibraryStore(val context: Context) : SQLiteOpenHelper(context, "music.db", null, 1) {
     val prefs = context.getSharedPreferences("music", Context.MODE_PRIVATE)
@@ -91,6 +100,12 @@ class LibraryStore(val context: Context) : SQLiteOpenHelper(context, "music.db",
     fun saveFolders(list: List<Folder>) { prefs.edit().putString("folders", JSONArray(list.map { JSONObject().put("uri", it.uri).put("name", it.name) }).toString()).apply() }
     fun array(key: String): JSONArray = runCatching { JSONArray(prefs.getString(key, "[]")) }.getOrDefault(JSONArray())
     fun manualLyrics(): Map<String,String> = runCatching { JSONObject(prefs.getString("manualLyrics", "{}")!!).let { obj -> obj.keys().asSequence().associateWith { obj.getString(it) } } }.getOrDefault(emptyMap())
+    fun lyricOffsets(known: Set<String>): Map<String,Long> = runCatching {
+        lyricOffsetsFromJson(JSONObject(prefs.getString("lyricOffsets","{}")!!),known)
+    }.getOrDefault(emptyMap())
+    fun saveLyricOffsets(values: Map<String,Long>) { prefs.edit().putString("lyricOffsets",JSONObject(values).toString()).apply() }
+    fun recentPlayed(known: Set<String>): List<String> = array("recentPlayed").strings().filter(known::contains).distinct().take(RECENT_PLAYED_LIMIT)
+    fun saveRecentPlayed(ids: List<String>) { prefs.edit().putString("recentPlayed",JSONArray(ids).toString()).apply() }
     fun saveManualLyrics(values: Map<String,String>) { prefs.edit().putString("manualLyrics",JSONObject(values).toString()).apply() }
 }
 
@@ -109,6 +124,7 @@ class LibraryScanner(private val context: Context) {
         val output = mutableListOf<Song>()
         val errors = mutableListOf<String>()
         val existing = old.associateBy { it.id }
+        val byUri=old.associateBy {it.uri}
         val visited = mutableSetOf<String>()
         fun walk(documentId: String, depth: Int) {
             require(depth <= 100 && visited.size < 100_000) { "文件夹层级或数量超过扫描限制" }
@@ -118,16 +134,31 @@ class LibraryScanner(private val context: Context) {
             children.forEach { doc ->
                 if (doc.directory) walk(DocumentsContract.getDocumentId(doc.uri), depth+1)
                 else if (doc.name.substringAfterLast('.', "").lowercase() in extensions) {
-                    val previous = existing[documentIdentity(doc.uri)]
+                    val previous = existing[documentIdentity(doc.uri)] ?: byUri[doc.uri.toString()]
                     try {
                         val lrcDoc = lyrics[doc.name.substringBeforeLast('.').lowercase()]
-                        val lrc = lrcDoc?.let { runCatching { reader.lyricText(it.uri) }.onFailure { e -> errors += "${it.name}：${e.message}" }.getOrNull() }
-                        val song = if (!force && previous != null && previous.available && previous.size == doc.size && previous.modified == doc.modified) {
-                            // Embedded lyrics need rereading when the sibling LRC disappears.
-                            if (lrc == null && previous.lyricFile.isNotEmpty()) reader.read(doc.uri, doc.name, doc.size, doc.modified, uri.toString())
-                            else previous.copy(uri=doc.uri.toString(), name=doc.name, lyrics=lrc ?: previous.lyrics)
+                        val revision=lrcDoc?.let {lyricRevision(it.uri.toString(),it.size,it.modified)}.orEmpty()
+                        val cached=!force && previous != null && lrcDoc != null && revision.isNotEmpty() &&
+                            previous.lyricFile == lrcDoc.uri.toString() && previous.lyricRevision == revision
+                        val lrcResult=lrcDoc?.let {lyric ->
+                            if(cached) Result.success(previous!!.lyrics) else runCatching {reader.lyricText(lyric.uri)}
+                                .onFailure {e -> errors += "${lyric.name}：${e.message ?: "歌词无法读取"}"}
+                        }
+                        val lrc=lrcResult?.getOrNull()
+                        val removedLyrics=lrcDoc == null && !previous?.lyricFile.isNullOrEmpty()
+                        val song=if(reuseAudioTags(previous,doc.name,doc.size,doc.modified,force) && !removedLyrics) {
+                            previous!!.copy(uri=doc.uri.toString(),name=doc.name,lyrics=lrc ?: previous.lyrics)
                         } else reader.read(doc.uri,doc.name,doc.size,doc.modified,uri.toString(),lrc)
-                        output += song.copy(lyricFile=if(lrc != null) lrcDoc?.uri?.toString().orEmpty() else "")
+                        val resolved=when {
+                            // An unreadable LRC is not a deletion. Retain its last good text and
+                            // clear the revision so the next check retries the failed read.
+                            lrcResult?.isFailure == true && previous != null && previous.lyricFile.isNotEmpty() ->
+                                song.copy(lyrics=previous.lyrics,lyricFile=previous.lyricFile,lyricRevision="")
+                            lrc != null -> song.copy(lyricFile=lrcDoc!!.uri.toString(),lyricRevision=revision)
+                            else -> song.copy(lyricFile="",lyricRevision="")
+                        }
+                        // Relinked backups retain their library ID across later folder checks.
+                        output += resolved.copy(id=previous?.id ?: resolved.id)
                     } catch (e: Exception) {
                         errors += "${doc.name}：${e.message ?: "无法读取"}"
                         // A corrupt/unreadable existing file must not be treated as deleted.

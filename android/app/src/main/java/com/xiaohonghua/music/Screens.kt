@@ -80,10 +80,10 @@ import kotlinx.coroutines.flow.map
 import java.io.File
 
 internal val accents = listOf(Color(0xFFCE3C4C), Color(0xFF527568), Color(0xFF436B92), Color(0xFF98644E), Color(0xFF76668D))
-internal val pageColor = Color(0xFFF8F8F6)
-internal val ink = Color(0xFF272B29)
-internal val muted = Color(0xFF696F6B)
-internal val menuTint = Color(0xFF8B918D)
+internal val pageColor: Color @Composable get() = MaterialTheme.colorScheme.background
+internal val ink: Color @Composable get() = MaterialTheme.colorScheme.onSurface
+internal val muted: Color @Composable get() = MaterialTheme.colorScheme.onSurfaceVariant
+internal val menuTint: Color @Composable get() = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha=.72f)
 
 @Composable
 fun MusicApp(model: MusicModel,showStartup: Boolean = false) {
@@ -159,6 +159,8 @@ fun MusicApp(model: MusicModel,showStartup: Boolean = false) {
     val restore = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri -> restoreUri=uri }
     val playlist = library.playlists.find { it.id == playlistId }
     val byId=remember(library.songs) {library.songs.associateBy {it.id}}
+    val searchIndex=rememberSongSearchIndex(library.songs)
+    val sleepTimer by model.sleepTimer.collectAsStateWithLifecycle()
     val current = byId[playback.currentId]
     val favoriteIds=remember(library.playlists) {library.playlists.firstOrNull {it.isFavorites}?.songIds.orEmpty().toSet()}
     val inPlaylist=screen == "playlist"
@@ -176,7 +178,7 @@ fun MusicApp(model: MusicModel,showStartup: Boolean = false) {
         screen=page; sheet=null;playlistMenu=false
     }
     fun back() {returning=true;keyboard?.hide();focusManager.clearFocus(); when {
-        screen in listOf("library","playlist") && searchExpanded -> {searchExpanded=false;query=""}
+        screen in listOf("library","playlist","recent") && searchExpanded -> {searchExpanded=false;query=""}
         screen == "library" && group != null -> group=null
         history.isNotEmpty() -> {screen=history.last();history=history.dropLast(1)}
         screen == "playlist" -> screen="playlists"
@@ -200,12 +202,27 @@ fun MusicApp(model: MusicModel,showStartup: Boolean = false) {
     LaunchedEffect(playlistId,library.playlists,library.ready,screen) {if(library.ready && screen == "playlist" && playlist == null) {history=emptyList();screen="playlists"}}
     BackHandler(screen !in mainPages || screen == "library" && (group != null || searchExpanded)) { back() }
     BackHandler(startupActive) {startupActive=false}
-    val accent=accents[library.settings.theme]
-    val selectedContainer=lerp(pageColor,accent,.16f)
-    MaterialTheme(colorScheme=lightColorScheme(primary=accent,onPrimary=Color.White,primaryContainer=selectedContainer,onPrimaryContainer=accent,
-        secondary=accent,onSecondary=Color.White,secondaryContainer=accent,onSecondaryContainer=Color.White,
-        tertiary=accent,onTertiary=Color.White,tertiaryContainer=accent,onTertiaryContainer=Color.White,
-        background=pageColor,surface=Color.White,onSurface=ink,onBackground=ink,outlineVariant=Color(0xFFE6E8E3))) {
+    val night=library.settings.nightMode
+    LaunchedEffect(night,context) {(context as? android.app.Activity)?.let {activity ->
+        androidx.core.view.WindowCompat.getInsetsController(activity.window,activity.window.decorView).apply {
+            isAppearanceLightStatusBars=!night;isAppearanceLightNavigationBars=!night
+        }
+    }}
+    val background=if(night) Color(0xFF161C19) else Color(0xFFF8F8F6)
+    val foreground=if(night) Color(0xFFE8EDE8) else Color(0xFF272B29)
+    val secondaryText=if(night) Color(0xFFB0B9B2) else Color(0xFF696F6B)
+    val accent=if(night) lerp(accents[library.settings.theme],Color.White,.22f) else accents[library.settings.theme]
+    val onAccent=if(night) Color(0xFF29181B) else Color.White
+    val selectedContainer=lerp(background,accent,.16f)
+    val scheme=if(night) darkColorScheme(primary=accent,onPrimary=onAccent,primaryContainer=selectedContainer,onPrimaryContainer=accent,
+        secondary=accent,onSecondary=onAccent,secondaryContainer=accent,onSecondaryContainer=onAccent,
+        tertiary=accent,onTertiary=onAccent,tertiaryContainer=accent,onTertiaryContainer=onAccent,
+        background=background,surface=Color(0xFF202823),onSurface=foreground,onBackground=foreground,onSurfaceVariant=secondaryText,outlineVariant=Color(0xFF3A443D))
+    else lightColorScheme(primary=accent,onPrimary=onAccent,primaryContainer=selectedContainer,onPrimaryContainer=accent,
+        secondary=accent,onSecondary=onAccent,secondaryContainer=accent,onSecondaryContainer=onAccent,
+        tertiary=accent,onTertiary=onAccent,tertiaryContainer=accent,onTertiaryContainer=onAccent,
+        background=background,surface=Color.White,onSurface=foreground,onBackground=foreground,onSurfaceVariant=secondaryText,outlineVariant=Color(0xFFE6E8E3))
+    MaterialTheme(colorScheme=scheme) {
         Box(Modifier.fillMaxSize()) {
         Scaffold(modifier=Modifier.fillMaxSize(),containerColor=pageColor,snackbarHost={ SnackbarHost(snackbar) {ActionSnackbar(it)} },
             bottomBar={ if(screen != "player") Column {
@@ -226,11 +243,18 @@ fun MusicApp(model: MusicModel,showStartup: Boolean = false) {
                 val pageCustom=if(page == "playlist") playlist?.songIds.orEmpty() else library.custom
                 val pageRandom=if(page == "playlist") playlist?.randomIds.orEmpty() else library.random
                 val pageSorted=remember(page,pageBase,pageSort,pageCustom,pageRandom) {if(page in listOf("library","playlist")) orderedSongs(pageBase,pageSort,pageCustom,pageRandom) else emptyList()}
-                val displayed=remember(pageSorted,group,libraryTab,query) {pageSorted.filter { song -> (group == null || if(libraryTab == 1) "${song.artist}\u0000${song.album}" == group else song.artist == group) &&
-                    (query.isBlank() || listOf(song.title,song.artist,song.album,song.name).any {it.contains(query,true)})}}
-                val groupSongs=remember(pageSorted,query) {if(query.isBlank()) pageSorted else pageSorted.filter {"${it.title} ${it.artist} ${it.album}".contains(query,true)}}
+                val groupMembers=remember(pageSorted,group,libraryTab) {
+                    pageSorted.filter {song -> group == null || if(libraryTab == 1) song.albumKey == group else song.artist == group}
+                }
+                val displayed=remember(page,groupMembers,libraryTab,group,query,searchIndex) {
+                    val result=searchIndex.filter(groupMembers,query)
+                    if(page == "library" && libraryTab == 1 && group != null) albumSongs(result) else result
+                }
+                val groupSongs=remember(pageSorted,query,searchIndex) {searchIndex.filter(pageSorted,query)}
+                val onNextSong: (Song)->Unit={song -> if(model.playNext(song)) haptic() else message("无法安排下一首，请确认文件可读取且播放器已就绪")}
+                val onAppendSong: (Song)->Unit={song -> if(model.appendQueue(song)) haptic() else message("无法加入队列，请确认文件可读取且播放器已就绪")}
                 if(page == "player") {
-                    PlayerScreen(current,library,playback,model,onBack=::back,onQueue={ sheet="queue" },onAdd={ addSong=current })
+                    PlayerScreen(current,library,playback,model,onBack=::back,onQueue={ sheet="queue" },onAdd={ addSong=current },onSleep={sheet="sleep-timer"})
                 } else Column(Modifier.testTag("page-$page").fillMaxSize()) {
                     val title = when(page) {
                         "library" -> if(group != null) (if(libraryTab == 1) group!!.substringAfter('\u0000') else group!!) else "音乐库"
@@ -239,6 +263,8 @@ fun MusicApp(model: MusicModel,showStartup: Boolean = false) {
                         "folders" -> "歌曲文件夹"
                         "lyric-style" -> "歌词样式"
                         "theme" -> "主题颜色"
+                        "recent" -> "最近播放"
+                        "sleep-timer" -> "睡眠计时"
                         "background" -> "播放背景"
                         "backup" -> "备份与恢复"
                         else -> "设置"
@@ -248,7 +274,7 @@ fun MusicApp(model: MusicModel,showStartup: Boolean = false) {
                         else InteractiveHeaderFlower(page,Modifier.onGloballyPositioned {
                             if(page == "library") flowerDestination=it.boundsInRoot().center
                         }.graphicsLayer {alpha=if(page == "library" && startupActive) 0f else 1f})
-                        if(page in listOf("library","playlist")) LibrarySearchHeader(title,query,searchExpanded,{query=it},{searchExpanded=true},{searchExpanded=false;query=""},Modifier.weight(1f),tagPrefix=page)
+                        if(page in listOf("library","playlist","recent")) LibrarySearchHeader(title,query,searchExpanded,{query=it},{searchExpanded=true},{searchExpanded=false;query=""},Modifier.weight(1f),tagPrefix=page)
                         else Text(title,Modifier.weight(1f),fontSize=27.sp,fontWeight=FontWeight.SemiBold,maxLines=1,overflow=TextOverflow.Ellipsis)
                         if(page == "playlists") ExpressiveIconButton(onClick={ create=true }) { Icon(Icons.Outlined.Add,"新建歌单") }
                         if(page == "playlist") Box {
@@ -273,12 +299,15 @@ fun MusicApp(model: MusicModel,showStartup: Boolean = false) {
                             if(libraryTab != 0 && group == null) GroupList(groupSongs,libraryTab) {group=it;query=""}
                             else {
                                 Row(Modifier.padding(horizontal=24.dp).fillMaxWidth(),verticalAlignment=Alignment.CenterVertically) {
-                                    Text("共 ${pageBase.size} 首${if(query.isNotBlank()) " · 找到 ${displayed.size} 首" else ""}",Modifier.weight(1f),fontSize=12.sp,color=muted)
-                                    TextButton(onClick={sheet="sort"}) {Text(library.sort.label);Icon(Icons.Outlined.SwapVert,null,Modifier.size(18.dp))}
+                                    Text("共 ${groupMembers.size} 首${if(query.isNotBlank()) " · 找到 ${displayed.size} 首" else ""}",Modifier.weight(1f),fontSize=12.sp,color=muted)
+                                    if(group == null) TextButton(onClick={go("recent")},modifier=Modifier.testTag("open-recent-playback")) {Text("最近播放",fontSize=12.sp)}
+                                    if(libraryTab == 1 && group != null) Text("盘号 · 曲号",fontSize=12.sp,color=muted)
+                                    else TextButton(onClick={sheet="sort"}) {Text(library.sort.label);Icon(Icons.Outlined.SwapVert,null,Modifier.size(18.dp))}
                                 }
-                                if(displayed.isEmpty()) EmptyLibrary(query.isNotBlank(),false) {sheet="import"}
-                                else SongList(displayed,pageBase.size,current?.id,Modifier.weight(1f),onPlay={model.play(displayed,it.id)},onAdd={addSong=it},onInfo={info=it},
-                                    favoriteIds=favoriteIds,onFavorite={model.repository.toggleFavorite(it.id)})
+                                if(displayed.isEmpty() && query.isNotBlank() && !searchIndex.readyFor(library.songs)) Text("正在准备拼音搜索…",Modifier.padding(24.dp),color=muted)
+                                else if(displayed.isEmpty()) EmptyLibrary(query.isNotBlank(),false) {sheet="import"}
+                                else SongList(displayed,groupMembers.size,current?.id,Modifier.weight(1f),onPlay={model.play(displayed,it.id,playlistId=if(libraryTab == 1 && group != null) "album:"+android.net.Uri.encode(group) else null)},onAdd={addSong=it},onInfo={info=it},
+                                    favoriteIds=favoriteIds,onFavorite={model.repository.toggleFavorite(it.id)},onNext=onNextSong,onAppend=onAppendSong)
                             }
                         }
                         "playlist" -> playlist?.let {list -> key(list.id) {
@@ -287,7 +316,7 @@ fun MusicApp(model: MusicModel,showStartup: Boolean = false) {
                                 onSort={sheet="sort"},onBulkAdd={sheet="add-playlist-songs"},onAdd={addSong=it},onInfo={info=it},
                                 onRemove={song -> model.repository.removePlaylistSong(list.id,song.id)?.let {removed ->
                                     haptic();completed("已从「${list.name}」移除",undo={model.repository.restorePlaylistSong(removed)})
-                                }},favoriteIds=favoriteIds,onFavorite={model.repository.toggleFavorite(it.id)})
+                                }},favoriteIds=favoriteIds,onFavorite={model.repository.toggleFavorite(it.id)},onNext=onNextSong,onAppend=onAppendSong,searchReady=searchIndex.readyFor(library.songs))
                         }}
                         "playlists" -> {
                             Text("${library.playlists.size} 个歌单",Modifier.padding(horizontal=24.dp,vertical=8.dp),fontSize=12.sp,color=muted)
@@ -295,22 +324,37 @@ fun MusicApp(model: MusicModel,showStartup: Boolean = false) {
                             LazyColumn(contentPadding=PaddingValues(24.dp),verticalArrangement=Arrangement.spacedBy(16.dp)) {
                                 items(library.playlists,key={it.id}) { list ->
                                     val source=remember {MutableInteractionSource()}
-                                    Row(Modifier.animateItem().testTag("playlist-${list.id}").fillMaxWidth().pressScale(source,.985f).clip(RoundedCornerShape(20.dp)).background(Color.White).clickable(interactionSource=source,indication=LocalIndication.current) { playlistId=list.id;go("playlist");group=null;query="";searchExpanded=false }.padding(16.dp),verticalAlignment=Alignment.CenterVertically) {
+                                    Row(Modifier.animateItem().testTag("playlist-${list.id}").fillMaxWidth().pressScale(source,.985f).clip(RoundedCornerShape(20.dp)).background(MaterialTheme.colorScheme.surface).clickable(interactionSource=source,indication=LocalIndication.current) { playlistId=list.id;go("playlist");group=null;query="";searchExpanded=false }.padding(16.dp),verticalAlignment=Alignment.CenterVertically) {
                                     PlaylistCover(list,Modifier.size(64.dp).testTag("play-playlist-${list.id}").clickable {
                                          model.play(orderedSongs(list.songIds.mapNotNull(byId::get),list.sort,list.songIds,list.randomIds),playlistId=list.id)
                                      })
-                                    Column(Modifier.padding(start=16.dp).weight(1f)) { Text(list.name,fontWeight=FontWeight.Medium,fontSize=18.sp); Text("${list.songIds.size} 首歌曲",fontSize=12.sp,color=muted,modifier=Modifier.padding(top=6.dp)) }
+                                    Column(Modifier.padding(start=16.dp).weight(1f)) {
+                                         Text(list.name,fontWeight=FontWeight.Medium,fontSize=18.sp)
+                                         Text(list.description.ifBlank {"暂无描述"},Modifier.testTag("playlist-card-description-${list.id}").padding(top=4.dp),fontSize=12.sp,color=muted,maxLines=2,overflow=TextOverflow.Ellipsis)
+                                         Text("${list.songIds.size} 首歌曲",fontSize=12.sp,color=muted,modifier=Modifier.padding(top=6.dp))
+                                     }
                                     Icon(Icons.Outlined.ChevronRight,"查看歌单",tint=menuTint,modifier=Modifier.size(20.dp))
                                 } }
                             }
                         }
+                        "recent" -> {
+                            val recentSongs=remember(library.recentPlayed,byId) {library.recentPlayed.mapNotNull(byId::get)}
+                            val recentResults=remember(recentSongs,query,searchIndex) {searchIndex.filter(recentSongs,query)}
+                            if(query.isNotBlank() && recentResults.isEmpty() && !searchIndex.readyFor(library.songs)) Text("正在准备拼音搜索…",Modifier.padding(24.dp),color=muted)
+                            else if(query.isNotBlank() && recentResults.isEmpty()) EmptyLibrary(true,false) {}
+                            else RecentPlaybackContent(recentResults,current?.id,onPlay={model.play(recentResults,it.id,playlistId=MANUAL_QUEUE_SOURCE)},onAdd={addSong=it},onInfo={info=it},
+                                favoriteIds=favoriteIds,onFavorite={model.repository.toggleFavorite(it.id)},onClear={sheet="clear-recent"},onNext=onNextSong,onAppend=onAppendSong)
+                        }
+                        "sleep-timer" -> SleepTimerPanel(sleepTimer,playback.connected,model::setSleepTimer,model::cancelSleepTimer,modifier=Modifier.weight(1f))
                         "settings" -> SettingsPage(library,onPage=::go,onSystemLock={
                             runCatching { context.startActivity(Intent(AndroidSettings.ACTION_APP_NOTIFICATION_SETTINGS).putExtra(AndroidSettings.EXTRA_APP_PACKAGE,context.packageName)) }.onFailure { message("请在手机设置中打开小红花的通知与锁屏显示设置") }
                         })
                         "folders" -> FolderPage(library,onAdd={folder.launch(null)},onRefresh={model.repository.requestRefresh()},onRemove={removeFolder=it},onMonitor={model.repository.settings(library.settings.copy(monitor=it))},onFiles={files.launch(arrayOf("audio/*","application/ogg","application/octet-stream"))})
                         "lyric-style" -> LyricSettings(library.settings,song=current,onImport={
                             if(current != null) {lyricTarget=current.id;lyrics.launch(arrayOf("*/*"))}
-                        },onComplete={completed(it)}) { model.repository.settings(it) }
+                        },onComplete={completed(it)},offsetMillis=library.lyricOffsets[current?.id] ?: 0L,
+                            onOffset={millis -> current?.id?.let {model.repository.lyricOffset(it,millis)}},
+                            lyricText=library.manualLyrics[current?.id] ?: current?.lyrics.orEmpty(),playbackPosition=model::playbackPosition) {model.repository.settings(it)}
                         "theme" -> ThemeSettings(library.settings) {model.repository.settings(it);completed("已应用主题颜色")}
                         "background" -> BackgroundSettings(library.settings,current,{image.launch(arrayOf("image/jpeg","image/png","image/webp"))},onComplete={completed(it)}) { model.repository.settings(it) }
                         "backup" -> BackupPage(onExport={export.launch("小红花备份-${java.time.LocalDate.now()}.json")},onRestore={restore.launch(arrayOf("application/json","text/plain","application/octet-stream"))})
@@ -346,6 +390,11 @@ fun MusicApp(model: MusicModel,showStartup: Boolean = false) {
             OrderSheet(sorted,onCancel={sheet=null},onSave={ids -> model.customOrder(ids,if(screen == "playlist") playlistId else null);sheet=null;completed("已保存歌曲顺序")})
         }
         if(sheet == "queue") QueueSheet(library,playback,model,onDismiss={sheet=null},onFeedback={completed(it)})
+        if(sheet == "sleep-timer") ModalBottomSheet(onDismissRequest={sheet=null},sheetState=rememberModalBottomSheetState(skipPartiallyExpanded=true)) {
+            SheetTitle("睡眠计时");SleepTimerPanel(sleepTimer,playback.connected,model::setSleepTimer,model::cancelSleepTimer)
+        }
+        if(sheet == "clear-recent") AlertDialog(onDismissRequest={sheet=null},title={Text("清空最近播放？")},text={Text("只清除播放记录，音乐文件和歌单保留。")},
+            confirmButton={TextButton(onClick={model.repository.clearRecentPlayed();sheet=null;completed("已清空最近播放")}) {Text("清空")}},dismissButton={TextButton(onClick={sheet=null}) {Text("取消")}})
         if(sheet == "edit-playlist" && playlist != null) PlaylistEditSheet(playlist,onDismiss={sheet=null},onSave={name,description ->
             if(model.repository.editPlaylist(playlist.id,name,description)) {sheet=null;completed("已保存歌单")}
             else {sheet=null;message("歌单已变化，请重新编辑")}
@@ -383,7 +432,7 @@ fun MusicApp(model: MusicModel,showStartup: Boolean = false) {
             } else message("歌曲已变化，请重新选择")
             addSong=null
         })
-        if(info != null) SongInfo(info!!) {info=null}
+        if(info != null) SongInfo(byId[info!!.id] ?: info!!) {info=null}
         if(create) NameDialog("新建歌单",onDismiss={create=false}) {name ->
             model.repository.createPlaylist(name);create=false
         }
@@ -441,7 +490,7 @@ fun MusicApp(model: MusicModel,showStartup: Boolean = false) {
         }
     }
 }
-@Composable private fun SongRow(song: Song,index: Int,selected: Boolean,onClick:()->Unit,onAdd:()->Unit,onInfo:()->Unit,modifier: Modifier=Modifier,onRemove:(()->Unit)?=null,favorite: Boolean=false,onFavorite:(()->Unit)?=null) {
+@Composable private fun SongRow(song: Song,index: Int,selected: Boolean,onClick:()->Unit,onAdd:()->Unit,onInfo:()->Unit,modifier: Modifier=Modifier,onRemove:(()->Unit)?=null,favorite: Boolean=false,onFavorite:(()->Unit)?=null,onNext:(()->Unit)?=null,onAppend:(()->Unit)?=null) {
     var menu by remember { mutableStateOf(false) }
     val source=remember {MutableInteractionSource()}
     val background by animateColorAsState(if(selected) MaterialTheme.colorScheme.primary.copy(alpha=.055f) else Color.Transparent,tween(160),label="current-song-surface")
@@ -451,12 +500,14 @@ fun MusicApp(model: MusicModel,showStartup: Boolean = false) {
         Cover(song,Modifier.size(44.dp))
         Column(Modifier.weight(1f).padding(horizontal=12.dp)) {
             Text(song.title,maxLines=1,overflow=TextOverflow.Ellipsis,fontSize=15.sp,color=if(selected) MaterialTheme.colorScheme.primary else ink,fontWeight=if(selected) FontWeight.SemiBold else FontWeight.Normal)
-            Text(if(song.available) "${song.artist} · ${song.format}" else "文件待重新授权",maxLines=1,overflow=TextOverflow.Ellipsis,fontSize=11.sp,color=muted,modifier=Modifier.padding(top=4.dp))
+            Text(if(song.available) "${song.artist} · ${song.album}" else "文件待重新授权",maxLines=1,overflow=TextOverflow.Ellipsis,fontSize=11.sp,color=muted,modifier=Modifier.padding(top=4.dp))
         }
         Text(timeLabel(song.duration),fontSize=11.sp,color=muted)
         if(onFavorite != null) FavoriteButton(song,favorite,onFavorite)
         Box { ExpressiveIconButton(onClick={menu=true}) { Icon(Icons.Outlined.MoreVert,"歌曲操作",tint=menuTint) }
             DropdownMenu(menu,{menu=false}) {
+                if(onNext != null) DropdownMenuItem(text={Text("下一首播放")},enabled=song.available,onClick={menu=false;onNext()})
+                if(onAppend != null) DropdownMenuItem(text={Text("追加队尾")},enabled=song.available,onClick={menu=false;onAppend()})
                 DropdownMenuItem(text={Text("添加到歌单")},onClick={menu=false;onAdd()})
                 DropdownMenuItem(text={Text("歌曲信息")},onClick={menu=false;onInfo()})
                 if(onRemove != null) DropdownMenuItem(text={Text("从歌单移除")},onClick={menu=false;onRemove()})
@@ -482,7 +533,7 @@ fun MusicApp(model: MusicModel,showStartup: Boolean = false) {
     }
 }
 @Composable internal fun SongList(songs: List<Song>,total: Int,currentId: String?,modifier: Modifier = Modifier,
-    onPlay:(Song)->Unit,onAdd:(Song)->Unit,onInfo:(Song)->Unit,onRemove:((Song)->Unit)?=null,favoriteIds: Set<String> = emptySet(),onFavorite:((Song)->Unit)?=null) {
+    onPlay:(Song)->Unit,onAdd:(Song)->Unit,onInfo:(Song)->Unit,onRemove:((Song)->Unit)?=null,favoriteIds: Set<String> = emptySet(),onFavorite:((Song)->Unit)?=null,onNext:((Song)->Unit)?=null,onAppend:((Song)->Unit)?=null) {
     val list=rememberLazyListState()
     val scope=rememberCoroutineScope()
     val density=LocalDensity.current
@@ -501,7 +552,7 @@ fun MusicApp(model: MusicModel,showStartup: Boolean = false) {
             itemsIndexed(songs,key={_,song->song.id}) {index,song ->
                 SongRow(song,index+1,song.id == currentId,{onPlay(song)},{onAdd(song)},{onInfo(song)},
                     modifier=Modifier.animateItem(placementSpec=spring(dampingRatio=.9f,stiffness=450f)),onRemove=onRemove?.let {remove -> {remove(song)}},
-                    favorite=song.id in favoriteIds,onFavorite=onFavorite?.let {like -> {like(song)}})
+                    favorite=song.id in favoriteIds,onFavorite=onFavorite?.let {like -> {like(song)}},onNext=onNext?.let {next -> {next(song)}},onAppend=onAppend?.let {append -> {append(song)}})
             }
             item {Text("共 $total 首歌曲",Modifier.fillMaxWidth().padding(20.dp),textAlign=TextAlign.Center,fontSize=11.sp,color=muted)}
         }
@@ -518,20 +569,20 @@ fun MusicApp(model: MusicModel,showStartup: Boolean = false) {
                         list.animateScrollToItem(currentIndex,-((viewport-rowHeight)/2).coerceAtLeast(0))
                     } finally {locating=false}
                 }
-            },modifier=Modifier.testTag("locate-current-song"),shape=CircleShape,containerColor=Color.White,contentColor=MaterialTheme.colorScheme.primary) {
+            },modifier=Modifier.testTag("locate-current-song"),shape=CircleShape,containerColor=MaterialTheme.colorScheme.surface,contentColor=MaterialTheme.colorScheme.primary) {
                 Icon(Icons.Outlined.MyLocation,"定位当前播放歌曲",Modifier.size(22.dp))
             }
         }
     }
 }
 @Composable private fun GroupList(songs: List<Song>,tab: Int,onSelect:(String)->Unit) {
-    val groups=songs.groupBy { if(tab == 1) "${it.artist}\u0000${it.album}" else it.artist }.toSortedMap()
+    val groups=songs.groupBy { if(tab == 1) it.albumKey else it.artist }.toSortedMap()
     LazyColumn(contentPadding=PaddingValues(24.dp),verticalArrangement=Arrangement.spacedBy(16.dp)) {
         items(groups.keys.toList(),key={it}) { key -> val tracks=groups.getValue(key)
             val source=remember {MutableInteractionSource()}
             Row(Modifier.animateItem().fillMaxWidth().pressScale(source,.985f).clickable(interactionSource=source,indication=LocalIndication.current) {onSelect(key)},verticalAlignment=Alignment.CenterVertically) {
                 Cover(tracks.first(),Modifier.size(60.dp))
-                Column(Modifier.padding(horizontal=16.dp).weight(1f)) { Text(if(tab == 1) tracks.first().album else key,maxLines=1,overflow=TextOverflow.Ellipsis,fontSize=17.sp); Text("${tracks.size} 首${if(tab == 1) " · ${tracks.first().artist}" else ""}",fontSize=12.sp,color=muted,modifier=Modifier.padding(top=6.dp)) }
+                Column(Modifier.padding(horizontal=16.dp).weight(1f)) { Text(if(tab == 1) tracks.first().album else key,maxLines=1,overflow=TextOverflow.Ellipsis,fontSize=17.sp); Text("${tracks.size} 首${if(tab == 1) " · ${tracks.first().albumDisplayArtist}" else ""}",fontSize=12.sp,color=muted,modifier=Modifier.padding(top=6.dp)) }
                 Icon(Icons.Outlined.ChevronRight,null)
             }
         }
@@ -547,7 +598,7 @@ fun MusicApp(model: MusicModel,showStartup: Boolean = false) {
 }
 @Composable private fun MiniPlayer(song: Song,p: PlaybackState,model: MusicModel,onOpen:()->Unit) {
     val source=remember {MutableInteractionSource()}
-    Surface(color=Color.White,shadowElevation=1.dp) { Row(Modifier.testTag("mini-player").fillMaxWidth().pressScale(source,.99f).clickable(interactionSource=source,indication=LocalIndication.current,onClick=onOpen).padding(start=16.dp,top=8.dp,bottom=8.dp),verticalAlignment=Alignment.CenterVertically) {
+    Surface(color=MaterialTheme.colorScheme.surface,shadowElevation=1.dp) { Row(Modifier.testTag("mini-player").fillMaxWidth().pressScale(source,.99f).clickable(interactionSource=source,indication=LocalIndication.current,onClick=onOpen).padding(start=16.dp,top=8.dp,bottom=8.dp),verticalAlignment=Alignment.CenterVertically) {
         Crossfade(song,animationSpec=tween(180),label="mini-artwork") {Cover(it,Modifier.size(40.dp))}
         Column(Modifier.weight(1f).padding(horizontal=12.dp)) { Text(song.title,maxLines=1,overflow=TextOverflow.Ellipsis,fontSize=14.sp); Text(song.artist,maxLines=1,overflow=TextOverflow.Ellipsis,fontSize=11.sp,color=muted) }
         ExpressiveIconButton(onClick={model.previous()},enabled=p.connected,tactile=true) {Icon(Icons.Outlined.SkipPrevious,"上一首")}

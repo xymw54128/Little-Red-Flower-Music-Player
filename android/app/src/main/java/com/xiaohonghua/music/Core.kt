@@ -23,7 +23,12 @@ data class Song(
     val available: Boolean = true,
     val lyricFile: String = "",
     val artworkRevision: String = "",
+    val albumArtist: String = "",
+    val disc: String = "",
+    val lyricRevision: String = "",
 ) {
+    val albumDisplayArtist: String get() = albumArtist.trim().ifBlank {artist}
+    val albumKey: String get() = "${albumDisplayArtist}\u0000$album"
     // Matching on a new phone must not rely on provider-specific document IDs.
     val migrationKey: String get() = "${name.lowercase(Locale.ROOT)}|$size"
 }
@@ -143,6 +148,7 @@ data class Settings(
     val scale: Float = 1f,
     val x: Float = .5f,
     val y: Float = .5f,
+    val nightMode: Boolean = false,
 )
 data class LyricLine(val time: Long, val text: String, val endTime: Long = Long.MAX_VALUE) {
     val startTime: Long get() = time
@@ -280,6 +286,50 @@ fun orderedSongs(songs: List<Song>, mode: SortMode, custom: List<String>, random
         }
     }
 }
+
+// FLAC/Vorbis and ID3 may store numbers as "2/3"; compare their first number.
+fun tagNumber(value: String): Int? = value.trim().substringBefore('/').trim().toIntOrNull()?.takeIf {it > 0}
+
+fun albumSongs(songs: List<Song>): List<Song> {
+    val collator=Collator.getInstance(Locale.CHINA).apply {strength=Collator.PRIMARY}
+    return songs.sortedWith(compareBy<Song> {tagNumber(it.disc) ?: 1}
+        .thenBy {tagNumber(it.track) ?: Int.MAX_VALUE}
+        .thenComparator {a,b -> collator.compare(a.title,b.title).takeIf {it != 0} ?: a.id.compareTo(b.id)})
+}
+
+const val MAX_LYRIC_OFFSET = 10_000L
+const val RECENT_PLAYED_LIMIT = 100
+
+// Positive calibration delays the displayed lyric. Negative positions keep the
+// first line unhighlighted until its calibrated timestamp, rather than clamping early.
+fun lyricPosition(position: Long, offset: Long): Long {
+    val bounded=offset.coerceIn(-MAX_LYRIC_OFFSET,MAX_LYRIC_OFFSET)
+    return when {
+        bounded > 0 && position < Long.MIN_VALUE+bounded -> Long.MIN_VALUE
+        bounded < 0 && position > Long.MAX_VALUE+bounded -> Long.MAX_VALUE
+        else -> position-bounded
+    }
+}
+
+fun mediaPosition(lyricTime: Long, offset: Long, duration: Long): Long {
+    val bounded=offset.coerceIn(-MAX_LYRIC_OFFSET,MAX_LYRIC_OFFSET)
+    val position=when {
+        bounded > 0 && lyricTime > Long.MAX_VALUE-bounded -> Long.MAX_VALUE
+        bounded < 0 && lyricTime < Long.MIN_VALUE-bounded -> Long.MIN_VALUE
+        else -> lyricTime+bounded
+    }
+    return position.coerceIn(0,duration.coerceAtLeast(0))
+}
+
+fun recentPlayedIds(current: List<String>, id: String, known: Set<String>): List<String> =
+    (listOf(id)+current).filter(known::contains).distinct().take(RECENT_PLAYED_LIMIT)
+
+// Unknown provider timestamps are never safe for reusing a sibling LRC cache.
+fun lyricRevision(uri: String, size: Long, modified: Long): String =
+    if(modified > 0) "$uri|$size|$modified" else ""
+
+fun reuseAudioTags(previous: Song?, name: String, size: Long, modified: Long, force: Boolean): Boolean =
+    !force && previous != null && previous.available && previous.name == name && previous.size == size && previous.modified == modified
 
 fun reconcileSongs(existing: List<Song>, scanned: List<Song>, source: String): List<Song> {
     val scannedById = scanned.associateBy { it.id }

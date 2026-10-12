@@ -6,6 +6,7 @@ import android.net.Uri
 import android.os.Build
 import android.provider.MediaStore
 import android.view.KeyEvent
+import androidx.compose.ui.graphics.toPixelMap
 import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.lifecycle.ViewModelProvider
@@ -58,6 +59,8 @@ class MainNavigationUiTest {
                     put("playlists",JSONArray())
                     put("folders",JSONArray())
                     put("manualLyrics",JSONObject())
+                    put("lyricOffsets",JSONObject())
+                    put("recentPlayed",JSONArray())
                     put("settings",Settings(monitor=false).toJson())
                     put("sort",SortMode.TITLE.name)
                     put("custom",JSONArray())
@@ -73,7 +76,7 @@ class MainNavigationUiTest {
     private fun ready(): MusicModel {
         val model=ViewModelProvider(compose.activity)[MusicModel::class.java]
         compose.waitUntil(60_000) {
-            model.library.value.ready && model.library.value.songs.size == 2 && model.playback.value.connected &&
+            model.library.value.ready && !model.library.value.busy && model.library.value.songs.size == 2 && model.playback.value.connected &&
                 compose.onAllNodesWithTag("launch-animation").fetchSemanticsNodes().isEmpty()
         }
         compose.runOnIdle {model.stopForRestore()}
@@ -414,4 +417,158 @@ class MainNavigationUiTest {
         compose.onNodeWithText("歌曲").assertIsDisplayed()
         home("library")
     }
+    @Test fun albumSourceUsesSafePersistenceAndLibrarySortDoesNotReorderItsQueue() {
+        val model=ready()
+        val song=model.library.value.songs.first()
+        val expected=albumSongs(model.library.value.songs.filter {it.albumKey == song.albumKey})
+        compose.onNodeWithText("专辑").performClick()
+        compose.onNodeWithText(song.album).performClick()
+        compose.onNodeWithText("盘号 · 曲号").assertIsDisplayed()
+        compose.onNodeWithTag("song-${song.id}").performClick()
+        val source="album:"+Uri.encode(song.albumKey)
+        compose.waitUntil(30_000) {model.playback.value.queueSource == source && model.playback.value.playing}
+        assertFalse(source.contains('\u0000')) // The album separator must not enter SharedPreferences XML.
+        assertEquals(song.albumKey,Uri.decode(source.substringAfter("album:")))
+        compose.runOnIdle {model.toggle();model.seek(400)}
+        compose.waitUntil(30_000) {!model.playback.value.playing}
+        val queue=model.playback.value.queue
+        assertEquals(expected.map {it.id},queue)
+        compose.runOnIdle {model.applySort(SortMode.RANDOM)}
+        compose.waitForIdle()
+        assertEquals(queue,model.playback.value.queue)
+        assertEquals(song.id,model.playback.value.currentId)
+        assertEquals(source,model.playback.value.queueSource)
+        assertFalse(model.playback.value.playing)
+        compose.waitUntil(30_000) {LibraryStore(context).prefs.getString("queueSource",null) == source}
+    }
+    @Test fun songMetadataPlaylistDescriptionAndArtworkReturnDoNotCreateHistoryUntilPlayback() {
+        val model=ready()
+        val songs=model.library.value.songs
+        val song=songs.first()
+        val row=hasAnyAncestor(hasTestTag("song-${song.id}"))
+        compose.onNode(hasText("${song.artist} · ${song.album}") and row,useUnmergedTree=true).assertIsDisplayed()
+        if(song.format.isNotBlank()) compose.onAllNodes(hasText(song.format) and row,useUnmergedTree=true).assertCountEquals(0)
+        assertTrue(model.library.value.recentPlayed.isEmpty())
+        // Preparing an empty queue through the menu must stay silent and must not count as a listen.
+        compose.onNode(hasContentDescription("歌曲操作") and row).performClick()
+        compose.onNodeWithText("追加队尾").performClick()
+        compose.waitUntil(30_000) {model.playback.value.queue == listOf(song.id)}
+        assertFalse(model.playback.value.playing)
+        assertTrue(model.library.value.recentPlayed.isEmpty())
+        lateinit var playlist: Playlist
+        compose.runOnIdle {
+            playlist=model.repository.createPlaylist("升级功能导航测试")
+            model.repository.playlist(playlist.copy(songIds=songs.map {it.id},description="让花朵陪伴每一段旋律"))
+        }
+        compose.onNodeWithTag("nav-playlists").performClick()
+        home("playlists")
+        compose.onNodeWithTag("playlist-card-description-${playlist.id}").assertTextEquals("让花朵陪伴每一段旋律")
+        compose.onNodeWithTag("playlist-${playlist.id}").performClick()
+        compose.onNodeWithTag("playlist-description").assertTextEquals("让花朵陪伴每一段旋律")
+        compose.onNode(hasContentDescription("歌曲操作") and row).performClick()
+        compose.onNodeWithText("歌曲信息").performClick()
+        compose.onNodeWithTag("song-info-cover").performScrollTo().performClick()
+        compose.onNodeWithTag("artwork-viewer").assertIsDisplayed()
+        compose.onNodeWithTag("artwork-close").assertExists()
+        back()
+        compose.onNodeWithTag("artwork-viewer").assertDoesNotExist()
+        compose.onNodeWithText("歌曲信息").assertIsDisplayed()
+        compose.onNodeWithTag("song-info-cover").assertIsDisplayed()
+        back()
+        compose.onNodeWithTag("page-playlist").assertIsDisplayed()
+        assertTrue(model.library.value.recentPlayed.isEmpty())
+        compose.onNodeWithTag("song-${song.id}").performClick()
+        compose.waitUntil(30_000) {model.playback.value.playing && model.library.value.recentPlayed.firstOrNull() == song.id}
+        compose.runOnIdle {model.toggle();model.seek(400)}
+        compose.waitUntil(30_000) {!model.playback.value.playing}
+        assertEquals(listOf(song.id),model.library.value.recentPlayed)
+        assertEquals(listOf(song.id),LibraryStore(context).recentPlayed(songs.map {it.id}.toSet()))
+        compose.onNodeWithTag("nav-library").performClick()
+        home("library")
+        compose.onNodeWithTag("open-recent-playback").performClick()
+        compose.onNodeWithTag("page-recent").assertIsDisplayed()
+        compose.onNodeWithTag("recent-count").assertTextEquals("共 1 首 · 最近播放优先")
+        compose.onNodeWithTag("clear-recent-playback").performClick()
+        compose.onNodeWithText("清空最近播放？").assertIsDisplayed()
+        back()
+        assertEquals(listOf(song.id),model.library.value.recentPlayed)
+        compose.onNodeWithTag("clear-recent-playback").performClick()
+        compose.onNodeWithText("清空").performClick()
+        compose.waitUntil(30_000) {model.library.value.recentPlayed.isEmpty()}
+        compose.onNodeWithText("还没有播放记录").assertIsDisplayed()
+        compose.runOnIdle {model.seek(500)} // Paused seek and later ticks must not recreate cleared history.
+        compose.waitForIdle()
+        assertTrue(model.library.value.recentPlayed.isEmpty())
+        assertEquals(songs,model.library.value.songs)
+        assertTrue(model.library.value.playlists.any {it.id == playlist.id})
+        back()
+        home("library")
+    }
+
+    @Test fun nightThemeSleepRoutesAndPerSongLyricCalibrationSurviveReturningToSettings() {
+        val model=ready()
+        val song=model.library.value.songs.first()
+        compose.onNodeWithTag("nav-settings").performClick()
+        compose.onNodeWithText("主题颜色").performScrollTo().performClick()
+        compose.onNodeWithTag("night-theme").assertIsOff().performClick()
+        compose.waitUntil(30_000) {model.library.value.settings.nightMode}
+        assertTrue(LibraryStore(context).settings().nightMode)
+        val nightPixel=compose.onNodeWithTag("page-theme").captureToImage().toPixelMap()[0,0]
+        assertTrue("The actual page background must become dark",nightPixel.red < .2f && nightPixel.green < .2f && nightPixel.blue < .2f)
+        compose.activityRule.scenario.recreate()
+        compose.waitUntil(30_000) {compose.onAllNodesWithTag("launch-animation").fetchSemanticsNodes().isEmpty()}
+        compose.onNodeWithTag("page-theme").assertIsDisplayed()
+        compose.onNodeWithTag("night-theme").assertIsOn()
+        back()
+        home("settings")
+        compose.onNodeWithText("睡眠计时").performScrollTo().performClick()
+        compose.onNodeWithTag("page-sleep-timer").assertIsDisplayed()
+        compose.onNodeWithTag("sleep-timer-preset-15").performClick()
+        compose.waitUntil(30_000) {model.sleepTimer.value.active}
+        compose.onNodeWithTag("sleep-timer-countdown").assertTextContains("剩余",substring=true)
+        back()
+        home("settings")
+        assertTrue(model.sleepTimer.value.active) // Leaving the panel cannot cancel the service deadline.
+        compose.onNodeWithText("睡眠计时").performScrollTo().performClick()
+        compose.onNodeWithTag("sleep-timer-cancel").performClick()
+        compose.waitUntil(30_000) {!model.sleepTimer.value.active}
+        back()
+        compose.onNodeWithTag("nav-library").performClick()
+        compose.runOnIdle {
+            model.repository.lyrics(song.id,"""[00:00.00]校准第一行
+[00:01.00]校准第二行""")
+            model.play(model.library.value.songs,song.id)
+        }
+        compose.waitUntil(30_000) {model.playback.value.playing}
+        compose.runOnIdle {model.toggle();model.seek(1_050)}
+        compose.waitUntil(30_000) {!model.playback.value.playing}
+        compose.onNodeWithTag("mini-player").performClick()
+        compose.onNodeWithTag("player-sleep-timer").performClick()
+        compose.onNodeWithTag("sleep-timer-preset-30").performClick()
+        compose.waitUntil(30_000) {model.sleepTimer.value.active}
+        back()
+        compose.onNodeWithTag("player-artwork").assertIsDisplayed()
+        compose.runOnIdle {model.cancelSleepTimer()}
+        compose.waitUntil(30_000) {!model.sleepTimer.value.active}
+        compose.onNodeWithTag("player-page-lyrics").performClick()
+        compose.onNodeWithTag("player-sleep-timer").assertDoesNotExist()
+        compose.onNodeWithContentDescription("添加到歌单").assertDoesNotExist()
+        compose.onNodeWithText("${song.title} - ${song.artist}").assertIsDisplayed()
+        compose.onNodeWithContentDescription("收起播放器").performClick()
+        compose.onNodeWithTag("nav-settings").performClick()
+        compose.onNodeWithText("歌词样式").performScrollTo().performClick()
+        compose.onNodeWithTag("lyric-offset-plus").performScrollTo().performClick()
+        compose.waitUntil(30_000) {model.library.value.lyricOffsets[song.id] == 100L}
+        compose.onNodeWithTag("lyric-offset-preview").performScrollTo().assertTextEquals("校准第一行")
+        assertEquals(100L,LibraryStore(context).lyricOffsets(setOf(song.id))[song.id])
+        assertFalse(model.playback.value.playing)
+        assertEquals(1_050L,model.playbackPosition())
+        compose.onNodeWithTag("lyric-offset-reset").performScrollTo().performClick()
+        compose.waitUntil(30_000) {song.id !in model.library.value.lyricOffsets}
+        compose.onNodeWithTag("lyric-offset-preview").assertTextEquals("校准第二行")
+        assertFalse(LibraryStore(context).lyricOffsets(setOf(song.id)).containsKey(song.id))
+        back()
+        home("settings")
+    }
+
 }

@@ -26,7 +26,7 @@ import androidx.compose.ui.unit.sp
     playlist: Playlist,songs: List<Song>,total: Int,currentId: String?,searching: Boolean,
     onPlay: (Song)->Unit,onPlayCover: ()->Unit,onSort: ()->Unit,onBulkAdd: ()->Unit,
     onAdd: (Song)->Unit,onInfo: (Song)->Unit,onRemove: (Song)->Unit,
-    favoriteIds: Set<String>,onFavorite: (Song)->Unit,modifier: Modifier=Modifier
+    favoriteIds: Set<String>,onFavorite: (Song)->Unit,modifier: Modifier=Modifier,onNext:((Song)->Unit)?=null,onAppend:((Song)->Unit)?=null,searchReady:Boolean=true
 ) {
     val density=LocalDensity.current
     var summaryHeight by remember(playlist.id,density) {mutableFloatStateOf(with(density) {140.dp.toPx()})}
@@ -60,8 +60,8 @@ import androidx.compose.ui.unit.sp
         if(songs.isEmpty()) Column(Modifier.fillMaxWidth().weight(1f).padding(32.dp),
             horizontalAlignment=Alignment.CenterHorizontally,verticalArrangement=Arrangement.Center) {
             Icon(Icons.Outlined.LocalFlorist,null,Modifier.size(48.dp),tint=MaterialTheme.colorScheme.primary)
-            Text(if(searching) "没有找到匹配的歌曲" else "歌单还没有歌曲",Modifier.padding(vertical=16.dp),color=muted)
+            Text(if(searching && !searchReady) "正在准备拼音搜索…" else if(searching) "没有找到匹配的歌曲" else "歌单还没有歌曲",Modifier.padding(vertical=16.dp),color=muted)
             if(!searching) TextButton(onClick=onBulkAdd,modifier=Modifier.testTag("playlist-empty-add")) {Text("添加音乐库歌曲")}
-        } else SongList(songs,total,currentId,Modifier.weight(1f),onPlay,onAdd,onInfo,onRemove,favoriteIds,onFavorite)
+        } else SongList(songs,total,currentId,Modifier.weight(1f),onPlay,onAdd,onInfo,onRemove,favoriteIds,onFavorite,onNext,onAppend)
     }
 }

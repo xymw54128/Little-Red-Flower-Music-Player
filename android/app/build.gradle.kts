@@ -10,8 +10,8 @@ android {
         applicationId = "com.xiaohonghua.music"
         minSdk = 26
         targetSdk = 36
-        versionCode = 13
-        versionName = "1.0.6"
+        versionCode = 14
+        versionName = "1.0.7"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
     buildFeatures { compose = true; buildConfig = true }
