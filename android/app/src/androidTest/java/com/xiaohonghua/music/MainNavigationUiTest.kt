@@ -155,25 +155,35 @@ class MainNavigationUiTest {
         compose.onNodeWithTag("favorite-${song.id}").assertIsDisplayed()
     }
 
-    @Test fun playlistCoverPlaysWhileCardSearchAndManagementStayInTheirRoutes() {
+    @Test fun playlistCoverOpensDetailsWithoutChangingPlaybackAndManagementStaysInItsRoute() {
         val model=ready()
         val songs=model.library.value.songs
         lateinit var playlist: Playlist
         compose.runOnIdle {
             playlist=model.repository.createPlaylist("歌单交互测试")
             model.repository.playlist(playlist.copy(songIds=songs.map {it.id}.reversed(),sort=SortMode.CUSTOM,description="春日里的音乐"))
+            model.play(songs,songs.first().id)
         }
+        compose.waitUntil(30_000) {model.playback.value.currentId == songs.first().id && model.playback.value.playing}
+        compose.runOnIdle {model.toggle();model.seek(400)}
+        compose.waitUntil(30_000) {!model.playback.value.playing && model.playback.value.position == 400L}
+        val playingId=model.playback.value.currentId
+        val queue=model.playback.value.queue
+        val queueSource=model.playback.value.queueSource
+        val position=model.playback.value.position
         compose.onNodeWithTag("nav-playlists").performClick()
         home("playlists")
-        compose.onNodeWithTag("play-playlist-${playlist.id}",useUnmergedTree=true).performScrollTo().performClick()
-        compose.waitUntil(30_000) {model.playback.value.currentId == songs.last().id && model.playback.value.playing}
-        home("playlists")
-        assertEquals(songs.map {it.id}.reversed(),model.playback.value.queue)
-        compose.runOnIdle {model.toggle()}
-        compose.waitUntil(30_000) {!model.playback.value.playing}
-        val playingId=model.playback.value.currentId
-        compose.onNodeWithTag("playlist-${playlist.id}").performClick()
+        compose.onNodeWithTag("playlist-card-cover-${playlist.id}",useUnmergedTree=true)
+            .performScrollTo().performTouchInput {click()}
         compose.onNodeWithTag("page-playlist").assertIsDisplayed()
+        compose.onNodeWithTag("playlist-summary-cover").assertHasNoClickAction().performTouchInput {click()}
+        compose.runOnIdle {
+            assertEquals(playingId,model.playback.value.currentId)
+            assertEquals(queue,model.playback.value.queue)
+            assertEquals(queueSource,model.playback.value.queueSource)
+            assertEquals(position,model.playback.value.position)
+            assertFalse(model.playback.value.playing)
+        }
         compose.onNodeWithText("播放全部").assertDoesNotExist()
         compose.onNodeWithTag("playlist-description").assertTextEquals("春日里的音乐")
         compose.onNodeWithTag("playlist-song-count").assertTextEquals("共 2 首")

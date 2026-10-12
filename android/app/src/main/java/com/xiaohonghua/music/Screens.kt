@@ -312,7 +312,7 @@ fun MusicApp(model: MusicModel,showStartup: Boolean = false) {
                         }
                         "playlist" -> playlist?.let {list -> key(list.id) {
                             PlaylistDetailContent(list,displayed,pageBase.size,current?.id,query.isNotBlank(),
-                                onPlay={model.play(displayed,it.id,playlistId=list.id)},onPlayCover={model.play(pageSorted,playlistId=list.id)},
+                                onPlay={model.play(displayed,it.id,playlistId=list.id)},
                                 onSort={sheet="sort"},onBulkAdd={sheet="add-playlist-songs"},onAdd={addSong=it},onInfo={info=it},
                                 onRemove={song -> model.repository.removePlaylistSong(list.id,song.id)?.let {removed ->
                                     haptic();completed("已从「${list.name}」移除",undo={model.repository.restorePlaylistSong(removed)})
@@ -325,9 +325,7 @@ fun MusicApp(model: MusicModel,showStartup: Boolean = false) {
                                 items(library.playlists,key={it.id}) { list ->
                                     val source=remember {MutableInteractionSource()}
                                     Row(Modifier.animateItem().testTag("playlist-${list.id}").fillMaxWidth().pressScale(source,.985f).clip(RoundedCornerShape(20.dp)).background(MaterialTheme.colorScheme.surface).clickable(interactionSource=source,indication=LocalIndication.current) { playlistId=list.id;go("playlist");group=null;query="";searchExpanded=false }.padding(16.dp),verticalAlignment=Alignment.CenterVertically) {
-                                    PlaylistCover(list,Modifier.size(64.dp).testTag("play-playlist-${list.id}").clickable {
-                                         model.play(orderedSongs(list.songIds.mapNotNull(byId::get),list.sort,list.songIds,list.randomIds),playlistId=list.id)
-                                     })
+                                    PlaylistCover(list,Modifier.size(64.dp).testTag("playlist-card-cover-${list.id}"))
                                     Column(Modifier.padding(start=16.dp).weight(1f)) {
                                          Text(list.name,fontWeight=FontWeight.Medium,fontSize=18.sp)
                                          Text(list.description.ifBlank {"暂无描述"},Modifier.testTag("playlist-card-description-${list.id}").padding(top=4.dp),fontSize=12.sp,color=muted,maxLines=2,overflow=TextOverflow.Ellipsis)

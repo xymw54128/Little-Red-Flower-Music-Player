@@ -32,7 +32,7 @@ class PlaylistDetailUiTest {
 
     @Test fun nativeListScrollFullyCollapsesSummaryAndDownwardGestureRestoresIt() {
         compose.setContent {MaterialTheme {Box(Modifier.fillMaxWidth().height(500.dp)) {
-            PlaylistDetailContent(playlist,songs,songs.size,null,false,onPlay={},onPlayCover={},onSort={},
+            PlaylistDetailContent(playlist,songs,songs.size,null,false,onPlay={},onSort={},
                 onBulkAdd={},onAdd={},onInfo={},onRemove={},favoriteIds=emptySet(),onFavorite={})
         }}}
         val expandedHeight=summaryHeight()
@@ -51,21 +51,21 @@ class PlaylistDetailUiTest {
         compose.onNodeWithTag("song-detail-1").assertDoesNotExist()
     }
 
-    @Test fun headerControlsUseIndependentCallbacksAndReportUpdatedMetadata() {
+    @Test fun coverIsDisplayOnlyWhileSongAndSortActionsKeepTheirCallbacks() {
         val current=mutableStateOf(playlist)
-        var coverPlays=0
         var sorts=0
         var rowPlays: String?=null
         compose.setContent {MaterialTheme {Box(Modifier.fillMaxWidth().height(500.dp)) {
             PlaylistDetailContent(current.value,songs,songs.size,null,false,onPlay={rowPlays=it.id},
-                onPlayCover={coverPlays++},onSort={sorts++},onBulkAdd={},onAdd={},onInfo={},onRemove={},
+                onSort={sorts++},onBulkAdd={},onAdd={},onInfo={},onRemove={},
                 favoriteIds=emptySet(),onFavorite={})
         }}}
-        compose.onNodeWithTag("playlist-summary-cover").performClick()
+        compose.onNodeWithTag("playlist-summary-cover").assertHasNoClickAction().performTouchInput {click()}
+        compose.runOnIdle {assertEquals(null,rowPlays)}
         compose.onNodeWithTag("playlist-sort").performClick()
         compose.onNodeWithTag("song-detail-1").performClick()
         compose.runOnIdle {
-            assertEquals(1,coverPlays);assertEquals(1,sorts);assertEquals("detail-1",rowPlays)
+            assertEquals(1,sorts);assertEquals("detail-1",rowPlays)
             current.value=current.value.copy(name="夜晚歌单",description="星光下的旋律")
         }
         compose.onNodeWithText("夜晚歌单").assertIsDisplayed()
@@ -77,11 +77,11 @@ class PlaylistDetailUiTest {
         val searching=mutableStateOf(false)
         var adds=0
         compose.setContent {MaterialTheme {Box(Modifier.fillMaxWidth().height(500.dp)) {
-            PlaylistDetailContent(playlist,emptyList(),0,null,searching.value,onPlay={},onPlayCover={},onSort={},
+            PlaylistDetailContent(playlist,emptyList(),0,null,searching.value,onPlay={},onSort={},
                 onBulkAdd={adds++},onAdd={},onInfo={},onRemove={},favoriteIds=emptySet(),onFavorite={})
         }}}
         compose.onNodeWithText("歌单还没有歌曲").assertIsDisplayed()
-        compose.onNodeWithTag("playlist-summary-cover").assertIsNotEnabled()
+        compose.onNodeWithTag("playlist-summary-cover").assertHasNoClickAction()
         compose.onNodeWithTag("playlist-empty-add").performClick()
         compose.runOnIdle {assertEquals(1,adds);searching.value=true}
         compose.onNodeWithText("没有找到匹配的歌曲").assertIsDisplayed()

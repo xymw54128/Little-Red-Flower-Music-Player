@@ -112,7 +112,10 @@ import androidx.compose.ui.unit.sp
             onConfirm(orderedSongs.map {it.id}.filter(selection::contains))
         }
     }
-    ModalBottomSheet(onDismissRequest=onDismiss,sheetState=rememberModalBottomSheetState(skipPartiallyExpanded=true)) {
+    // The picker list owns vertical gestures, including at its boundaries. Sheet
+    // dragging otherwise moves the whole page and springs it back while browsing.
+    ModalBottomSheet(onDismissRequest=onDismiss,sheetState=rememberModalBottomSheetState(skipPartiallyExpanded=true),
+        sheetGesturesEnabled=false,dragHandle=null) {
         Column(Modifier.fillMaxWidth().heightIn(max=with(LocalDensity.current) {LocalWindowInfo.current.containerSize.height.toDp()}*.88f).imePadding()) {
             SheetTitle(title)
             OutlinedTextField(query,{query=it},Modifier.testTag("playlist-songs-search").fillMaxWidth().padding(horizontal=24.dp),

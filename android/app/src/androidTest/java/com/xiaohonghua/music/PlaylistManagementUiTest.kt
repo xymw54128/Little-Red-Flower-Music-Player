@@ -2,6 +2,7 @@ package com.xiaohonghua.music
 
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.createComposeRule
@@ -62,6 +63,40 @@ class PlaylistManagementUiTest {
         }}
         compose.onNodeWithText("取消").performClick()
         compose.runOnIdle {assertEquals(1,dismisses);assertEquals(0,confirms)}
+    }
+
+    @Test fun pickerListOwnsBoundaryDragsWithoutMovingTheSearchOrLosingSelection() {
+        val longSongs=(1..80).map {index ->
+            Song("pick-$index","content://example/$index","$index.flac","歌曲 $index",artist="花",album="春日")
+        }
+        var dismisses=0
+        val confirmed=mutableListOf<List<String>>()
+        compose.setContent {MaterialTheme {
+            PlaylistSongPicker("添加音乐",longSongs,onDismiss={dismisses++},onConfirm={confirmed+=it})
+        }}
+        compose.onNodeWithTag("playlist-song-choice-pick-1").performClick()
+        val search=compose.onNodeWithTag("playlist-songs-search")
+        val list=compose.onNodeWithTag("playlist-songs-list")
+        val originalSearch=search.getUnclippedBoundsInRoot()
+        val originalList=list.getUnclippedBoundsInRoot()
+        // Hold a downward drag at the first item: the old sheet took this gesture
+        // and moved the entire picker, then bounced upward again on release.
+        list.performTouchInput {
+            down(Offset(center.x,16f))
+            moveTo(Offset(center.x,height*.65f),delayMillis=350)
+        }
+        val heldSearch=search.getUnclippedBoundsInRoot()
+        assertEquals(originalSearch.top.value,heldSearch.top.value,.5f)
+        assertEquals(originalList.top.value,list.getUnclippedBoundsInRoot().top.value,.5f)
+        list.performTouchInput {up()}
+        // Swipe up repeatedly, including beyond the last item. The viewport and
+        // footer must stay put even when the list can no longer consume motion.
+        list.performScrollToIndex(79)
+        repeat(3) {list.performTouchInput {swipeUp(durationMillis=350)}}
+        assertEquals(originalSearch.top.value,search.getUnclippedBoundsInRoot().top.value,.5f)
+        compose.onNodeWithText("已选 1 首").assertIsDisplayed()
+        compose.onNodeWithTag("playlist-songs-confirm").performClick()
+        compose.runOnIdle {assertEquals(0,dismisses);assertEquals(listOf(listOf("pick-1")),confirmed)}
     }
 
     @Test fun editorKeepsDraftAcrossCoverChangesAndSavesTrimmedValuesOnce() {

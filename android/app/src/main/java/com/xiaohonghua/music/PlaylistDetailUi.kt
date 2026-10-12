@@ -2,7 +2,6 @@
 
 package com.xiaohonghua.music
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.LocalFlorist
@@ -16,7 +15,6 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -24,7 +22,7 @@ import androidx.compose.ui.unit.sp
 
 @Composable internal fun PlaylistDetailContent(
     playlist: Playlist,songs: List<Song>,total: Int,currentId: String?,searching: Boolean,
-    onPlay: (Song)->Unit,onPlayCover: ()->Unit,onSort: ()->Unit,onBulkAdd: ()->Unit,
+    onPlay: (Song)->Unit,onSort: ()->Unit,onBulkAdd: ()->Unit,
     onAdd: (Song)->Unit,onInfo: (Song)->Unit,onRemove: (Song)->Unit,
     favoriteIds: Set<String>,onFavorite: (Song)->Unit,modifier: Modifier=Modifier,onNext:((Song)->Unit)?=null,onAppend:((Song)->Unit)?=null,searchReady:Boolean=true
 ) {
@@ -40,8 +38,7 @@ import androidx.compose.ui.unit.sp
             Row(Modifier.fillMaxWidth().wrapContentHeight(Alignment.Top,unbounded=true)
                 .onSizeChanged {summaryHeight=it.height.toFloat()}.padding(horizontal=24.dp,vertical=16.dp),
                 verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.spacedBy(18.dp)) {
-                PlaylistCover(playlist,Modifier.size(88.dp).testTag("playlist-summary-cover")
-                    .clickable(enabled=total > 0,role=Role.Button,onClickLabel="播放歌单",onClick=onPlayCover))
+                PlaylistCover(playlist,Modifier.size(88.dp).testTag("playlist-summary-cover"))
                 Column(Modifier.weight(1f),verticalArrangement=Arrangement.spacedBy(6.dp)) {
                     Text(playlist.name,fontSize=21.sp,fontWeight=FontWeight.SemiBold,maxLines=2,overflow=TextOverflow.Ellipsis)
                     Text(playlist.description.ifBlank {"暂无简介"},Modifier.testTag("playlist-description"),

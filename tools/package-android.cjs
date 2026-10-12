@@ -1,12 +1,12 @@
 const fs=require('node:fs');const path=require('node:path');const cp=require('node:child_process');const crypto=require('node:crypto');
 const config=JSON.parse(fs.readFileSync('.toolchain/env.json','utf8'));
-const version='1.0.7';const versionCode='14';
+const version='1.0.8';const versionCode='15';
 const apk=path.resolve('android/app/build/outputs/apk/release/app-release.apk');
 const output=path.resolve('dist');fs.mkdirSync(output,{recursive:true});
 function check(exe,args) {const result=cp.spawnSync(exe,args,{encoding:'utf8',env:{...process.env,JAVA_HOME:config.javaHome}});if(result.error)throw result.error;if(result.status!==0)throw new Error(result.stdout+result.stderr);return result.stdout+result.stderr;}
 const signing=check(path.join(config.javaHome,'bin/java.exe'),['-jar',path.join(config.sdk,'build-tools/35.0.0/lib/apksigner.jar'),'verify','--verbose','--print-certs',apk]);
 const certificate=text=>text.match(/Signer #1 certificate SHA-256 digest: (\w+)/)?.[1];
-const upgradeCertificates=['0.1.0','0.1.5','1.0.0','1.0.1','1.0.2','1.0.3','1.0.4','1.0.5','1.0.6'].map(version=>{
+const upgradeCertificates=['0.1.0','0.1.5','1.0.0','1.0.1','1.0.2','1.0.3','1.0.4','1.0.5','1.0.6','1.0.7'].map(version=>{
   const previous=path.join(output,`小红花-${version}.apk`);
   if(!fs.existsSync(previous))throw new Error('Upgrade baseline APK missing: '+version);
   const oldSigning=check(path.join(config.javaHome,'bin/java.exe'),['-jar',path.join(config.sdk,'build-tools/35.0.0/lib/apksigner.jar'),'verify','--print-certs',previous]);
@@ -80,7 +80,7 @@ const lint=fs.readFileSync('android/app/build/intermediates/lint_intermediate_te
 if(!lint||Number(lint[1])!==0)throw new Error('Lint errors or missing report');
 if(!metadata.some(m=>m.includes("name='com.xiaohonghua.music'")&&m.includes(`versionName='${version}'`)&&m.includes(`versionCode='${versionCode}'`)))throw new Error('APK identity or version mismatch');
 fs.copyFileSync(apk,dest);
-const report={date:new Date().toISOString(),apk:dest,buildType:'release',debuggable:false,testComponentsAbsent:true,networkPermissionAbsent:true,size:fs.statSync(dest).size,sha256:crypto.createHash('sha256').update(fs.readFileSync(dest)).digest('hex'),metadata,signing:signing.trim(),sameSigningCertificateAs010:sameSigningCertificate,upgradeCertificates,iconResources,launchIcon,headerIcons,playlistCovers,fonts,zipAlign16k:true,arm64LoadSegmentAlignments:aligns,unitTests:suites,lint:{errors:Number(lint[1]),warnings:Number(lint[2])},acceptance:'1.0.7 integrates collection management, native pinyin search, album artist/disc/track ordering, play-next and append-queue, per-song lyric timing adjustment, incremental audio/LRC refresh, service sleep timer, night theme, recent playback and artwork detail viewer. Device gestures, sleep timing and frame performance still require phone acceptance.',nativeTests:'Instrumented tests compile successfully. Device execution status is recorded separately in ANDROID-1.0.7-UI-CHECK.json; compilation alone does not confirm runtime behavior or native frame performance.'};
+const report={date:new Date().toISOString(),apk:dest,buildType:'release',debuggable:false,testComponentsAbsent:true,networkPermissionAbsent:true,size:fs.statSync(dest).size,sha256:crypto.createHash('sha256').update(fs.readFileSync(dest)).digest('hex'),metadata,signing:signing.trim(),sameSigningCertificateAs010:sameSigningCertificate,upgradeCertificates,iconResources,launchIcon,headerIcons,playlistCovers,fonts,zipAlign16k:true,arm64LoadSegmentAlignments:aligns,unitTests:suites,lint:{errors:Number(lint[1]),warnings:Number(lint[2])},acceptance:'1.0.8 removes playlist cover tap-to-play from both overview and detail, and keeps bulk song selection scroll gestures inside its list instead of dragging the modal sheet. Native gesture regression is compiled; phone behavior and frame performance still require acceptance.',nativeTests:'Instrumented tests compile successfully. Device execution status is recorded separately in ANDROID-1.0.8-UI-CHECK.json; compilation alone does not confirm runtime behavior or native frame performance.'};
 fs.writeFileSync(path.join(output,'APK-CHECK.json'),JSON.stringify(report,null,2));
 fs.writeFileSync(path.join(output,`小红花-${version}-CHECK.json`),JSON.stringify(report,null,2));
 fs.writeFileSync(path.join(output,`小红花-${version}.apk.sha256`),report.sha256+'  '+path.basename(dest)+'\n');

@@ -1,14 +1,14 @@
 {
-  "date": "2026-10-12T15:30:04.157Z",
-  "apk": "D:\\music player app\\dist\\小红花-1.0.7.apk",
+  "date": "2026-10-12T15:42:29.168Z",
+  "apk": "D:\\music player app\\dist\\小红花-1.0.8.apk",
   "buildType": "release",
   "debuggable": false,
   "testComponentsAbsent": true,
   "networkPermissionAbsent": true,
   "size": 43939599,
-  "sha256": "540fa53b65ebe2c66a43ab2d2004bd1b8a2606e41756be35d82dd0b2e8300126",
+  "sha256": "5a6f2e7dce928353bae68b2dd742a0ac0bd9907b8b45c161ee025cac2ca4c088",
   "metadata": [
-    "package: name='com.xiaohonghua.music' versionCode='14' versionName='1.0.7' platformBuildVersionName='16' platformBuildVersionCode='36' compileSdkVersion='36' compileSdkVersionCodename='16'",
+    "package: name='com.xiaohonghua.music' versionCode='15' versionName='1.0.8' platformBuildVersionName='16' platformBuildVersionCode='36' compileSdkVersion='36' compileSdkVersionCodename='16'",
     "minSdkVersion:'26'",
     "targetSdkVersion:'36'",
     "application-label:'小红花'",
@@ -51,6 +51,10 @@
     },
     {
       "version": "1.0.6",
+      "sameSigningCertificate": true
+    },
+    {
+      "version": "1.0.7",
       "sameSigningCertificate": true
     }
   ],
@@ -259,6 +263,6 @@
     "errors": 0,
     "warnings": 23
   },
-  "acceptance": "1.0.7 integrates collection management, native pinyin search, album artist/disc/track ordering, play-next and append-queue, per-song lyric timing adjustment, incremental audio/LRC refresh, service sleep timer, night theme, recent playback and artwork detail viewer. Device gestures, sleep timing and frame performance still require phone acceptance.",
-  "nativeTests": "Instrumented tests compile successfully. Device execution status is recorded separately in ANDROID-1.0.7-UI-CHECK.json; compilation alone does not confirm runtime behavior or native frame performance."
+  "acceptance": "1.0.8 removes playlist cover tap-to-play from both overview and detail, and keeps bulk song selection scroll gestures inside its list instead of dragging the modal sheet. Native gesture regression is compiled; phone behavior and frame performance still require acceptance.",
+  "nativeTests": "Instrumented tests compile successfully. Device execution status is recorded separately in ANDROID-1.0.8-UI-CHECK.json; compilation alone does not confirm runtime behavior or native frame performance."
 }
