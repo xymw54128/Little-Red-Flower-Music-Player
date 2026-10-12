@@ -28,11 +28,12 @@ fun JSONArray?.strings(): List<String> = if (this == null) emptyList() else (0 u
 fun Playlist.toJson(backup: Boolean = false): JSONObject = JSONObject().apply {
     put("id", id); put("name", name); put("songIds", JSONArray(songIds)); put("sort", sort.name); put("randomIds", JSONArray(randomIds))
     put("coverPreset",coverPreset); put("coverPhoto",if(backup) "" else coverPhoto)
+    put("description",description.take(PLAYLIST_DESCRIPTION_LIMIT))
 }
 fun playlistFromJson(j: JSONObject): Playlist = Playlist(j.getString("id"), j.getString("name"), j.optJSONArray("songIds").strings(),
     runCatching { SortMode.valueOf(j.optString("sort")) }.getOrDefault(SortMode.CUSTOM), j.optJSONArray("randomIds").strings(),
     j.optInt("coverPreset",defaultPlaylistCover(j.getString("id"))).coerceIn(0,PLAYLIST_COVER_COUNT-1),
-    j.optString("coverPhoto").takeIf {it.matches(Regex("[a-f0-9-]{36}\\.jpg"))}.orEmpty())
+    j.optString("coverPhoto").takeIf {it.matches(Regex("[a-f0-9-]{36}\\.jpg"))}.orEmpty(),j.optString("description").take(PLAYLIST_DESCRIPTION_LIMIT))
 fun Settings.toJson(): JSONObject = JSONObject().apply {
     put("theme", theme); put("font", lyricFont); put("size", lyricSize); put("gap", lyricGap); put("dynamic", dynamicLyrics); put("monitor", monitor)
     put("background", background); put("opacity", opacity); put("scale", scale); put("x", x); put("y", y)

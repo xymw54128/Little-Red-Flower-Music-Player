@@ -44,11 +44,16 @@ class MusicRepository private constructor(private val context: Context) {
     init {
         scope.launch {
             val songs=store.songs()
-            val playlists=normalizeFavorites(store.playlists(),songs.map {it.id}.toSet())
+            val known=songs.map {it.id}.toSet()
+            val playlists=normalizeFavorites(store.playlists().map {playlist ->
+                val members=playlist.songIds.filter(known::contains).distinct()
+                playlist.copy(songIds=members,randomIds=mergeSongOrder(playlist.randomIds,members))
+            },known)
             store.savePlaylists(playlists)
             mutable.value = LibraryState(songs,playlists,store.folders(),store.settings(),
                 runCatching { SortMode.valueOf(store.prefs.getString("sort","TITLE")!!) }.getOrDefault(SortMode.TITLE),
-                store.array("custom").strings(),store.array("random").strings(),store.manualLyrics(),ready=true)
+                mergeSongOrder(store.array("custom").strings(),songs.map {it.id}),
+                mergeSongOrder(store.array("random").strings(),songs.map {it.id}),store.manualLyrics(),ready=true)
             observeFolders()
             updateMonitoring()
             if(foreground) requestRefresh(false,showProgress=false)
@@ -163,7 +168,8 @@ class MusicRepository private constructor(private val context: Context) {
         mutable.update { old ->
             val known=old.songs.map {it.id}.toSet()
             val updated=value.copy(name=if(value.isFavorites) "我喜欢" else value.name,
-                songIds=value.songIds.filter(known::contains).distinct(),randomIds=value.randomIds.filter(known::contains).distinct())
+                songIds=value.songIds.filter(known::contains).distinct(),
+                randomIds=mergeSongOrder(value.randomIds,value.songIds.filter(known::contains)),description=value.description.trim().take(PLAYLIST_DESCRIPTION_LIMIT))
             val playlists=if(old.playlists.any {it.id == updated.id}) old.playlists.map {if(it.id == updated.id) updated else it} else old.playlists+updated
             old.copy(playlists=normalizeFavorites(playlists,known))
         }
@@ -179,6 +185,46 @@ class MusicRepository private constructor(private val context: Context) {
         if(name.trim() == "我喜欢") return state.value.playlists.first {it.isFavorites}
         val preset=(8..17).minBy {index -> state.value.playlists.count {it.coverPreset == index}}
         return Playlist(UUID.randomUUID().toString(),name.trim(),coverPreset=preset).also {playlist(it)}
+    }
+    fun editPlaylist(id: String, name: String, description: String): Boolean {
+        val trimmed=name.trim()
+        if(id != FAVORITES_PLAYLIST_ID && (trimmed.length !in 1..60 || trimmed == "我喜欢")) return false
+        val before=mutable.getAndUpdate {old -> old.copy(playlists=old.playlists.map {playlist ->
+            if(playlist.id == id) playlist.copy(name=if(playlist.isFavorites) "我喜欢" else trimmed,
+                description=description.trim().take(PLAYLIST_DESCRIPTION_LIMIT)) else playlist
+        })}
+        if(before.playlists.none {it.id == id}) return false
+        store.savePlaylists(state.value.playlists)
+        return true
+    }
+    fun addPlaylistSongs(id: String, ids: List<String>): Int {
+        val before=mutable.getAndUpdate {old -> old.copy(playlists=old.playlists.map {playlist ->
+            if(playlist.id == id) addPlaylistMembers(playlist,ids,old.songs.map {it.id}.toSet()) else playlist
+        })}
+        val previous=before.playlists.find {it.id == id} ?: return 0
+        val updated=addPlaylistMembers(previous,ids,before.songs.map {it.id}.toSet())
+        if(updated != previous) store.savePlaylists(state.value.playlists)
+        return (updated.songIds.toSet()-previous.songIds.toSet()).size
+    }
+    fun removePlaylistSongs(id: String, ids: List<String>): RemovedPlaylistSongs? {
+        val selected=ids.toSet()
+        val before=mutable.getAndUpdate {old -> old.copy(playlists=old.playlists.map {playlist ->
+            if(playlist.id == id) removePlaylistMembers(playlist,selected) else playlist
+        })}
+        val previous=before.playlists.find {it.id == id} ?: return null
+        val removed=previous.songIds.filter(selected::contains).distinct()
+        if(removed.isEmpty()) return null
+        store.savePlaylists(state.value.playlists)
+        return RemovedPlaylistSongs(previous,removed)
+    }
+    fun restorePlaylistSongs(removed: RemovedPlaylistSongs): Boolean {
+        val before=mutable.getAndUpdate {old -> old.copy(playlists=old.playlists.map {playlist ->
+            if(playlist.id == removed.playlist.id) restoreRemovedPlaylistSongs(playlist,removed,old.songs.map {it.id}.toSet()) else playlist
+        })}
+        val playlist=before.playlists.find {it.id == removed.playlist.id} ?: return false
+        val changed=restoreRemovedPlaylistSongs(playlist,removed,before.songs.map {it.id}.toSet()) != playlist
+        if(changed) store.savePlaylists(state.value.playlists)
+        return changed
     }
     fun playlistCover(id: String, preset: Int, photo: String = ""): Boolean {
         if(state.value.playlists.none {it.id == id}) return false
@@ -217,13 +263,30 @@ class MusicRepository private constructor(private val context: Context) {
         if(changed) store.savePlaylists(state.value.playlists)
         return changed
     }
-    fun sort(mode: SortMode, playlistId: String? = null) {
-        if(playlistId != null) state.value.playlists.find { it.id == playlistId }?.let { playlist(it.copy(sort=mode,randomIds=if(mode == SortMode.RANDOM) it.songIds.shuffled() else it.randomIds)) }
-        else { mutable.update { it.copy(sort=mode,random=if(mode == SortMode.RANDOM) it.songs.shuffled().map(Song::id) else it.random) }; saveOrder() }
+    fun sort(mode: SortMode, playlistId: String? = null): Boolean {
+        val before=mutable.getAndUpdate {old ->
+            if(playlistId != null) old.copy(playlists=old.playlists.map {playlist ->
+                if(playlist.id == playlistId) playlist.copy(sort=mode,
+                    randomIds=if(mode == SortMode.RANDOM) playlist.songIds.distinct().shuffled() else playlist.randomIds) else playlist
+            }) else old.copy(sort=mode,random=if(mode == SortMode.RANDOM) old.songs.shuffled().map(Song::id) else old.random)
+        }
+        if(playlistId != null) {
+            if(before.playlists.none {it.id == playlistId}) return false
+            store.savePlaylists(state.value.playlists)
+        } else saveOrder()
+        return true
     }
-    fun customOrder(ids: List<String>, playlistId: String? = null) {
-        if(playlistId != null) state.value.playlists.find { it.id == playlistId }?.let { playlist(it.copy(songIds=ids,sort=SortMode.CUSTOM)) }
-        else { mutable.update { it.copy(custom=ids,sort=SortMode.CUSTOM) }; saveOrder() }
+    fun customOrder(ids: List<String>, playlistId: String? = null): Boolean {
+        val before=mutable.getAndUpdate {old ->
+            if(playlistId != null) old.copy(playlists=old.playlists.map {playlist ->
+                if(playlist.id == playlistId) playlist.copy(songIds=mergeSongOrder(ids,playlist.songIds),sort=SortMode.CUSTOM) else playlist
+            }) else old.copy(custom=mergeSongOrder(ids,orderedSongs(old.songs,old.sort,old.custom,old.random).map {it.id}),sort=SortMode.CUSTOM)
+        }
+        if(playlistId != null) {
+            if(before.playlists.none {it.id == playlistId}) return false
+            store.savePlaylists(state.value.playlists)
+        } else saveOrder()
+        return true
     }
     private fun saveOrder() { state.value.let { store.prefs.edit().putString("sort",it.sort.name).putString("custom",JSONArray(it.custom).toString()).putString("random",JSONArray(it.random).toString()).apply() } }
     fun lyrics(id: String, text: String?) {
@@ -250,7 +313,8 @@ class MusicRepository private constructor(private val context: Context) {
             require(a.length() <= 5000)
             (0 until a.length()).map { playlistFromJson(a.getJSONObject(it)).let { p ->
                 require(p.id.length in 1..128 && p.name.length in 1..60) { "歌单数据无效" }
-                p.copy(songIds=p.songIds.filter(known::contains).distinct(),randomIds=p.randomIds.filter(known::contains).distinct(),coverPhoto="")
+                val members=p.songIds.filter(known::contains).distinct()
+                p.copy(songIds=members,randomIds=mergeSongOrder(p.randomIds,members),coverPhoto="")
             } }
         }
         require(parsedPlaylists.map {it.id}.distinct().size == parsedPlaylists.size) { "歌单编号重复" }

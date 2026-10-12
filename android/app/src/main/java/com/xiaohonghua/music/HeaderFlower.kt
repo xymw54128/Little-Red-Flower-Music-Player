@@ -3,13 +3,12 @@ package com.xiaohonghua.music
 import android.provider.Settings as SystemSettings
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
@@ -93,12 +92,13 @@ internal fun InteractiveHeaderFlower(page: String,modifier: Modifier=Modifier) {
         }
     }
 
-    Box(modifier.size(48.dp).clip(CircleShape).testTag("$page-header-flower")
+    Box(modifier.size(48.dp).testTag("$page-header-flower")
         .semantics {contentDescription=when(page) {
             "playlists" -> "重绘歌单小红花"
             "settings" -> "绽放设置小红花"
             else -> "旋转音乐库小红花"
-        }}.clickable(role=Role.Button,onClickLabel="播放小红花动画") {
+        }}.clickable(interactionSource=remember {MutableInteractionSource()},indication=null,
+            role=Role.Button,onClickLabel="播放小红花动画") {
             // Every tap restarts the two-second sequence from the current visible pose.
             start.value=HeaderFlowerMotion.sample(page,elapsed.longValue,start.value)
             elapsed.longValue=0L

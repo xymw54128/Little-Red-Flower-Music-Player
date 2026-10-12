@@ -1,0 +1,90 @@
+{
+  "date": "2026-10-12",
+  "platform": "Android",
+  "version": "1.0.6",
+  "versionCode": 13,
+  "instrumentedTestsCompiled": true,
+  "instrumentedTestsExecuted": false,
+  "status": "compiled_not_executed",
+  "reason": "adb devices -l returned an empty device list in this run. Native UI tests compile, but no device execution or frame performance measurement was possible.",
+  "deviceSnapshot": "List of devices attached: none",
+  "compiledSuites": [
+    {
+      "name": "MainNavigationUiTest",
+      "tests": 7,
+      "scope": "Home and playlist search/navigation, cover playback vs card entry, edit draft through cover modal, bulk routes, protected Favorites and deletion undo"
+    },
+    {
+      "name": "NativeSmokeTest",
+      "tests": 1,
+      "scope": "Emulator-only synthetic FLAC/WAV, lyrics, settings, backup and covers regression"
+    },
+    {
+      "name": "PlaybackOrderTest",
+      "tests": 2,
+      "scope": "Real native ExoPlayer timeline continuity and description legacy/backup JSON compatibility"
+    },
+    {
+      "name": "PlayerNavigationUiTest",
+      "tests": 6,
+      "scope": "Player pager, lyrics, queue/collapse callbacks and shared reorder boundary gesture"
+    },
+    {
+      "name": "PlaylistDetailUiTest",
+      "tests": 3,
+      "scope": "Native metadata header collapse/expand, independent controls and empty/search states"
+    },
+    {
+      "name": "PlaylistManagementUiTest",
+      "tests": 5,
+      "scope": "Edit validation, cover draft preservation, batch search/selection/live pruning and repeated confirm"
+    },
+    {
+      "name": "ReorderUiTest",
+      "tests": 6,
+      "scope": "Stable long drag, edge autoscroll, active membership addition, cancellation restart, live draft reconciliation and footer accessibility"
+    },
+    {
+      "name": "SettingsInteractionUiTest",
+      "tests": 9,
+      "scope": "Local preview/save, inline sheet Back, target change, repeated confirm and lyric import"
+    },
+    {
+      "name": "SongListUiTest",
+      "tests": 3,
+      "scope": "Current-song locator, centering, two-second fade and missing target"
+    }
+  ],
+  "instrumentedTestCount": 42,
+  "unitTestsPassed": 71,
+  "lint": {
+    "errors": 0,
+    "warnings": 17
+  },
+  "nativeFramePerformanceMeasured": false,
+  "phoneAcceptancePending": true,
+  "real100GBLibraryTested": false,
+  "ios": "1.0.1 source retained; no iOS changes or Xcode build in this Android update.",
+  "ordering": {
+    "containerOwnedGesture": true,
+    "liveMembershipChangeInvalidatesPendingLayout": true,
+    "idDraftReconciledOnRefresh": true,
+    "saveMergesCurrentMembership": true,
+    "sourceIsolatedQueueMoves": true,
+    "currentTrackPositionPlayingAndRepeatPreservedByDesign": true,
+    "matchingSortDisablesShuffle": true,
+    "nativeContinuityTestCompiled": true,
+    "nativeContinuityTestExecuted": false
+  },
+  "playlist": {
+    "collapsibleMetadataHeader": true,
+    "collapsedSearch": true,
+    "coverTapPlays": true,
+    "editNameCoverDescription": true,
+    "descriptionLimit": 300,
+    "batchAddAndRemove": true,
+    "favoritesFixedNameAndPermanent": true,
+    "removalPreservesFiles": true
+  },
+  "git": "Local commit only; no push or GitHub release performed."
+}

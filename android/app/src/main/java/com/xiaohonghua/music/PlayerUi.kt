@@ -4,7 +4,6 @@ package com.xiaohonghua.music
 
 import androidx.compose.animation.core.*
 import androidx.compose.animation.Crossfade
-import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.*
 import androidx.compose.foundation.gestures.*
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -26,16 +25,15 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFontFamilyResolver
@@ -43,6 +41,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.customActions
 import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.AnnotatedString
@@ -336,78 +335,213 @@ import java.io.File
 }
 
 @Composable internal fun OrderSheet(songs: List<Song>,onCancel:()->Unit,onSave:(List<String>)->Unit) {
-    val draft=remember {mutableStateListOf<Song>().apply {addAll(songs)}}
-    var draggingId by remember {mutableStateOf<String?>(null)}
-    ModalBottomSheet(onDismissRequest=onCancel) {
-        SheetTitle("自定义顺序","按住右侧手柄拖动；保存后生效")
-        LazyColumn(Modifier.fillMaxWidth().heightIn(max=420.dp),contentPadding=PaddingValues(horizontal=16.dp)) {
-            itemsIndexed(draft,key={_,song->song.id}) {index,song ->
-                ReorderRow(song,index,draft.size,modifier=Modifier.animateItem(fadeInSpec=null,fadeOutSpec=null,placementSpec=if(draggingId == song.id) null else spring(dampingRatio=1f,stiffness=500f)),
-                    onDraggingChanged={dragging -> draggingId=if(dragging) song.id else null},
-                    onMove={direction -> val from=draft.indexOfFirst {it.id == song.id};if(from >= 0) {val to=(from+direction).coerceIn(0,draft.lastIndex);if(from != to) draft.add(to,draft.removeAt(from))} })
+    val source=songs.map {it.id}.distinct()
+    val byId=songs.associateBy {it.id}
+    var draft by remember {mutableStateOf(source)}
+    var dragging by remember {mutableStateOf(false)}
+    LaunchedEffect(source) {draft=reconcileReorderIds(draft,source)}
+    val order=reconcileReorderIds(draft,source)
+    ModalBottomSheet(onDismissRequest=onCancel,modifier=Modifier.fillMaxHeight(),sheetState=rememberModalBottomSheetState(skipPartiallyExpanded=true)) {
+        Column(Modifier.fillMaxWidth().fillMaxHeight()) {
+            SheetTitle("自定义顺序 · "+order.size+" 首","按住手柄拖动，点按手柄可逐首移动")
+            ReorderList(order.mapNotNull(byId::get),onReorder={draft=it},modifier=Modifier.weight(1f).fillMaxWidth(),onDraggingChanged={dragging=it})
+            HorizontalDivider(color=MaterialTheme.colorScheme.outlineVariant.copy(alpha=.55f))
+            Row(Modifier.fillMaxWidth().padding(horizontal=24.dp,vertical=16.dp),horizontalArrangement=Arrangement.spacedBy(16.dp)) {
+                OutlinedButton(onClick=onCancel,modifier=Modifier.weight(1f).heightIn(min=48.dp)) {Text("取消")}
+                Button(onClick={onSave(reconcileReorderIds(draft,source))},enabled=!dragging,modifier=Modifier.testTag("reorder-save").weight(1f).heightIn(min=48.dp)) {Text("保存顺序")}
             }
         }
-        Row(Modifier.fillMaxWidth().padding(24.dp),horizontalArrangement=Arrangement.spacedBy(16.dp)) {OutlinedButton(onClick=onCancel,modifier=Modifier.weight(1f)) {Text("取消")};Button(onClick={onSave(draft.map {it.id})},modifier=Modifier.weight(1f)) {Text("保存顺序")}}
     }
 }
-@Composable internal fun ReorderRow(song: Song,index: Int,count: Int,onMove:(Int)->Unit,modifier: Modifier=Modifier,onClick:(()->Unit)?=null,onRemove:(()->Unit)?=null,onDraggingChanged:(Boolean)->Unit={}) {
-    val latestMove by rememberUpdatedState(onMove)
-    val latestIndex by rememberUpdatedState(index)
-    val latestCount by rememberUpdatedState(count)
-    val latestDragging by rememberUpdatedState(onDraggingChanged)
+private data class ActiveReorderDrag(val id: String,val fingerY: Float,val touchOffset: Float,val height: Float,val finishing: Boolean=false) {
+    val top: Float get()=fingerY-touchOffset
+    val center: Float get()=top+height/2
+}
+@Composable internal fun ReorderList(songs: List<Song>,onReorder:(List<String>)->Unit,modifier: Modifier=Modifier,
+    onDraggingChanged:(Boolean)->Unit={},onClick:((Song)->Unit)?=null,onRemove:((Song)->Unit)?=null) {
+    val scroll=rememberLazyListState()
+    val scope=rememberCoroutineScope()
+    val density=LocalDensity.current
     val haptic=rememberActionHaptic()
-    var offset by remember {mutableFloatStateOf(0f)}
-    var dragging by remember {mutableStateOf(false)}
-    var raised by remember {mutableStateOf(false)}
-    var dragIndex by remember {mutableIntStateOf(index)}
-    val initialHeight=with(LocalDensity.current) {68.dp.toPx()}
-    var rowHeight by remember {mutableFloatStateOf(initialHeight)}
-    val latestHeight by rememberUpdatedState(rowHeight)
-    val restingOffset=animateFloatAsState(offset,if(dragging) snap() else spring(dampingRatio=1f,stiffness=550f),label="reorder-return")
-    val scale=animateFloatAsState(if(dragging) 1.015f else 1f,spring(dampingRatio=1f,stiffness=700f),label="reorder-scale")
-    val lift=animateFloatAsState(if(dragging) 3f else 0f,tween(140),label="reorder-lift")
-    val background=animateColorAsState(if(dragging) MaterialTheme.colorScheme.surfaceContainer else Color.Transparent,tween(140),label="reorder-background")
-    LaunchedEffect(dragging) {if(!dragging) {delay(260);raised=false}}
-    val rowShape=RoundedCornerShape(12.dp)
-    Row(modifier.testTag("reorder-${song.id}").fillMaxWidth().heightIn(min=68.dp).onSizeChanged {rowHeight=it.height.toFloat().coerceAtLeast(1f)}
-        .zIndex(if(raised) 1f else 0f).graphicsLayer {
-            translationY=if(dragging) offset else restingOffset.value;scaleX=scale.value;scaleY=scale.value;shadowElevation=lift.value.dp.toPx();shape=rowShape
-        }.drawBehind {drawRoundRect(background.value,cornerRadius=CornerRadius(12.dp.toPx()))}
-        .then(if(onClick != null) Modifier.clip(rowShape).clickable(onClick=onClick) else Modifier),verticalAlignment=Alignment.CenterVertically) {
-        Text("${index+1}",Modifier.width(30.dp),fontSize=12.sp,color=muted,textAlign=TextAlign.Center)
-        Column(Modifier.weight(1f).padding(horizontal=8.dp)) {Text(song.title,maxLines=1,overflow=TextOverflow.Ellipsis,fontSize=14.sp);Text(song.artist,maxLines=1,overflow=TextOverflow.Ellipsis,fontSize=11.sp,color=muted)}
-        Column {ExpressiveIconButton(onClick={latestMove(-1)},enabled=index > 0,modifier=Modifier.testTag("move-up-${song.id}").size(48.dp),tactile=true) {Icon(Icons.Outlined.KeyboardArrowUp,"上移",Modifier.size(20.dp))};ExpressiveIconButton(onClick={latestMove(1)},enabled=index < count-1,modifier=Modifier.testTag("move-down-${song.id}").size(48.dp),tactile=true) {Icon(Icons.Outlined.KeyboardArrowDown,"下移",Modifier.size(20.dp))}}
-        if(onRemove != null) ExpressiveIconButton(onClick=onRemove,tactile=true) {Icon(Icons.Outlined.Close,"移出队列",Modifier.size(18.dp))}
-        Box(Modifier.testTag("reorder-handle-${song.id}").size(48.dp).pointerInput(song.id) {detectDragGesturesAfterLongPress(
-            onDragStart={dragging=true;raised=true;dragIndex=latestIndex;offset=0f;latestDragging(true);haptic()},
-            onDragEnd={dragging=false;offset=0f;latestDragging(false)},onDragCancel={dragging=false;offset=0f;latestDragging(false)}) {change,amount ->
-            change.consume();offset+=amount.y
-            val threshold=latestHeight
-            while(kotlin.math.abs(offset) >= threshold) {
-                val direction=if(offset > 0f) 1 else -1
-                if(dragIndex+direction !in 0 until latestCount) {offset=offset.coerceIn(-threshold*.2f,threshold*.2f);break}
-                latestMove(direction);dragIndex+=direction;offset-=direction*threshold;haptic()
+    val latestSongs by rememberUpdatedState(songs)
+    val latestReorder by rememberUpdatedState(onReorder)
+    val latestDragging by rememberUpdatedState(onDraggingChanged)
+    var activeDrag by remember {mutableStateOf<ActiveReorderDrag?>(null)}
+    var pendingLayout by remember {mutableStateOf<List<String>?>(null)}
+    val ids=songs.map {it.id}
+    val handleWidth=with(density) {48.dp.toPx()}
+    val horizontalPadding=with(density) {16.dp.toPx()}
+    val edge=with(density) {72.dp.toPx()}
+    val speed=with(density) {900.dp.toPx()}
+    fun clearDrag() {activeDrag=null;pendingLayout=null;latestDragging(false)}
+    fun advanceDrag() {
+        val active=activeDrag ?: return
+        val order=latestSongs.map {it.id}
+        val pending=pendingLayout
+        if(pending != null && pending != order) {
+            // A live folder/queue membership update cannot acknowledge the preceding draft.
+            if(pending.toSet() == order.toSet()) return
+            pendingLayout=null
+        }
+        val slots=scroll.layoutInfo.visibleItemsInfo.map {ReorderSlot(it.key as String,it.index,it.offset.toFloat(),it.size.toFloat())}
+        val target=reorderDragTarget(order,active.id,active.center,slots) ?: return
+        pendingLayout=null
+        val next=moveReorderId(order,active.id,target)
+        if(next != order) {pendingLayout=next;latestReorder(next);haptic()}
+    }
+    fun finishDrag() {
+        if(activeDrag == null || activeDrag?.finishing == true) return
+        val finishing=activeDrag!!.copy(finishing=true)
+        activeDrag=finishing
+        // Let the last layout catch up before resolving a fast final move and enabling Save.
+        scope.launch {
+            repeat(3) {
+                withFrameNanos {}
+                if(activeDrag !== finishing) return@launch
+                advanceDrag()
             }
-            if(dragIndex == 0 && offset < 0f) offset=offset.coerceAtLeast(-threshold*.2f)
-            if(dragIndex == latestCount-1 && offset > 0f) offset=offset.coerceAtMost(threshold*.2f)
-        }},contentAlignment=Alignment.Center) {Icon(Icons.Outlined.DragHandle,"长按拖动排序",tint=MaterialTheme.colorScheme.primary)}
+            clearDrag()
+        }
+    }
+    fun move(id: String,direction: Int) {
+        if(activeDrag != null) return
+        val order=latestSongs.map {it.id}
+        val from=order.indexOf(id)
+        if(from < 0) return
+        val next=moveReorderId(order,id,(from+direction).coerceIn(0,order.lastIndex))
+        if(next != order) {latestReorder(next);haptic()}
+    }
+    LaunchedEffect(ids) {if(activeDrag?.id?.let {it !in ids} == true) clearDrag()}
+    LaunchedEffect(density.density,density.fontScale) {if(activeDrag != null) clearDrag()}
+    LaunchedEffect(activeDrag?.id,density.density,density.fontScale) {
+        if(activeDrag == null) return@LaunchedEffect
+        var lastFrame=withFrameNanos {it}
+        while(isActive && activeDrag != null) {
+            val frame=withFrameNanos {it}
+            val active=activeDrag ?: break
+            if(!active.finishing) {
+                val layout=scroll.layoutInfo
+                val velocity=reorderEdgeVelocity(active.fingerY,layout.viewportStartOffset.toFloat(),layout.viewportEndOffset.toFloat(),edge,speed)
+                if(velocity != 0f) scroll.scrollBy(velocity*((frame-lastFrame)/1_000_000_000f).coerceAtMost(.05f))
+                advanceDrag()
+            }
+            lastFrame=frame
+        }
+    }
+    // This pointer owner never moves or leaves composition when a keyed row changes index.
+    Box(modifier.clipToBounds().pointerInput(scroll,density.density,density.fontScale) {
+        try {
+            awaitEachGesture {
+                val down=awaitFirstDown(requireUnconsumed=false)
+                if(activeDrag != null || down.position.x !in (size.width-horizontalPadding-handleWidth)..(size.width-horizontalPadding)) return@awaitEachGesture
+                val item=scroll.layoutInfo.visibleItemsInfo.firstOrNull {down.position.y >= it.offset && down.position.y < it.offset+it.size}
+                    ?: return@awaitEachGesture
+                val id=item.key as String
+                val press=awaitLongPressOrCancellation(down.id) ?: return@awaitEachGesture
+                if(id !in latestSongs.map {it.id}) return@awaitEachGesture
+                val currentItem=scroll.layoutInfo.visibleItemsInfo.firstOrNull {it.key == id} ?: return@awaitEachGesture
+                activeDrag=ActiveReorderDrag(id,press.position.y,press.position.y-currentItem.offset,currentItem.size.toFloat())
+                latestDragging(true);haptic()
+                press.consume()
+                while(true) {
+                    // Take the active gesture before LazyColumn or the sheet can claim scrolling.
+                    val event=awaitPointerEvent(PointerEventPass.Initial)
+                    val change=event.changes.firstOrNull {it.id == press.id}
+                    if(change == null || change.isConsumed) {clearDrag();break}
+                    change.consume()
+                    if(!change.pressed) {finishDrag();break}
+                    activeDrag=activeDrag?.copy(fingerY=change.position.y)
+                    advanceDrag()
+                }
+            }
+        } finally {if(activeDrag != null) clearDrag()}
+    }) {
+        LazyColumn(Modifier.testTag("reorder-list").fillMaxSize(),state=scroll,userScrollEnabled=activeDrag == null,
+            contentPadding=PaddingValues(vertical=8.dp)) {
+            itemsIndexed(songs,key={_,song -> song.id}) {index,song ->
+                ReorderRow(song,index,songs.size,onMove={move(song.id,it)},
+                    modifier=Modifier.padding(horizontal=16.dp).animateItem(fadeInSpec=null,fadeOutSpec=null,
+                        placementSpec=if(activeDrag?.id == song.id) null else spring(dampingRatio=1f,stiffness=500f)).graphicsLayer {alpha=if(activeDrag?.id == song.id) 0f else 1f},
+                    enabled=activeDrag == null,onClick=onClick?.let {{it(song)}},onRemove=onRemove?.let {{it(song)}})
+            }
+        }
+        activeDrag?.let {active -> latestSongs.firstOrNull {it.id == active.id}?.let {song ->
+            val index=latestSongs.indexOfFirst {it.id == active.id}
+            Box(Modifier.fillMaxWidth().padding(horizontal=16.dp).offset {androidx.compose.ui.unit.IntOffset(0,active.top.toInt())}
+                .height(with(density) {active.height.toDp()}).zIndex(1f).clearAndSetSemantics {}.graphicsLayer {
+                    shadowElevation=3.dp.toPx();shape=RoundedCornerShape(12.dp)
+                }.background(MaterialTheme.colorScheme.surfaceContainer,RoundedCornerShape(12.dp))) {
+                ReorderRow(song,index,songs.size,onMove={},enabled=false)
+            }
+        } }
+    }
+}
+@Composable internal fun ReorderRow(song: Song,index: Int,count: Int,onMove:(Int)->Unit,modifier: Modifier=Modifier,
+    onClick:(()->Unit)?=null,onRemove:(()->Unit)?=null,enabled: Boolean=true) {
+    var menu by remember(song.id) {mutableStateOf(false)}
+    val shape=RoundedCornerShape(12.dp)
+    Row(modifier.testTag("reorder-"+song.id).fillMaxWidth().heightIn(min=68.dp).semantics {
+        customActions=buildList {
+            if(enabled && index > 0) add(androidx.compose.ui.semantics.CustomAccessibilityAction("上移一位") {onMove(-1);true})
+            if(enabled && index < count-1) add(androidx.compose.ui.semantics.CustomAccessibilityAction("下移一位") {onMove(1);true})
+        }
+    }.then(if(onClick != null) Modifier.clip(shape).clickable(enabled=enabled,onClick=onClick) else Modifier),verticalAlignment=Alignment.CenterVertically) {
+        Text(""+(index+1),Modifier.width(30.dp),fontSize=12.sp,color=muted,textAlign=TextAlign.Center)
+        Cover(song,Modifier.size(44.dp))
+        Column(Modifier.weight(1f).padding(start=12.dp,end=4.dp)) {
+            Text(song.title,maxLines=1,overflow=TextOverflow.Ellipsis,fontSize=14.sp,fontWeight=FontWeight.Medium)
+            Text(song.artist,maxLines=1,overflow=TextOverflow.Ellipsis,fontSize=11.sp,color=muted)
+        }
+        if(onRemove != null) ExpressiveIconButton(onClick=onRemove,enabled=enabled,tactile=true) {Icon(Icons.Outlined.Close,"移出队列",Modifier.size(18.dp))}
+        Box {
+            ExpressiveIconButton(onClick={if(enabled) menu=true},enabled=enabled,modifier=Modifier.testTag("reorder-handle-"+song.id).size(48.dp)) {
+                Icon(Icons.Outlined.DragHandle,"排序 "+song.title,tint=muted)
+            }
+            DropdownMenu(expanded=menu && enabled,onDismissRequest={menu=false}) {
+                DropdownMenuItem(text={Text("上移一位")},onClick={menu=false;onMove(-1)},enabled=index > 0,
+                    leadingIcon={Icon(Icons.Outlined.KeyboardArrowUp,null)},modifier=Modifier.testTag("move-up-"+song.id))
+                DropdownMenuItem(text={Text("下移一位")},onClick={menu=false;onMove(1)},enabled=index < count-1,
+                    leadingIcon={Icon(Icons.Outlined.KeyboardArrowDown,null)},modifier=Modifier.testTag("move-down-"+song.id))
+            }
+        }
     }
 }
 @Composable internal fun QueueSheet(library: LibraryState,p: PlaybackState,model: MusicModel,onFeedback:(String)->Unit={},onDismiss:()->Unit) {
     val byId=library.songs.associateBy {it.id}
-    var draggingId by remember {mutableStateOf<String?>(null)}
+    var pendingRemovals by remember {mutableStateOf<Set<String>>(emptySet())}
+    val source=p.queue.distinct().filterNot(pendingRemovals::contains)
+    var draft by remember {mutableStateOf(source)}
+    var pending by remember {mutableStateOf<List<String>?>(null)}
+    var dragging by remember {mutableStateOf(false)}
     var changed by remember {mutableStateOf(false)}
-    ModalBottomSheet(onDismissRequest=onDismiss) {SheetTitle("播放队列 · ${p.queue.size} 首","队列顺序独立于音乐库和歌单")
-        LazyColumn(Modifier.heightIn(max=460.dp),contentPadding=PaddingValues(horizontal=16.dp,vertical=8.dp)) {
-            itemsIndexed(p.queue,key={_,id->id}) {index,id -> byId[id]?.let {song -> ReorderRow(song,index,p.queue.size,
-                modifier=Modifier.animateItem(fadeInSpec=tween(140),fadeOutSpec=tween(120),placementSpec=if(draggingId == id) null else spring(dampingRatio=1f,stiffness=500f)),
-                onDraggingChanged={dragging -> draggingId=if(dragging) id else null},
-                onMove={direction -> val queue=model.playback.value.queue;val from=queue.indexOf(id);if(from >= 0) {
-                    val to=(from+direction).coerceIn(0,queue.lastIndex);if(from != to) {model.queueMove(from,to);changed=true}
-                }},
-                onClick={val current=model.playback.value.queue.indexOf(id);if(current >= 0) model.queuePlay(current)},
-                onRemove={val current=model.playback.value.queue.indexOf(id);if(current >= 0) {model.queueRemove(current);changed=true;onFeedback("已移出播放队列")}})} }
+    fun submit() {
+        val order=reconcileReorderIds(draft,model.playback.value.queue.filterNot(pendingRemovals::contains))
+        draft=order
+        if(order != model.playback.value.queue) {pending=order;model.queueOrder(order);changed=true}
+    }
+    LaunchedEffect(p.queue) {pendingRemovals=pendingRemovals.intersect(p.queue.toSet())}
+    LaunchedEffect(pendingRemovals) {if(pendingRemovals.isNotEmpty()) {delay(2000);pendingRemovals=emptySet()}}
+    LaunchedEffect(source) {
+        draft=if(dragging || pending != null) reconcileReorderIds(draft,source) else source
+        if(pending?.let {source == reconcileReorderIds(it,source)} == true) pending=null
+    }
+    // Intermediate Media3 acknowledgments must not overwrite a local drag draft.
+    // If the controller rejects a request, return to its actual queue after it settles.
+    LaunchedEffect(pending,dragging) {
+        if(pending != null && !dragging) {delay(2000);draft=model.playback.value.queue.distinct();pending=null}
+    }
+    val order=reconcileReorderIds(draft,source)
+    ModalBottomSheet(onDismissRequest=onDismiss,modifier=Modifier.fillMaxHeight(),sheetState=rememberModalBottomSheetState(skipPartiallyExpanded=true)) {
+        Column(Modifier.fillMaxWidth().fillMaxHeight()) {
+            SheetTitle("播放队列 · "+order.size+" 首","按住手柄拖动，点按手柄可逐首移动")
+            ReorderList(order.map {id -> byId[id] ?: Song(id,"",id,"无法读取的歌曲")},modifier=Modifier.weight(1f).fillMaxWidth(),
+                onReorder={draft=it;if(!dragging) submit()},onDraggingChanged={wasDragging -> dragging=wasDragging;if(!wasDragging) submit()},
+                onClick={model.queuePlay(it.id)},onRemove={song ->
+                    pendingRemovals=pendingRemovals+song.id;draft=draft-song.id;pending=pending?.minus(song.id);model.queueRemove(song.id);changed=true;onFeedback("已移出播放队列")
+                })
+            HorizontalDivider(color=MaterialTheme.colorScheme.outlineVariant.copy(alpha=.55f))
+            TextButton(onClick={onDismiss();if(changed) onFeedback("队列已更新")},enabled=!dragging,
+                modifier=Modifier.fillMaxWidth().padding(horizontal=16.dp,vertical=12.dp).heightIn(min=48.dp)) {Text("完成")}
         }
-        TextButton(onClick={onDismiss();if(changed) onFeedback("队列已更新")},modifier=Modifier.fillMaxWidth().padding(16.dp)) {Text("完成")}
     }
 }

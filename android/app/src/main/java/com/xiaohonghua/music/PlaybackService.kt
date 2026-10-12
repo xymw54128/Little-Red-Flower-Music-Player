@@ -4,6 +4,7 @@ import android.app.PendingIntent
 import android.content.Intent
 import android.os.Handler
 import android.os.Looper
+import android.os.Bundle
 import androidx.media3.common.AudioAttributes
 import androidx.media3.common.C
 import androidx.media3.common.MediaItem
@@ -14,8 +15,12 @@ import androidx.media3.session.MediaSession
 import androidx.media3.session.MediaSessionService
 import org.json.JSONArray
 
-fun Song.mediaItem(): MediaItem = MediaItem.Builder().setMediaId(id).setUri(uri).setMediaMetadata(
+private const val QUEUE_SOURCE_KEY = "queueSource"
+val Player.queueSource: String? get() = if(mediaItemCount == 0) null else getMediaItemAt(0).mediaMetadata.extras?.getString(QUEUE_SOURCE_KEY)
+
+fun Song.mediaItem(source: String? = null): MediaItem = MediaItem.Builder().setMediaId(id).setUri(uri).setMediaMetadata(
     MediaMetadata.Builder().setTitle(title).setArtist(artist).setAlbumTitle(album)
+        .setExtras(source?.let {Bundle().apply {putString(QUEUE_SOURCE_KEY,it)}})
         .setArtworkUri(artwork.takeIf { it.isNotBlank() }?.let { android.net.Uri.fromFile(java.io.File(it)).buildUpon().appendQueryParameter("version",artworkRevision).build() }).build()
 ).build()
 
@@ -48,7 +53,7 @@ class PlaybackService : MediaSessionService() {
         val queue = repository.store.array("queue").strings().mapNotNull(byId::get)
         if (queue.isNotEmpty()) {
             val index = queue.indexOfFirst { it.id == prefs.getString("current", "") }.coerceAtLeast(0)
-            player.setMediaItems(queue.map { it.mediaItem() },index,prefs.getLong("position",0).coerceAtLeast(0))
+            player.setMediaItems(queue.map { it.mediaItem(prefs.getString(QUEUE_SOURCE_KEY,null)) },index,prefs.getLong("position",0).coerceAtLeast(0))
             player.repeatMode = prefs.getInt("repeat",Player.REPEAT_MODE_OFF).coerceIn(0,2)
             player.shuffleModeEnabled = prefs.getBoolean("shuffle",false)
             player.prepare() // Restore paused; never start audio unexpectedly at launch.
@@ -63,6 +68,7 @@ class PlaybackService : MediaSessionService() {
         if (!::player.isInitialized) return
         val edit=repository.store.prefs.edit()
         if(queueChanged) edit.putString("queue",JSONArray((0 until player.mediaItemCount).map { player.getMediaItemAt(it).mediaId }).toString())
+            .putString(QUEUE_SOURCE_KEY,player.queueSource)
         edit.putString("current",player.currentMediaItem?.mediaId).putLong("position",player.currentPosition.coerceAtLeast(0))
             .putInt("repeat",player.repeatMode).putBoolean("shuffle",player.shuffleModeEnabled).apply()
     }

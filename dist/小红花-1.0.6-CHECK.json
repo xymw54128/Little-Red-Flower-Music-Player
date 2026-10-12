@@ -1,0 +1,230 @@
+{
+  "date": "2026-10-12T10:35:26.997Z",
+  "apk": "D:\\music player app\\dist\\小红花-1.0.6.apk",
+  "buildType": "release",
+  "debuggable": false,
+  "testComponentsAbsent": true,
+  "networkPermissionAbsent": true,
+  "size": 43874063,
+  "sha256": "d6f4d9fc2617716315918239a11dfc6e514c469ca7d48ff1411787448d586894",
+  "metadata": [
+    "package: name='com.xiaohonghua.music' versionCode='13' versionName='1.0.6' platformBuildVersionName='16' platformBuildVersionCode='36' compileSdkVersion='36' compileSdkVersionCodename='16'",
+    "minSdkVersion:'26'",
+    "targetSdkVersion:'36'",
+    "application-label:'小红花'",
+    "native-code: 'arm64-v8a' 'armeabi-v7a' 'x86' 'x86_64'"
+  ],
+  "signing": "Verifies\r\nVerified using v1 scheme (JAR signing): false\r\nVerified using v2 scheme (APK Signature Scheme v2): true\r\nVerified using v3 scheme (APK Signature Scheme v3): false\r\nVerified using v3.1 scheme (APK Signature Scheme v3.1): false\r\nVerified using v4 scheme (APK Signature Scheme v4): false\r\nVerified for SourceStamp: false\r\nNumber of signers: 1\r\nSigner #1 certificate DN: CN=Xiaohonghua Local Debug, O=Local, C=CN\r\nSigner #1 certificate SHA-256 digest: bc582313cf7ef2723931a83b0836ffd143e09905c420760b073ef434375a416b\r\nSigner #1 certificate SHA-1 digest: 780b575eecb591410211f5737134fb5b485d21af\r\nSigner #1 certificate MD5 digest: 23dbca02550c44e2febe4c6ec1153c7b\r\nSigner #1 key algorithm: RSA\r\nSigner #1 key size (bits): 2048\r\nSigner #1 public key SHA-256 digest: ccaaeb6fdf17cb10d328ebcbd484944039e0dc6483a2a833051fb5413ec13009\r\nSigner #1 public key SHA-1 digest: 5186f3b126533d4b4da347c320f3f9a95967a119\r\nSigner #1 public key MD5 digest: ce8e2276318659f2585c9e42ee65fe22",
+  "sameSigningCertificateAs010": true,
+  "upgradeCertificates": [
+    {
+      "version": "0.1.0",
+      "sameSigningCertificate": true
+    },
+    {
+      "version": "0.1.5",
+      "sameSigningCertificate": true
+    },
+    {
+      "version": "1.0.0",
+      "sameSigningCertificate": true
+    },
+    {
+      "version": "1.0.1",
+      "sameSigningCertificate": true
+    },
+    {
+      "version": "1.0.2",
+      "sameSigningCertificate": true
+    },
+    {
+      "version": "1.0.3",
+      "sameSigningCertificate": true
+    },
+    {
+      "version": "1.0.4",
+      "sameSigningCertificate": true
+    },
+    {
+      "version": "1.0.5",
+      "sameSigningCertificate": true
+    }
+  ],
+  "iconResources": {
+    "path": "res/E4.xml",
+    "adaptive": true,
+    "monochrome": true
+  },
+  "launchIcon": {
+    "path": "res/8Z.xml",
+    "goldCenterOnly": true
+  },
+  "headerIcons": [
+    {
+      "drawable": "ic_flower",
+      "path": "res/Az1.xml",
+      "foregroundOnly": true
+    },
+    {
+      "drawable": "ic_header_playlists",
+      "path": "res/Q8.xml",
+      "foregroundOnly": true
+    },
+    {
+      "drawable": "ic_header_settings",
+      "path": "res/RW.xml",
+      "foregroundOnly": true
+    }
+  ],
+  "playlistCovers": [
+    {
+      "drawable": "ic_cover_peach",
+      "path": "res/wh.xml",
+      "vector": true
+    },
+    {
+      "drawable": "ic_cover_daisy",
+      "path": "res/2n.xml",
+      "vector": true
+    },
+    {
+      "drawable": "ic_cover_tulip",
+      "path": "res/rQ.xml",
+      "vector": true
+    },
+    {
+      "drawable": "ic_cover_lily",
+      "path": "res/gy.xml",
+      "vector": true
+    },
+    {
+      "drawable": "ic_cover_iris",
+      "path": "res/b8.xml",
+      "vector": true
+    },
+    {
+      "drawable": "ic_cover_sunflower",
+      "path": "res/9A.xml",
+      "vector": true
+    },
+    {
+      "drawable": "ic_cover_camellia",
+      "path": "res/zj.xml",
+      "vector": true
+    },
+    {
+      "drawable": "ic_cover_hydrangea",
+      "path": "res/PY.xml",
+      "vector": true
+    },
+    {
+      "drawable": "ic_cover_lotus",
+      "path": "res/ro.xml",
+      "vector": true
+    },
+    {
+      "drawable": "ic_cover_poppy",
+      "path": "res/WI.xml",
+      "vector": true
+    },
+    {
+      "drawable": "ic_cover_favorite",
+      "path": "res/ea.xml",
+      "vector": true
+    }
+  ],
+  "fonts": [
+    {
+      "file": "lxgw_wenkai.ttf",
+      "path": "res/PV.ttf",
+      "version": "1.522",
+      "bytes": 25575676,
+      "sha256": "39ad71264b588165b469e35e6afb162a378dacd1f95348160240ba9038ac3009",
+      "licenseBundled": true
+    },
+    {
+      "file": "source_han_serif_cn.otf",
+      "path": "res/pA.otf",
+      "version": "2.003",
+      "bytes": 11626108,
+      "sha256": "3754ea669c530e2473354f8f6d9f79680a44d7e26ec7d00eeabee4a7e0753c5d",
+      "licenseBundled": true
+    },
+    {
+      "file": "zhuque_fangsong.ttf",
+      "path": "res/i0.ttf",
+      "version": "0.212 (upstream preview)",
+      "bytes": 8824084,
+      "sha256": "558c62730844fe54ba220146ed62f859d4e2880188d92d985f8921c6e3743bc4",
+      "licenseBundled": true
+    }
+  ],
+  "zipAlign16k": true,
+  "arm64LoadSegmentAlignments": [
+    16384,
+    16384,
+    16384
+  ],
+  "unitTests": [
+    {
+      "name": "com.xiaohonghua.music.CoreTest",
+      "tests": 5,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "name": "com.xiaohonghua.music.FavoritesTest",
+      "tests": 12,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "name": "com.xiaohonghua.music.HeaderFlowerMotionTest",
+      "tests": 7,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "name": "com.xiaohonghua.music.LaunchMotionTest",
+      "tests": 3,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "name": "com.xiaohonghua.music.LyricMotionTest",
+      "tests": 16,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "name": "com.xiaohonghua.music.PlaylistOrderTest",
+      "tests": 8,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "name": "com.xiaohonghua.music.PlaylistUndoTest",
+      "tests": 12,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "name": "com.xiaohonghua.music.ReorderDragTest",
+      "tests": 4,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "name": "com.xiaohonghua.music.TagParserTest",
+      "tests": 4,
+      "failures": 0,
+      "errors": 0
+    }
+  ],
+  "lint": {
+    "errors": 0,
+    "warnings": 17
+  },
+  "acceptance": "1.0.6 removes header flower ripple surfaces; adds stable container-owned reorder gestures, reconciled saved ID order and source-aware playback queue reordering. Playlist details have collapsible metadata and search, edit/avatar/description, batch add/remove and undo. Playlist cover taps play the ordered playlist. Native gesture and frame acceptance remain pending.",
+  "nativeTests": "Instrumented tests compile successfully. Device execution status is recorded separately in ANDROID-1.0.6-UI-CHECK.json; compilation alone does not confirm runtime behavior or native frame performance."
+}

@@ -1,14 +1,14 @@
 {
-  "date": "2026-10-11T14:34:00.928Z",
-  "apk": "D:\\music player app\\dist\\小红花-1.0.5.apk",
+  "date": "2026-10-12T10:35:26.997Z",
+  "apk": "D:\\music player app\\dist\\小红花-1.0.6.apk",
   "buildType": "release",
   "debuggable": false,
   "testComponentsAbsent": true,
   "networkPermissionAbsent": true,
-  "size": 43824911,
-  "sha256": "6016a8c7b0a1ece85e37037b3f3859fea35da44ad9f6f4873ccd0c9b725bf086",
+  "size": 43874063,
+  "sha256": "d6f4d9fc2617716315918239a11dfc6e514c469ca7d48ff1411787448d586894",
   "metadata": [
-    "package: name='com.xiaohonghua.music' versionCode='12' versionName='1.0.5' platformBuildVersionName='16' platformBuildVersionCode='36' compileSdkVersion='36' compileSdkVersionCodename='16'",
+    "package: name='com.xiaohonghua.music' versionCode='13' versionName='1.0.6' platformBuildVersionName='16' platformBuildVersionCode='36' compileSdkVersion='36' compileSdkVersionCodename='16'",
     "minSdkVersion:'26'",
     "targetSdkVersion:'36'",
     "application-label:'小红花'",
@@ -43,6 +43,10 @@
     },
     {
       "version": "1.0.4",
+      "sameSigningCertificate": true
+    },
+    {
+      "version": "1.0.5",
       "sameSigningCertificate": true
     }
   ],
@@ -193,8 +197,20 @@
       "errors": 0
     },
     {
+      "name": "com.xiaohonghua.music.PlaylistOrderTest",
+      "tests": 8,
+      "failures": 0,
+      "errors": 0
+    },
+    {
       "name": "com.xiaohonghua.music.PlaylistUndoTest",
       "tests": 12,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "name": "com.xiaohonghua.music.ReorderDragTest",
+      "tests": 4,
       "failures": 0,
       "errors": 0
     },
@@ -209,6 +225,6 @@
     "errors": 0,
     "warnings": 17
   },
-  "acceptance": "1.0.5 restores the light lyric surface, synchronizes theme-colored glyph layers and lazy centering, and anticipates LRC boundaries with speed-aware windows and pre-timestamp completion. Adds ten flower covers and a favorite heart-flower, three restartable two-second header animations, theme-colored selection and revised copy. Device timing and frame performance await phone acceptance.",
-  "nativeTests": "Instrumented tests compile successfully. Device execution status is recorded separately in ANDROID-1.0.5-UI-CHECK.json; compilation alone does not confirm runtime behavior or native frame performance."
+  "acceptance": "1.0.6 removes header flower ripple surfaces; adds stable container-owned reorder gestures, reconciled saved ID order and source-aware playback queue reordering. Playlist details have collapsible metadata and search, edit/avatar/description, batch add/remove and undo. Playlist cover taps play the ordered playlist. Native gesture and frame acceptance remain pending.",
+  "nativeTests": "Instrumented tests compile successfully. Device execution status is recorded separately in ANDROID-1.0.6-UI-CHECK.json; compilation alone does not confirm runtime behavior or native frame performance."
 }

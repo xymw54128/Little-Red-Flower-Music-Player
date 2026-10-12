@@ -30,6 +30,8 @@ data class Song(
 
 enum class SortMode(val label: String) { TITLE("歌曲名 A–Z"), ARTIST("歌手 A–Z"), RANDOM("随机排序"), CUSTOM("自定义排序") }
 const val PLAYLIST_COVER_COUNT = 19
+const val PLAYLIST_DESCRIPTION_LIMIT = 300
+const val LIBRARY_QUEUE_SOURCE = "library"
 const val FAVORITES_FLOWER_COVER = 18
 fun defaultPlaylistCover(id: String): Int = if(id == FAVORITES_PLAYLIST_ID) FAVORITES_FLOWER_COVER else 8+(id.hashCode() and Int.MAX_VALUE)%10
 
@@ -37,7 +39,7 @@ fun defaultPlaylistCover(id: String): Int = if(id == FAVORITES_PLAYLIST_ID) FAVO
 fun upgradeFavoriteFlower(playlist: Playlist): Playlist = if(playlist.isFavorites && playlist.coverPhoto.isEmpty() &&
     playlist.coverPreset == (FAVORITES_PLAYLIST_ID.hashCode() and Int.MAX_VALUE)%8) playlist.copy(coverPreset=FAVORITES_FLOWER_COVER) else playlist
 data class Playlist(val id: String, val name: String, val songIds: List<String> = emptyList(), val sort: SortMode = SortMode.CUSTOM,
-    val randomIds: List<String> = emptyList(), val coverPreset: Int = defaultPlaylistCover(id), val coverPhoto: String = "")
+    val randomIds: List<String> = emptyList(), val coverPreset: Int = defaultPlaylistCover(id), val coverPhoto: String = "", val description: String = "")
 const val FAVORITES_PLAYLIST_ID = "favorites"
 val Playlist.isFavorites: Boolean get() = id == FAVORITES_PLAYLIST_ID
 
@@ -61,6 +63,42 @@ fun toggleFavorite(playlists: List<Playlist>, songId: String): List<Playlist> = 
 }
 data class DeletedPlaylist(val playlist: Playlist, val index: Int)
 data class RemovedPlaylistSong(val playlist: Playlist, val songId: String)
+data class RemovedPlaylistSongs(val playlist: Playlist, val songIds: List<String>)
+
+fun mergeSongOrder(requested: List<String>, current: List<String>): List<String> {
+    val members=current.toSet()
+    return (requested.filter(members::contains)+current).distinct()
+}
+
+fun orderedQueueIds(queue: List<String>, queueSource: String?, ordered: List<String>, source: String?): List<String> {
+    if(queueSource != source) return queue
+    val rank=ordered.distinct().withIndex().associate {it.value to it.index}
+    return queue.sortedBy {rank[it] ?: Int.MAX_VALUE}
+}
+
+fun queueMovePlan(current: List<String>, ordered: List<String>): List<Pair<Int,Int>> {
+    val working=current.toMutableList()
+    return buildList {
+        ordered.forEachIndexed {to,id ->
+            val from=(to until working.size).firstOrNull {working[it] == id}
+            if(from != null && from != to) {
+                working.add(to,working.removeAt(from))
+                add(from to to)
+            }
+        }
+    }
+}
+
+fun addPlaylistMembers(playlist: Playlist, ids: List<String>, knownSongIds: Set<String>): Playlist {
+    val songs=(playlist.songIds+ids).filter(knownSongIds::contains).distinct()
+    return playlist.copy(songIds=songs,randomIds=mergeSongOrder(playlist.randomIds,songs))
+}
+
+fun removePlaylistMembers(playlist: Playlist, ids: Set<String>): Playlist =
+    playlist.copy(songIds=playlist.songIds.filterNot(ids::contains),randomIds=playlist.randomIds.filterNot(ids::contains))
+
+fun restoreRemovedPlaylistSongs(current: Playlist, removed: RemovedPlaylistSongs, knownSongIds: Set<String>): Playlist =
+    removed.songIds.fold(current) {playlist,id -> restoreRemovedPlaylistSong(playlist,RemovedPlaylistSong(removed.playlist,id),knownSongIds)}
 
 fun restoreDeletedPlaylist(playlists: List<Playlist>, deleted: DeletedPlaylist, knownSongIds: Set<String>): List<Playlist> {
     if(deleted.playlist.isFavorites || playlists.any {it.id == deleted.playlist.id}) return playlists

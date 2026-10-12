@@ -2,8 +2,6 @@ package com.xiaohonghua.music
 
 import android.app.Application
 import android.os.Build
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.ui.geometry.Offset
@@ -105,15 +103,11 @@ class PlayerNavigationUiTest {
         val draft=mutableStateListOf<Song>().apply {addAll(tracks)}
         var moves=0
         compose.setContent {MaterialTheme {
-            LazyColumn {
-                itemsIndexed(draft,key={_,track -> track.id}) {index,track ->
-                    ReorderRow(track,index,draft.size,onMove={direction ->
-                        val from=draft.indexOfFirst {it.id == track.id}
-                        val to=(from+direction).coerceIn(0,draft.lastIndex)
-                        if(from != to) {draft.add(to,draft.removeAt(from));moves++}
-                    })
-                }
-            }
+            ReorderList(draft,onReorder={ids ->
+                val byId=draft.associateBy {it.id}
+                val next=ids.mapNotNull(byId::get)
+                if(next != draft.toList()) {draft.clear();draft.addAll(next);moves++}
+            })
         }}
         compose.onNodeWithTag("reorder-handle-reorder-0").performTouchInput {
             down(center);advanceEventTime(650);moveBy(Offset(0f,-height*2f));up()

@@ -22,7 +22,7 @@ import java.util.concurrent.Executor
 
 data class PlaybackState(val connected: Boolean = false, val currentId: String? = null, val queue: List<String> = emptyList(),
     val playing: Boolean = false, val position: Long = 0, val duration: Long = 0, val mode: Int = 0, val error: String? = null,
-    val speed: Float = 1f, val seekRevision: Long = 0)
+    val speed: Float = 1f, val seekRevision: Long = 0, val queueSource: String? = null)
 
 class MusicModel(application: Application) : AndroidViewModel(application) {
     val repository = MusicRepository.get(application)
@@ -53,7 +53,7 @@ class MusicModel(application: Application) : AndroidViewModel(application) {
                     for (i in player.mediaItemCount-1 downTo 0) {
                         val song = byId[player.getMediaItemAt(i).mediaId]
                         if(song == null) player.removeMediaItem(i)
-                        else if(oldById[song.id] != song) player.replaceMediaItem(i,song.mediaItem())
+                        else if(oldById[song.id] != song) player.replaceMediaItem(i,song.mediaItem(player.queueSource))
                     }
                 }
                 previous=state.songs
@@ -67,14 +67,37 @@ class MusicModel(application: Application) : AndroidViewModel(application) {
         mutablePlayback.value=PlaybackState(true,player.currentMediaItem?.mediaId,queue,
             player.isPlaying,player.currentPosition.coerceAtLeast(0),player.duration.takeIf { it != C.TIME_UNSET && it > 0 } ?: 0,
             if(player.shuffleModeEnabled) 3 else when(player.repeatMode) { Player.REPEAT_MODE_ALL -> 1; Player.REPEAT_MODE_ONE -> 2; else -> 0 },player.playerError?.let { "此文件暂时无法播放：${it.errorCodeName}" },
-            player.playbackParameters.speed,seekRevision)
+            player.playbackParameters.speed,seekRevision,player.queueSource)
     }
     // Called on the UI thread's frame clock; no per-frame StateFlow emissions or timeline scans.
     fun playbackPosition(): Long = controller?.currentPosition?.coerceAtLeast(0) ?: playback.value.position
-    fun play(songs: List<Song>, id: String? = null) {
+    fun play(songs: List<Song>, id: String? = null, playlistId: String? = null) {
         val playable=songs.filter { it.available }
         if(playable.isEmpty()) return
-        controller?.apply { setMediaItems(playable.map { it.mediaItem() },playable.indexOfFirst { it.id == id }.coerceAtLeast(0),0); prepare(); play() }
+        controller?.apply { setMediaItems(playable.map { it.mediaItem(playlistId ?: LIBRARY_QUEUE_SOURCE) },playable.indexOfFirst { it.id == id }.coerceAtLeast(0),0); prepare(); play() }
+    }
+    fun applySort(mode: SortMode, playlistId: String? = null) {
+        if(repository.sort(mode,playlistId)) syncSourceOrder(playlistId)
+    }
+    fun customOrder(ids: List<String>, playlistId: String? = null) {
+        if(repository.customOrder(ids,playlistId)) syncSourceOrder(playlistId)
+    }
+    private fun syncSourceOrder(playlistId: String?) {
+        val state=library.value
+        val playlist=playlistId?.let {id -> state.playlists.find {it.id == id} ?: return}
+        val members=playlist?.songIds?.toSet()
+        val songs=if(members == null) state.songs else state.songs.filter {it.id in members}
+        val ordered=orderedSongs(songs,playlist?.sort ?: state.sort,playlist?.songIds ?: state.custom,playlist?.randomIds ?: state.random)
+        reorderQueue(ordered.map {it.id},playlistId ?: LIBRARY_QUEUE_SOURCE)
+    }
+    private fun reorderQueue(ids: List<String>, source: String?) {
+        val player=controller ?: return
+        if(player.queueSource != source) return
+        val queue=(0 until player.mediaItemCount).map {player.getMediaItemAt(it).mediaId}
+        val ordered=orderedQueueIds(queue,player.queueSource,ids,source)
+        queueMovePlan(queue,ordered).forEach {(from,to) -> player.moveMediaItem(from,to)}
+        player.shuffleModeEnabled=false
+        updatePlayback(queueChanged=true)
     }
     fun toggle() { controller?.let { if(it.isPlaying) it.pause() else { if(it.playbackState == Player.STATE_ENDED) it.seekToDefaultPosition(); it.prepare(); it.play() } } }
     fun previous() { controller?.apply {if(hasPreviousMediaItem()) seekToPreviousMediaItem() else seekTo(0)} }
@@ -89,8 +112,12 @@ class MusicModel(application: Application) : AndroidViewModel(application) {
         }
     } }
     fun queueMove(from: Int, to: Int) { controller?.moveMediaItem(from,to) }
+    fun queueOrder(ids: List<String>) { reorderQueue(ids,controller?.queueSource) }
     fun queueRemove(index: Int) { controller?.removeMediaItem(index) }
     fun queuePlay(index: Int) { controller?.apply { seekToDefaultPosition(index); play() } }
+    fun queueRemove(id: String) { queuedIndex(id)?.let(::queueRemove) }
+    fun queuePlay(id: String) { queuedIndex(id)?.let(::queuePlay) }
+    private fun queuedIndex(id: String): Int? = controller?.let {player -> (0 until player.mediaItemCount).firstOrNull {player.getMediaItemAt(it).mediaId == id}}
     fun stopForRestore() { controller?.apply { stop(); clearMediaItems() } }
     fun importLyrics(id: String, uri: Uri, onResult: (String) -> Unit) = viewModelScope.launch {
         val result=runCatching { withContext(Dispatchers.IO) { TagReader(getApplication()).lyricText(uri) } }

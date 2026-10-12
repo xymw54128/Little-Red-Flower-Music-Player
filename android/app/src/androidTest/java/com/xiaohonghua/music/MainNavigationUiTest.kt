@@ -91,6 +91,11 @@ class MainNavigationUiTest {
         compose.waitForIdle()
     }
 
+    private fun playlistOption(label: String) {
+        compose.onNodeWithTag("playlist-menu").performClick()
+        compose.onNodeWithText(label).performClick()
+    }
+
     @Test fun horizontalMainPagesSearchAndFavoritesPreservePlayback() {
         val model=ready()
         home("library")
@@ -122,8 +127,13 @@ class MainNavigationUiTest {
         home("playlists")
         compose.onNodeWithTag("playlist-$FAVORITES_PLAYLIST_ID").performClick()
         compose.onNodeWithTag("page-playlist").assertIsDisplayed()
-        compose.onNodeWithContentDescription("重命名歌单").assertDoesNotExist()
-        compose.onNodeWithContentDescription("删除歌单").assertDoesNotExist()
+        compose.onNodeWithTag("playlist-search-field").assertDoesNotExist()
+        compose.onNodeWithText("播放全部").assertDoesNotExist()
+        compose.onNodeWithTag("playlist-menu").performClick()
+        compose.onNodeWithText("删除歌单").assertDoesNotExist()
+        compose.onNodeWithText("编辑歌单").performClick()
+        compose.onNodeWithTag("playlist-edit-name").assertIsNotEnabled()
+        back()
         compose.onNodeWithTag("favorite-${song.id}").assertIsSelected().performClick()
         compose.waitUntil(30_000) {model.library.value.playlists.first {it.isFavorites}.songIds.isEmpty()}
         compose.onNodeWithText("歌单还没有歌曲").assertIsDisplayed()
@@ -140,6 +150,70 @@ class MainNavigationUiTest {
         back()
         compose.onNodeWithTag("library-search-field").assertDoesNotExist()
         compose.onNodeWithTag("favorite-${song.id}").assertIsDisplayed()
+    }
+
+    @Test fun playlistCoverPlaysWhileCardSearchAndManagementStayInTheirRoutes() {
+        val model=ready()
+        val songs=model.library.value.songs
+        lateinit var playlist: Playlist
+        compose.runOnIdle {
+            playlist=model.repository.createPlaylist("歌单交互测试")
+            model.repository.playlist(playlist.copy(songIds=songs.map {it.id}.reversed(),sort=SortMode.CUSTOM,description="春日里的音乐"))
+        }
+        compose.onNodeWithTag("nav-playlists").performClick()
+        home("playlists")
+        compose.onNodeWithTag("play-playlist-${playlist.id}",useUnmergedTree=true).performScrollTo().performClick()
+        compose.waitUntil(30_000) {model.playback.value.currentId == songs.last().id && model.playback.value.playing}
+        home("playlists")
+        assertEquals(songs.map {it.id}.reversed(),model.playback.value.queue)
+        compose.runOnIdle {model.toggle()}
+        compose.waitUntil(30_000) {!model.playback.value.playing}
+        val playingId=model.playback.value.currentId
+        compose.onNodeWithTag("playlist-${playlist.id}").performClick()
+        compose.onNodeWithTag("page-playlist").assertIsDisplayed()
+        compose.onNodeWithText("播放全部").assertDoesNotExist()
+        compose.onNodeWithTag("playlist-description").assertTextEquals("春日里的音乐")
+        compose.onNodeWithTag("playlist-song-count").assertTextEquals("共 2 首")
+        compose.onNodeWithTag("playlist-search-field").assertDoesNotExist()
+        compose.onNodeWithTag("open-playlist-search").performClick()
+        compose.onNodeWithTag("playlist-search-field").performTextInput("no-playlist-song-match")
+        compose.onNodeWithText("没有找到匹配的歌曲").assertIsDisplayed()
+        compose.onNodeWithTag("playlist-empty-add").assertDoesNotExist()
+        assertEquals(playingId,model.playback.value.currentId)
+        assertFalse(model.playback.value.playing)
+        compose.onNodeWithTag("close-playlist-search").performClick()
+        compose.onNodeWithTag("playlist-search-field").assertDoesNotExist()
+        playlistOption("编辑歌单")
+        compose.onNodeWithTag("playlist-edit-name").performTextReplacement("修改后的歌单")
+        compose.onNodeWithTag("playlist-edit-description").performTextReplacement("夜晚的音乐")
+        compose.onNodeWithTag("playlist-edit-cover").performScrollTo().performClick()
+        back()
+        compose.onNodeWithTag("playlist-edit-name").assertTextContains("修改后的歌单")
+        compose.onNodeWithTag("playlist-edit-description").assertTextContains("夜晚的音乐")
+        compose.onNodeWithTag("playlist-edit-save").performClick()
+        compose.waitUntil(30_000) {model.library.value.playlists.first {it.id == playlist.id}.description == "夜晚的音乐"}
+        compose.onNodeWithTag("playlist-description").assertTextEquals("夜晚的音乐")
+        playlistOption("批量添加音乐")
+        songs.forEach {song -> compose.onNodeWithTag("playlist-song-choice-${song.id}").assertIsNotEnabled()}
+        compose.onNodeWithTag("playlist-songs-confirm").assertIsNotEnabled()
+        back()
+        compose.onNodeWithTag("page-playlist").assertIsDisplayed()
+        playlistOption("删除歌曲")
+        compose.onNodeWithTag("playlist-song-choice-${songs.last().id}").performClick()
+        compose.onNodeWithTag("playlist-songs-confirm").performClick()
+        compose.waitUntil(30_000) {songs.last().id !in model.library.value.playlists.first {it.id == playlist.id}.songIds}
+        compose.onNodeWithTag("playlist-song-count").assertTextEquals("共 1 首")
+        playlistOption("批量添加音乐")
+        compose.onNodeWithTag("playlist-song-choice-${songs.last().id}").assertIsEnabled().performClick()
+        compose.onNodeWithTag("playlist-songs-confirm").performClick()
+        compose.waitUntil(30_000) {model.library.value.playlists.first {it.id == playlist.id}.songIds.size == 2}
+        compose.onNodeWithTag("page-playlist").assertIsDisplayed()
+        compose.onNodeWithTag("playlist-song-count").assertTextEquals("共 2 首")
+        assertEquals(playingId,model.playback.value.currentId)
+        assertFalse(model.playback.value.playing)
+        assertEquals(songs,model.library.value.songs)
+        back()
+        home("playlists")
     }
 
     @Test fun childPagesAndSongSheetsReturnToTheirCaller() {
@@ -173,10 +247,10 @@ class MainNavigationUiTest {
         back()
         compose.onNodeWithText("确认添加").assertDoesNotExist()
         compose.onNodeWithTag("page-playlist").assertIsDisplayed()
-        compose.onNodeWithContentDescription("删除歌单").performClick()
+        playlistOption("删除歌单")
         back()
         assertTrue(model.library.value.playlists.any {it.id == playlist.id})
-        compose.onNodeWithContentDescription("删除歌单").performClick()
+        playlistOption("删除歌单")
         compose.onNodeWithText("删除").performClick()
         home("playlists")
         assertFalse(model.library.value.playlists.any {it.id == playlist.id})
@@ -198,9 +272,9 @@ class MainNavigationUiTest {
         compose.onNodeWithTag("nav-playlists").performClick()
         home("playlists")
         compose.onNodeWithTag("playlist-${playlist.id}").performScrollTo().performClick()
-        compose.onNodeWithContentDescription("重命名歌单").performClick()
-        compose.onNodeWithTag("playlist-name-field").performTextReplacement("已编辑的撤销测试歌单")
-        compose.onNodeWithText("确定").performClick()
+        playlistOption("编辑歌单")
+        compose.onNodeWithTag("playlist-edit-name").performTextReplacement("已编辑的撤销测试歌单")
+        compose.onNodeWithTag("playlist-edit-save").performClick()
         compose.waitUntil(30_000) {model.library.value.playlists.first {it.id == playlist.id}.name == "已编辑的撤销测试歌单"}
         assertEquals(playlistOrder,model.library.value.playlists.map {it.id})
 
@@ -221,7 +295,7 @@ class MainNavigationUiTest {
         assertEquals(laterEdit.copy(songIds=beforeRemoval.songIds,randomIds=beforeRemoval.randomIds),restoredSongList)
         assertEquals(playlistOrder,model.library.value.playlists.map {it.id})
 
-        compose.onNodeWithContentDescription("删除歌单").performClick()
+        playlistOption("删除歌单")
         compose.onNodeWithText("删除").performClick()
         home("playlists")
         assertFalse(model.library.value.playlists.any {it.id == playlist.id})
@@ -231,8 +305,11 @@ class MainNavigationUiTest {
         assertEquals(restoredSongList,model.library.value.playlists.first {it.id == playlist.id})
         assertEquals(restoredSongList,LibraryStore(context).playlists().first {it.id == playlist.id})
         compose.onNodeWithTag("playlist-$FAVORITES_PLAYLIST_ID").performScrollTo().performClick()
-        compose.onNodeWithContentDescription("重命名歌单").assertDoesNotExist()
-        compose.onNodeWithContentDescription("删除歌单").assertDoesNotExist()
+        compose.onNodeWithTag("playlist-menu").performClick()
+        compose.onNodeWithText("删除歌单").assertDoesNotExist()
+        compose.onNodeWithText("编辑歌单").performClick()
+        compose.onNodeWithTag("playlist-edit-name").assertIsNotEnabled()
+        back()
         assertEquals(1,model.library.value.playlists.count {it.isFavorites})
         for(song in songs) {
             val bytes=context.contentResolver.openInputStream(Uri.parse(song.uri))!!.use {it.readBytes()}
