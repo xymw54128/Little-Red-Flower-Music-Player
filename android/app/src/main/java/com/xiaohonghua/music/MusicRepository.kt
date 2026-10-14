@@ -18,7 +18,6 @@ data class LibraryState(
     val settings: Settings = Settings(), val sort: SortMode = SortMode.TITLE, val custom: List<String> = emptyList(),
     val random: List<String> = emptyList(), val manualLyrics: Map<String,String> = emptyMap(),
     val busy: Boolean = false, val status: String = "", val events: List<String> = emptyList(), val showScanProgress: Boolean = false, val ready: Boolean = false,
-    val lyricOffsets: Map<String,Long> = emptyMap(),
 )
 
 class MusicRepository private constructor(private val context: Context) {
@@ -39,10 +38,8 @@ class MusicRepository private constructor(private val context: Context) {
             mutable.value = LibraryState(songs,playlists,store.folders(),store.settings(),
                 runCatching { SortMode.valueOf(store.prefs.getString("sort","TITLE")!!) }.getOrDefault(SortMode.TITLE),
                 mergeSongOrder(store.array("custom").strings(),songs.map {it.id}),
-                mergeSongOrder(store.array("random").strings(),songs.map {it.id}),store.manualLyrics().filterKeys(known::contains),ready=true,
-                lyricOffsets=store.lyricOffsets(known))
+                mergeSongOrder(store.array("random").strings(),songs.map {it.id}),store.manualLyrics().filterKeys(known::contains),ready=true)
             store.saveManualLyrics(state.value.manualLyrics)
-            store.saveLyricOffsets(state.value.lyricOffsets)
         }
     }
     fun settings(value: Settings) { store.saveSettings(value); mutable.update { it.copy(settings=value) } }
@@ -143,10 +140,9 @@ class MusicRepository private constructor(private val context: Context) {
             playlists=normalizeFavorites(old.playlists.map { it.copy(songIds=it.songIds.filter(known::contains),randomIds=it.randomIds.filter(known::contains)) },known),
             custom=old.custom.filter(known::contains)+songs.filter { it.id !in old.custom }.map { it.id },
             random=old.random.filter(known::contains)+songs.filter { it.id !in old.random }.shuffled().map { it.id },
-            manualLyrics=old.manualLyrics.filterKeys(known::contains),lyricOffsets=old.lyricOffsets.filterKeys(known::contains)) }
+            manualLyrics=old.manualLyrics.filterKeys(known::contains)) }
         store.savePlaylists(state.value.playlists)
         store.saveManualLyrics(state.value.manualLyrics)
-        store.saveLyricOffsets(state.value.lyricOffsets)
         saveOrder()
     }
     fun playlist(value: Playlist) {
@@ -278,18 +274,10 @@ class MusicRepository private constructor(private val context: Context) {
         mutable.update { it.copy(manualLyrics=if(text == null) it.manualLyrics-id else it.manualLyrics+(id to text)) }
         store.saveManualLyrics(state.value.manualLyrics)
     }
-    fun lyricOffset(id: String, millis: Long) {
-        val bounded=millis.coerceIn(-MAX_LYRIC_OFFSET,MAX_LYRIC_OFFSET)
-        mutable.update {old ->
-            if(old.songs.none {it.id == id}) old else old.copy(lyricOffsets=if(bounded == 0L) old.lyricOffsets-id else old.lyricOffsets+(id to bounded))
-        }
-        store.saveLyricOffsets(state.value.lyricOffsets)
-    }
     fun backup(): String = state.value.let { s -> JSONObject().apply {
         put("kind","xiaohonghua-android"); put("version",1); put("songs",JSONArray(s.songs.map { it.toJson(true) }))
         put("playlists",JSONArray(normalizeFavorites(s.playlists,s.songs.map {it.id}.toSet()).map { it.toJson(true) })); put("folders",JSONArray(s.folders.map { JSONObject().put("uri",it.uri).put("name",it.name) }))
         put("settings",s.settings.toJson())
-        put("lyricOffsets",JSONObject(s.lyricOffsets))
         put("manualLyrics",JSONObject(s.manualLyrics)); put("sort",s.sort.name); put("custom",JSONArray(s.custom)); put("random",JSONArray(s.random))
     }.toString(2) }
     suspend fun restore(text: String) = withContext(Dispatchers.IO) { scanMutex.withLock {
@@ -316,14 +304,12 @@ class MusicRepository private constructor(private val context: Context) {
         require(folders.all { Uri.parse(it.uri).scheme == "content" })
         val settings = settingsFromJson(data.getJSONObject("settings"))
         val lyrics = data.getJSONObject("manualLyrics").let { obj -> obj.keys().asSequence().filter(known::contains).associateWith { obj.getString(it) } }
-        val offsets=lyricOffsetsFromJson(data.optJSONObject("lyricOffsets") ?: JSONObject(),known)
         val sort = SortMode.valueOf(data.getString("sort"))
         val custom = data.getJSONArray("custom").strings().filter(known::contains).distinct()
         val random = data.getJSONArray("random").strings().filter(known::contains).distinct()
         // Parse and validate everything before replacing any current data.
         store.replaceSongs(songs); store.savePlaylists(playlists); store.saveFolders(folders); store.saveSettings(settings); store.saveManualLyrics(lyrics)
-        store.saveLyricOffsets(offsets)
-        mutable.value = LibraryState(songs,playlists,folders,settings,sort,custom,random,lyrics,status="备份已恢复，请重新授权音乐文件夹",ready=true,lyricOffsets=offsets)
+        mutable.value = LibraryState(songs,playlists,folders,settings,sort,custom,random,lyrics,status="备份已恢复，请重新授权音乐文件夹",ready=true)
         saveOrder()
     } }
     companion object {

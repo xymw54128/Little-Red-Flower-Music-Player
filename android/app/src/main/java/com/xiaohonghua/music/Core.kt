@@ -294,29 +294,6 @@ fun albumSongs(songs: List<Song>): List<Song> {
         .thenComparator {a,b -> collator.compare(a.title,b.title).takeIf {it != 0} ?: a.id.compareTo(b.id)})
 }
 
-const val MAX_LYRIC_OFFSET = 10_000L
-
-// Positive calibration delays the displayed lyric. Negative positions keep the
-// first line unhighlighted until its calibrated timestamp, rather than clamping early.
-fun lyricPosition(position: Long, offset: Long): Long {
-    val bounded=offset.coerceIn(-MAX_LYRIC_OFFSET,MAX_LYRIC_OFFSET)
-    return when {
-        bounded > 0 && position < Long.MIN_VALUE+bounded -> Long.MIN_VALUE
-        bounded < 0 && position > Long.MAX_VALUE+bounded -> Long.MAX_VALUE
-        else -> position-bounded
-    }
-}
-
-fun mediaPosition(lyricTime: Long, offset: Long, duration: Long): Long {
-    val bounded=offset.coerceIn(-MAX_LYRIC_OFFSET,MAX_LYRIC_OFFSET)
-    val position=when {
-        bounded > 0 && lyricTime > Long.MAX_VALUE-bounded -> Long.MAX_VALUE
-        bounded < 0 && lyricTime < Long.MIN_VALUE-bounded -> Long.MIN_VALUE
-        else -> lyricTime+bounded
-    }
-    return position.coerceIn(0,duration.coerceAtLeast(0))
-}
-
 // Unknown provider timestamps are never safe for reusing a sibling LRC cache.
 fun lyricRevision(uri: String, size: Long, modified: Long): String =
     if(modified > 0) "$uri|$size|$modified" else ""

@@ -14,6 +14,13 @@ class CoreTest {
         assertEquals(1, Lrc.current(lines, 91750))
         assertEquals(2, Lrc.current(lines, Long.MAX_VALUE))
     }
+    @Test fun standardTimestampsUseTheUnadjustedPlaybackClock() {
+        val lines=Lrc.parse("[00:01.00]第一行\n[00:02.00]第二行")
+        assertEquals(listOf(1000L,2000L),lines.map {it.startTime})
+        assertEquals(-1,Lrc.current(lines,999))
+        assertEquals(0,Lrc.current(lines,1000))
+        assertEquals(1,Lrc.current(lines,2000))
+    }
     @Test fun repeatedTimestampsOffsetsAndTranslation() {
         val lines = Lrc.parse("[offset:-200]\n[00:01.5][00:02]Hello\n[00:02.00]你好\n[00:65]错误")
         assertEquals(listOf(1300L, 1800L), lines.map { it.time })

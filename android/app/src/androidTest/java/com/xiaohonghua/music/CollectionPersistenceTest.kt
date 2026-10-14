@@ -35,7 +35,7 @@ class CollectionPersistenceTest {
         assertEquals(Settings(nightMode=true),retired)
         assertEquals(setOf("theme","font","size","gap","dynamic","nightMode"),retired.toJson().keys().asSequence().toSet())
     }
-    @Test fun metadataNightAndOffsetsPersistWithoutIncludingCacheRevisionInBackup() {
+    @Test fun metadataAndNightPersistWithoutIncludingCacheRevisionInBackup() {
         val unique="collection-test-"+java.util.UUID.randomUUID()
         val isolated=object : ContextWrapper(context) {
             override fun getSharedPreferences(name: String,mode: Int)=super.getSharedPreferences(unique,mode)
@@ -47,10 +47,6 @@ class CollectionPersistenceTest {
             val portable=songFromJson(song.toJson(true))
             assertEquals("群星",portable.albumArtist);assertEquals("2/3",portable.disc);assertEquals("",portable.lyricRevision)
             store.saveSettings(Settings(nightMode=true));assertTrue(LibraryStore(isolated).settings().nightMode)
-            store.saveLyricOffsets(mapOf("id" to 500,"deleted" to -500))
-            assertEquals(mapOf("id" to 500L),LibraryStore(isolated).lyricOffsets(setOf("id")))
-            val values=lyricOffsetsFromJson(JSONObject().put("id",99_999).put("string","oops").put("deleted",100),setOf("id","string"))
-            assertEquals(mapOf("id" to 10_000L),values)
         } finally {store.close();context.deleteSharedPreferences(unique)}
     }
 
@@ -177,7 +173,8 @@ class CollectionPersistenceTest {
             val standalone=scanner.single(DocumentsContract.buildDocumentUri(authority,"standalone")).copy(title="旧单文件标签")
             val initial=LibraryStore(isolated)
             initial.replaceSongs(listOf(folderSong,standalone));initial.saveFolders(listOf(Folder(tree.toString(),"Test")))
-            initial.saveLyricOffsets(mapOf(folderSong.id to 500L))
+            // Legacy per-song calibration must not affect the original LRC after upgrade.
+            initial.prefs.edit().putString("lyricOffsets",JSONObject().put(folderSong.id,500L).toString()).apply()
             initial.prefs.edit().putString("settings",JSONObject().put("monitor",true).put("background","photo").toString())
                 .putBoolean("albumMetadataV1",false).apply()
             initial.close()
@@ -208,12 +205,16 @@ class CollectionPersistenceTest {
             assertTrue(counts().getInt("audio") > first.getInt("audio"))
             assertEquals(first.getInt("lyrics")+1,counts().getInt("lyrics"))
             val portable=JSONObject(repo.backup())
-            assertFalse(portable.has("recentPlayed"));assertFalse(portable.getJSONObject("settings").has("monitor"))
+            assertFalse(portable.has("recentPlayed"));assertFalse(portable.has("lyricOffsets"))
+            assertEquals(1000L,Lrc.parse(repo.state.value.songs.first {it.id == folderSong.id}.lyrics).single().startTime)
+            assertFalse(portable.getJSONObject("settings").has("monitor"))
             // Schema-1 backups may contain removed fields; ignore them without enabling old features.
             portable.put("recentPlayed",JSONArray().put(folderSong.id))
+            portable.put("lyricOffsets",JSONObject().put(folderSong.id,-9_999L))
             portable.getJSONObject("settings").put("monitor",true).put("background","photo")
             runBlocking {repo.restore(portable.toString())}
-            assertEquals(500L,repo.state.value.lyricOffsets[folderSong.id])
+            assertFalse(JSONObject(repo.backup()).has("lyricOffsets"))
+            assertEquals(1000L,Lrc.parse(repo.state.value.songs.first {it.id == folderSong.id}.lyrics).single().startTime)
             assertTrue(repo.state.value.songs.all {!it.available})
             assertFalse(JSONObject(repo.backup()).has("recentPlayed"))
         } finally {

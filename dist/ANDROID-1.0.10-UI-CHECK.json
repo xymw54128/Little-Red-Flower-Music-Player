@@ -1,0 +1,92 @@
+{
+  "date": "2026-10-14",
+  "platform": "Android",
+  "version": "1.0.10",
+  "versionCode": 17,
+  "instrumentedTestsCompiled": true,
+  "instrumentedTestsExecuted": false,
+  "status": "compiled_not_executed",
+  "reason": "adb devices -l returned an empty device list.",
+  "deviceSnapshot": "List of devices attached: none",
+  "compiledSuites": [
+    {
+      "name": "AppThemeUiTest",
+      "tests": 2
+    },
+    {
+      "name": "CollectionPersistenceTest",
+      "tests": 5
+    },
+    {
+      "name": "LyricFontRenderingTest",
+      "tests": 2
+    },
+    {
+      "name": "MainNavigationUiTest",
+      "tests": 10
+    },
+    {
+      "name": "NativeSmokeTest",
+      "tests": 1
+    },
+    {
+      "name": "Playback107Test",
+      "tests": 5
+    },
+    {
+      "name": "PlaybackOrderTest",
+      "tests": 2
+    },
+    {
+      "name": "PlayerNavigationUiTest",
+      "tests": 6
+    },
+    {
+      "name": "PlaylistCoverUiTest",
+      "tests": 3
+    },
+    {
+      "name": "PlaylistDetailUiTest",
+      "tests": 3
+    },
+    {
+      "name": "PlaylistManagementUiTest",
+      "tests": 6
+    },
+    {
+      "name": "ReorderUiTest",
+      "tests": 6
+    },
+    {
+      "name": "SettingsInteractionUiTest",
+      "tests": 8
+    },
+    {
+      "name": "SongArtworkUiTest",
+      "tests": 2
+    },
+    {
+      "name": "SongListUiTest",
+      "tests": 3
+    },
+    {
+      "name": "SongSearchNativeTest",
+      "tests": 3
+    }
+  ],
+  "instrumentedTestCount": 67,
+  "unitTestsPassed": 98,
+  "lint": {
+    "errors": 0,
+    "warnings": 17
+  },
+  "nativeFramePerformanceMeasured": false,
+  "phoneAcceptancePending": true,
+  "manualCalibrationRemoved": true,
+  "legacySavedOffsetsIgnored": true,
+  "standardLrcOffsetMetadataPreserved": true,
+  "actualAppFontsAndPlayerLayoutUnchanged": true,
+  "preview": "Six new font directions with language companions and four standalone player layouts; selection pending.",
+  "apkSha256": "aee68f0f4716d77311a1cc0784eb1b6b6195b5f84567918dd1c72abf4772a954",
+  "git": "Local commit only; no GitHub push or release."
+}

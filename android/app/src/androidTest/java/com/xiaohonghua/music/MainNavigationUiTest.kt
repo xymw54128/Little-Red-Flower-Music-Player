@@ -59,7 +59,7 @@ class MainNavigationUiTest {
                     put("playlists",JSONArray())
                     put("folders",JSONArray())
                     put("manualLyrics",JSONObject())
-                    put("lyricOffsets",JSONObject())
+                    put("lyricOffsets",JSONObject(songs.associate {it.id to 500L}))
                     put("recentPlayed",JSONArray())
                     put("settings",Settings().toJson())
                     put("sort",SortMode.TITLE.name)
@@ -491,7 +491,7 @@ class MainNavigationUiTest {
         assertTrue(model.library.value.playlists.any {it.id == playlist.id})
     }
 
-    @Test fun nightThemeAndPerSongLyricCalibrationSurviveReturningToSettings() {
+    @Test fun nightThemeAndStandardLyricTimingSurviveReturningToSettings() {
         val model=ready()
         val song=model.library.value.songs.first()
         compose.onNodeWithTag("nav-settings").performClick()
@@ -512,8 +512,8 @@ class MainNavigationUiTest {
         compose.onNodeWithText("播放背景").assertDoesNotExist()
         compose.onNodeWithTag("nav-library").performClick()
         compose.runOnIdle {
-            model.repository.lyrics(song.id,"""[00:00.00]校准第一行
-[00:01.00]校准第二行""")
+            model.repository.lyrics(song.id,"""[00:00.00]标准第一行
+[00:01.00]标准第二行""")
             model.play(model.library.value.songs,song.id)
         }
         compose.waitUntil(30_000) {model.playback.value.playing}
@@ -524,19 +524,20 @@ class MainNavigationUiTest {
         compose.onNodeWithTag("player-sleep-timer").assertDoesNotExist()
         compose.onNodeWithContentDescription("添加到歌单").assertDoesNotExist()
         compose.onNodeWithText("${song.title} - ${song.artist}").assertIsDisplayed()
+        compose.waitUntil(30_000) {
+            compose.onAllNodes(hasTestTag("current-lyric") and hasText("标准第二行")).fetchSemanticsNodes().size == 1
+        }
+        compose.onNodeWithTag("current-lyric").assertTextEquals("标准第二行")
         compose.onNodeWithContentDescription("收起播放器").performClick()
         compose.onNodeWithTag("nav-settings").performClick()
         compose.onNodeWithText("歌词样式").performScrollTo().performClick()
-        compose.onNodeWithTag("lyric-offset-plus").performScrollTo().performClick()
-        compose.waitUntil(30_000) {model.library.value.lyricOffsets[song.id] == 100L}
-        compose.onNodeWithTag("lyric-offset-preview").performScrollTo().assertTextEquals("校准第一行")
-        assertEquals(100L,LibraryStore(context).lyricOffsets(setOf(song.id))[song.id])
+        compose.onNodeWithText("歌词时间校准").assertDoesNotExist()
+        compose.onNodeWithTag("lyric-offset-slider").assertDoesNotExist()
+        compose.onNodeWithTag("lyric-offset-plus").assertDoesNotExist()
+        compose.onNodeWithTag("lyric-offset-reset").assertDoesNotExist()
+        compose.onNodeWithTag("import-current-lyrics").assertIsDisplayed()
         assertFalse(model.playback.value.playing)
         assertEquals(1_050L,model.playbackPosition())
-        compose.onNodeWithTag("lyric-offset-reset").performScrollTo().performClick()
-        compose.waitUntil(30_000) {song.id !in model.library.value.lyricOffsets}
-        compose.onNodeWithTag("lyric-offset-preview").assertTextEquals("校准第二行")
-        assertFalse(LibraryStore(context).lyricOffsets(setOf(song.id)).containsKey(song.id))
         back()
         home("settings")
     }

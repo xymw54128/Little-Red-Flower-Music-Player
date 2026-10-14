@@ -1,0 +1,2220 @@
+{
+  "date": "2026-10-14",
+  "scope": "Preview only; Android fonts unchanged",
+  "samples": {
+    "zh": "风经过花瓣，音乐刚好。\n春风桃李花开日，秋雨梧桐叶落时。",
+    "en": "Music blooms where you are.\nLittle Red Flower · 0123456789",
+    "ja": "花びらが風にゆれる。\n君の声が、春を連れてくる。",
+    "ko": "꽃잎 사이로 음악이 흘러요.\n너의 목소리에 봄이 찾아와.",
+    "digits": "0123456789 · 01:23 / 04:56"
+  },
+  "fonts": [
+    {
+      "id": "xiaowei",
+      "code": "A",
+      "name": "站酷小薇",
+      "family": "P110A",
+      "kind": "文艺宋意",
+      "description": "字面轻盈，笔锋有变化。适合叙事感强的慢歌。",
+      "reference": false,
+      "asset": "assets/preview-a.woff",
+      "format": "woff",
+      "source": "https://fonts.google.com/specimen/ZCOOL+XiaoWei",
+      "repository": "https://github.com/google/fonts",
+      "revision": "bd8f81ddb5c74d5c8897b36ad88b440266245103",
+      "license": "SIL OFL 1.1",
+      "licenseFile": "licenses/preview-a.txt",
+      "licenseUrl": "https://github.com/google/fonts/blob/bd8f81ddb5c74d5c8897b36ad88b440266245103/ofl/zcoolxiaowei/OFL.txt",
+      "sourceScope": "Google official text subset only",
+      "unicodeRangeScope": "preview sample subset, not total family coverage",
+      "deliveryUrl": "https://fonts.gstatic.com/l/font?kit=i7dMIFFrTRywPpUVX9_RJyM1YFKIiQa0TlakR_X5i4_bbToX-ohDAfAyVeIWYv_pmOxMsMXyiUxNmCo699aKjmgqjdNhFM1lqrhJ0aN45PWpoC60lor04v4F04OUr7s4jWXMt6_VUNGY_A5As-me55Y6i2K-dxcspO56YOHSqGk7AoW6U7BrvF01_NEM1Bvm4rgO9s2cK1YH_UYV1_UgTk_N8-AGpZt9wExL-rrk4AT2X163iImZXYxwjqUuR2v-TwnZ_acTsEFY9CIOB2NtjsPf9RlzyZYfKF6-YPj3B1RksZHSycCJbXMoyi_W8TRCXIN0nGbD89V6d6UjaC0kckHneELHcSDAlP3YzgvC4i5tZkrUDFFZ83-Ll7VM_cSCK8Nl0s-hxPta&skey=14ca153fc38e039b&v=v15",
+      "cssUrl": "https://fonts.googleapis.com/css2?family=ZCOOL%20XiaoWei:wght@400&text=%E9%A3%8E%E7%BB%8F%E8%BF%87%E8%8A%B1%E7%93%A3%EF%BC%8C%E9%9F%B3%E4%B9%90%E5%88%9A%E5%A5%BD%E3%80%82%E6%98%A5%E6%A1%83%E6%9D%8E%E5%BC%80%E6%97%A5%E7%A7%8B%E9%9B%A8%E6%A2%A7%E6%A1%90%E5%8F%B6%E8%90%BD%E6%97%B6Music%20blomwherya.LtRdF%C2%B70123456789%E3%81%B3%E3%82%89%E3%81%8C%E9%A2%A8%E3%81%AB%E3%82%86%E3%82%8C%E3%82%8B%E5%90%9B%E3%81%AE%E5%A3%B0%E3%80%81%E3%82%92%E9%80%A3%E3%81%A6%E3%81%8F%EA%BD%83%EC%9E%8E%EC%82%AC%EC%9D%B4%EB%A1%9C%EC%9D%8C%EC%95%85%ED%9D%98%EB%9F%AC%EC%9A%94%EB%84%88%EC%9D%98%EB%AA%A9%EC%86%8C%EB%A6%AC%EC%97%90%EB%B4%84%EC%B0%BE%EC%95%84%EC%99%80%3A%2F!%22%23%24%25%26'()*%2B%2C-%3B%3C%3D%3E%3F%40ABCDEGHIJKNOPQSTUVWXYZ%5B%5C%5D%5E_%60fgjknpqvxz%7B%7C%7D~",
+      "sourceSha256": "54d000bfb3b05fb19a45418ec8ebfd016e11d213bc7622e1d1ffa3c3057be9c2",
+      "sourceBytes": 45668,
+      "previewSha256": "b07393f06a494373c8c84956333ad351484e4bb384ce4b245c7bdcb1b387c4b3",
+      "previewBytes": 24740,
+      "sampleCoverage": {
+        "zh": {
+          "tested": 21,
+          "native": 21,
+          "missing": [],
+          "percent": 100.0,
+          "scope": "language letters / digits in shown samples; punctuation excluded from percentage",
+          "allSampleChars": 23,
+          "allSampleNative": 23
+        },
+        "en": {
+          "tested": 20,
+          "native": 20,
+          "missing": [
+            "·"
+          ],
+          "percent": 100.0,
+          "scope": "language letters / digits in shown samples; punctuation excluded from percentage",
+          "allSampleChars": 32,
+          "allSampleNative": 31
+        },
+        "ja": {
+          "tested": 17,
+          "native": 4,
+          "missing": [
+            "が",
+            "く",
+            "て",
+            "に",
+            "の",
+            "び",
+            "ゆ",
+            "ら",
+            "る",
+            "れ",
+            "を",
+            "連",
+            "風"
+          ],
+          "percent": 23.5,
+          "scope": "language letters / digits in shown samples; punctuation excluded from percentage",
+          "allSampleChars": 19,
+          "allSampleNative": 6
+        },
+        "ko": {
+          "tested": 20,
+          "native": 0,
+          "missing": [
+            "꽃",
+            "너",
+            "러",
+            "로",
+            "리",
+            "목",
+            "봄",
+            "사",
+            "소",
+            "아",
+            "악",
+            "에",
+            "와",
+            "요",
+            "음",
+            "의",
+            "이",
+            "잎",
+            "찾",
+            "흘"
+          ],
+          "percent": 0.0,
+          "scope": "language letters / digits in shown samples; punctuation excluded from percentage",
+          "allSampleChars": 21,
+          "allSampleNative": 1
+        },
+        "digits": {
+          "tested": 10,
+          "native": 10,
+          "missing": [
+            "·"
+          ],
+          "percent": 100.0,
+          "scope": "language letters / digits in shown samples; punctuation excluded from percentage",
+          "allSampleChars": 13,
+          "allSampleNative": 12
+        }
+      },
+      "unicodeRanges": {
+        "basicCjk": {
+          "present": 23,
+          "total": 20992
+        },
+        "hiragana": {
+          "present": 0,
+          "total": 86
+        },
+        "katakana": {
+          "present": 0,
+          "total": 90
+        },
+        "hangulSyllables": {
+          "present": 0,
+          "total": 11172
+        },
+        "latinDigits": {
+          "present": 75,
+          "total": 75
+        }
+      },
+      "originalNames": {
+        "1": "ZCOOL XiaoWei",
+        "2": "Regular",
+        "4": "ZCOOL XiaoWei Regular",
+        "5": "Version 1.000",
+        "6": "ZCOOLXiaoWei-Regular"
+      },
+      "languageCompanions": {
+        "ja": "klee",
+        "ko": "gowun"
+      },
+      "combinationCoverage": {
+        "zh": {
+          "tested": 21,
+          "native": 21,
+          "missing": [],
+          "percent": 100.0,
+          "scope": "language letters / digits in shown samples; punctuation excluded from percentage",
+          "allSampleChars": 23,
+          "allSampleNative": 23
+        },
+        "en": {
+          "tested": 20,
+          "native": 20,
+          "missing": [
+            "·"
+          ],
+          "percent": 100.0,
+          "scope": "language letters / digits in shown samples; punctuation excluded from percentage",
+          "allSampleChars": 32,
+          "allSampleNative": 31
+        },
+        "ja": {
+          "tested": 17,
+          "native": 17,
+          "missing": [],
+          "percent": 100.0,
+          "scope": "language letters / digits in shown samples; punctuation excluded from percentage",
+          "allSampleChars": 19,
+          "allSampleNative": 19
+        },
+        "ko": {
+          "tested": 20,
+          "native": 20,
+          "missing": [],
+          "percent": 100.0,
+          "scope": "language letters / digits in shown samples; punctuation excluded from percentage",
+          "allSampleChars": 21,
+          "allSampleNative": 21
+        },
+        "digits": {
+          "tested": 10,
+          "native": 10,
+          "missing": [
+            "·"
+          ],
+          "percent": 100.0,
+          "scope": "language letters / digits in shown samples; punctuation excluded from percentage",
+          "allSampleChars": 13,
+          "allSampleNative": 12
+        }
+      },
+      "languageFonts": {
+        "zh": "站酷小薇",
+        "en": "站酷小薇",
+        "ja": "Klee One",
+        "ko": "Gowun Batang",
+        "digits": "站酷小薇"
+      }
+    },
+    {
+      "id": "zenmaru",
+      "code": "B",
+      "name": "Zen Maru Gothic",
+      "family": "P110B",
+      "kind": "克制圆体",
+      "description": "圆角清楚、整齐而不僵硬。日文和英文温柔易读。",
+      "reference": false,
+      "asset": "assets/preview-b.woff",
+      "format": "woff",
+      "source": "https://fonts.google.com/specimen/Zen+Maru+Gothic",
+      "repository": "https://github.com/google/fonts",
+      "revision": "bd8f81ddb5c74d5c8897b36ad88b440266245103",
+      "license": "SIL OFL 1.1",
+      "licenseFile": "licenses/preview-b.txt",
+      "licenseUrl": "https://github.com/google/fonts/blob/bd8f81ddb5c74d5c8897b36ad88b440266245103/ofl/zenmarugothic/OFL.txt",
+      "sourceScope": "Google official text subset only",
+      "unicodeRangeScope": "preview sample subset, not total family coverage",
+      "deliveryUrl": "https://fonts.gstatic.com/l/font?kit=o-0SIpIxzW5b-RxT-6A8jWAtCp-k7VrwPpC_14rZm3WEHwRXoAwYbtBt-GXB-VZv-YuXzKCpUShcqMWqWPXjttnPozc2KsMR3_mdgZmVmIZ3eO49nJPWlVT5XWYtxmJTpzra-G_BmuNPQrdtbMCQplGkjPdI2HF2175iV7B0oxS7v45lNNRXiInuGwChzqDhZlMlLfeGPlCR-BeNlKOsaxATiAC4nnaWTJb7KL240lZ87HWHzkFd1UBdDXlh1OfSLIX5M8K0fCLOEQm-Yz75W0Avsb7k1MgHDXT4ALiS5QMnqb3EOOpqs2aYqk_UZyxuCqAQG4pNMAkmstFdSI7PPmzSoHKrOOU0qLO05ylluAwWNRdvUc-vHRSQ8ugiY8TLFC92ZZV1FTSDLyE&skey=8b293a778d58697d&v=v20",
+      "cssUrl": "https://fonts.googleapis.com/css2?family=Zen%20Maru%20Gothic:wght@400&text=%E9%A3%8E%E7%BB%8F%E8%BF%87%E8%8A%B1%E7%93%A3%EF%BC%8C%E9%9F%B3%E4%B9%90%E5%88%9A%E5%A5%BD%E3%80%82%E6%98%A5%E6%A1%83%E6%9D%8E%E5%BC%80%E6%97%A5%E7%A7%8B%E9%9B%A8%E6%A2%A7%E6%A1%90%E5%8F%B6%E8%90%BD%E6%97%B6Music%20blomwherya.LtRdF%C2%B70123456789%E3%81%B3%E3%82%89%E3%81%8C%E9%A2%A8%E3%81%AB%E3%82%86%E3%82%8C%E3%82%8B%E5%90%9B%E3%81%AE%E5%A3%B0%E3%80%81%E3%82%92%E9%80%A3%E3%81%A6%E3%81%8F%EA%BD%83%EC%9E%8E%EC%82%AC%EC%9D%B4%EB%A1%9C%EC%9D%8C%EC%95%85%ED%9D%98%EB%9F%AC%EC%9A%94%EB%84%88%EC%9D%98%EB%AA%A9%EC%86%8C%EB%A6%AC%EC%97%90%EB%B4%84%EC%B0%BE%EC%95%84%EC%99%80%3A%2F!%22%23%24%25%26'()*%2B%2C-%3B%3C%3D%3E%3F%40ABCDEGHIJKNOPQSTUVWXYZ%5B%5C%5D%5E_%60fgjknpqvxz%7B%7C%7D~",
+      "sourceSha256": "2173c45b2df0aefb42da3050860a30096a7eebd7aa3e1a2740208ad3f817d0ae",
+      "sourceBytes": 25196,
+      "previewSha256": "3a7fa7ba816f2aa93cbb25b5aa0f68f7f5d23300f9397a73d8e806a810f7d959",
+      "previewBytes": 16172,
+      "sampleCoverage": {
+        "zh": {
+          "tested": 21,
+          "native": 14,
+          "missing": [
+            "乐",
+            "刚",
+            "开",
+            "时",
+            "经",
+            "过",
+            "风"
+          ],
+          "percent": 66.7,
+          "scope": "language letters / digits in shown samples; punctuation excluded from percentage",
+          "allSampleChars": 23,
+          "allSampleNative": 16
+        },
+        "en": {
+          "tested": 20,
+          "native": 20,
+          "missing": [],
+          "percent": 100.0,
+          "scope": "language letters / digits in shown samples; punctuation excluded from percentage",
+          "allSampleChars": 32,
+          "allSampleNative": 32
+        },
+        "ja": {
+          "tested": 17,
+          "native": 17,
+          "missing": [],
+          "percent": 100.0,
+          "scope": "language letters / digits in shown samples; punctuation excluded from percentage",
+          "allSampleChars": 19,
+          "allSampleNative": 19
+        },
+        "ko": {
+          "tested": 20,
+          "native": 0,
+          "missing": [
+            "꽃",
+            "너",
+            "러",
+            "로",
+            "리",
+            "목",
+            "봄",
+            "사",
+            "소",
+            "아",
+            "악",
+            "에",
+            "와",
+            "요",
+            "음",
+            "의",
+            "이",
+            "잎",
+            "찾",
+            "흘"
+          ],
+          "percent": 0.0,
+          "scope": "language letters / digits in shown samples; punctuation excluded from percentage",
+          "allSampleChars": 21,
+          "allSampleNative": 1
+        },
+        "digits": {
+          "tested": 10,
+          "native": 10,
+          "missing": [],
+          "percent": 100.0,
+          "scope": "language letters / digits in shown samples; punctuation excluded from percentage",
+          "allSampleChars": 13,
+          "allSampleNative": 13
+        }
+      },
+      "unicodeRanges": {
+        "basicCjk": {
+          "present": 18,
+          "total": 20992
+        },
+        "hiragana": {
+          "present": 11,
+          "total": 86
+        },
+        "katakana": {
+          "present": 0,
+          "total": 90
+        },
+        "hangulSyllables": {
+          "present": 0,
+          "total": 11172
+        },
+        "latinDigits": {
+          "present": 75,
+          "total": 75
+        }
+      },
+      "originalNames": {
+        "1": "Zen Maru Gothic",
+        "2": "Regular",
+        "4": "Zen Maru Gothic Regular",
+        "5": "Version 1.002",
+        "6": "ZenMaruGothic-Regular"
+      },
+      "languageCompanions": {
+        "ko": "jua"
+      },
+      "combinationCoverage": {
+        "zh": {
+          "tested": 21,
+          "native": 14,
+          "missing": [
+            "乐",
+            "刚",
+            "开",
+            "时",
+            "经",
+            "过",
+            "风"
+          ],
+          "percent": 66.7,
+          "scope": "language letters / digits in shown samples; punctuation excluded from percentage",
+          "allSampleChars": 23,
+          "allSampleNative": 16
+        },
+        "en": {
+          "tested": 20,
+          "native": 20,
+          "missing": [],
+          "percent": 100.0,
+          "scope": "language letters / digits in shown samples; punctuation excluded from percentage",
+          "allSampleChars": 32,
+          "allSampleNative": 32
+        },
+        "ja": {
+          "tested": 17,
+          "native": 17,
+          "missing": [],
+          "percent": 100.0,
+          "scope": "language letters / digits in shown samples; punctuation excluded from percentage",
+          "allSampleChars": 19,
+          "allSampleNative": 19
+        },
+        "ko": {
+          "tested": 20,
+          "native": 20,
+          "missing": [],
+          "percent": 100.0,
+          "scope": "language letters / digits in shown samples; punctuation excluded from percentage",
+          "allSampleChars": 21,
+          "allSampleNative": 21
+        },
+        "digits": {
+          "tested": 10,
+          "native": 10,
+          "missing": [],
+          "percent": 100.0,
+          "scope": "language letters / digits in shown samples; punctuation excluded from percentage",
+          "allSampleChars": 13,
+          "allSampleNative": 13
+        }
+      },
+      "languageFonts": {
+        "zh": "Zen Maru Gothic",
+        "en": "Zen Maru Gothic",
+        "ja": "Zen Maru Gothic",
+        "ko": "Jua",
+        "digits": "Zen Maru Gothic"
+      }
+    },
+    {
+      "id": "kiwi",
+      "code": "C",
+      "name": "Kiwi Maru",
+      "family": "P110C",
+      "kind": "软糯书卷",
+      "description": "圆润衬线，像带一点气泡感的书写。可爱但不花哨。",
+      "reference": false,
+      "asset": "assets/preview-c.woff",
+      "format": "woff",
+      "source": "https://fonts.google.com/specimen/Kiwi+Maru",
+      "repository": "https://github.com/google/fonts",
+      "revision": "bd8f81ddb5c74d5c8897b36ad88b440266245103",
+      "license": "SIL OFL 1.1",
+      "licenseFile": "licenses/preview-c.txt",
+      "licenseUrl": "https://github.com/google/fonts/blob/bd8f81ddb5c74d5c8897b36ad88b440266245103/ofl/kiwimaru/OFL.txt",
+      "sourceScope": "Google official text subset only",
+      "unicodeRangeScope": "preview sample subset, not total family coverage",
+      "deliveryUrl": "https://fonts.gstatic.com/l/font?kit=R70YjykGkuuDep-hRg6YmBgGVRPYbbaduEO82nVyk0yHX7Rl0LFDQUvC9_r50T44nErcUrvVw0OsaE85tamOtu9K2bI_1fQIUKAJB9GWTUAQ6xjTqkR2ShYnsdVGl8Jec0ZGkbh207Ox0UWH5ltz2mX-41Lf27fRVAE3JilfKoI-KluCcxXiQyswmxoDBjJD8-ver8G7MpRUDzH6Dau6PDznvWzfIaFg8zqhfqUb9t33pAWUGQvO_HCm-ZoZ0Dj-RBxzjDD73NO1RSvXp9-pq-o4eD_BAxbYPRLxoaXhGmF1a1KprCW8awFIpStm4yRSxYjvNv0yHwefgpt9HKuUd5jevYU1BbrV_r_PBrl9mCRS19stMHGb-sprkCvQ9SujwKdlM7s&skey=243428d79dade364&v=v21",
+      "cssUrl": "https://fonts.googleapis.com/css2?family=Kiwi%20Maru:wght@400&text=%E9%A3%8E%E7%BB%8F%E8%BF%87%E8%8A%B1%E7%93%A3%EF%BC%8C%E9%9F%B3%E4%B9%90%E5%88%9A%E5%A5%BD%E3%80%82%E6%98%A5%E6%A1%83%E6%9D%8E%E5%BC%80%E6%97%A5%E7%A7%8B%E9%9B%A8%E6%A2%A7%E6%A1%90%E5%8F%B6%E8%90%BD%E6%97%B6Music%20blomwherya.LtRdF%C2%B70123456789%E3%81%B3%E3%82%89%E3%81%8C%E9%A2%A8%E3%81%AB%E3%82%86%E3%82%8C%E3%82%8B%E5%90%9B%E3%81%AE%E5%A3%B0%E3%80%81%E3%82%92%E9%80%A3%E3%81%A6%E3%81%8F%EA%BD%83%EC%9E%8E%EC%82%AC%EC%9D%B4%EB%A1%9C%EC%9D%8C%EC%95%85%ED%9D%98%EB%9F%AC%EC%9A%94%EB%84%88%EC%9D%98%EB%AA%A9%EC%86%8C%EB%A6%AC%EC%97%90%EB%B4%84%EC%B0%BE%EC%95%84%EC%99%80%3A%2F!%22%23%24%25%26'()*%2B%2C-%3B%3C%3D%3E%3F%40ABCDEGHIJKNOPQSTUVWXYZ%5B%5C%5D%5E_%60fgjknpqvxz%7B%7C%7D~",
+      "sourceSha256": "e1aa237e418ac4d0a7e5616431beeab2fa5ad3b55ce746c862e0a1f529d4401c",
+      "sourceBytes": 39552,
+      "previewSha256": "d607079fb243434b7dfaa4ee73dc6fa3c799f342bc2fd0bed8104e104a18678b",
+      "previewBytes": 22692,
+      "sampleCoverage": {
+        "zh": {
+          "tested": 21,
+          "native": 14,
+          "missing": [
+            "乐",
+            "刚",
+            "开",
+            "时",
+            "经",
+            "过",
+            "风"
+          ],
+          "percent": 66.7,
+          "scope": "language letters / digits in shown samples; punctuation excluded from percentage",
+          "allSampleChars": 23,
+          "allSampleNative": 16
+        },
+        "en": {
+          "tested": 20,
+          "native": 20,
+          "missing": [],
+          "percent": 100.0,
+          "scope": "language letters / digits in shown samples; punctuation excluded from percentage",
+          "allSampleChars": 32,
+          "allSampleNative": 32
+        },
+        "ja": {
+          "tested": 17,
+          "native": 17,
+          "missing": [],
+          "percent": 100.0,
+          "scope": "language letters / digits in shown samples; punctuation excluded from percentage",
+          "allSampleChars": 19,
+          "allSampleNative": 19
+        },
+        "ko": {
+          "tested": 20,
+          "native": 0,
+          "missing": [
+            "꽃",
+            "너",
+            "러",
+            "로",
+            "리",
+            "목",
+            "봄",
+            "사",
+            "소",
+            "아",
+            "악",
+            "에",
+            "와",
+            "요",
+            "음",
+            "의",
+            "이",
+            "잎",
+            "찾",
+            "흘"
+          ],
+          "percent": 0.0,
+          "scope": "language letters / digits in shown samples; punctuation excluded from percentage",
+          "allSampleChars": 21,
+          "allSampleNative": 1
+        },
+        "digits": {
+          "tested": 10,
+          "native": 10,
+          "missing": [],
+          "percent": 100.0,
+          "scope": "language letters / digits in shown samples; punctuation excluded from percentage",
+          "allSampleChars": 13,
+          "allSampleNative": 13
+        }
+      },
+      "unicodeRanges": {
+        "basicCjk": {
+          "present": 18,
+          "total": 20992
+        },
+        "hiragana": {
+          "present": 11,
+          "total": 86
+        },
+        "katakana": {
+          "present": 0,
+          "total": 90
+        },
+        "hangulSyllables": {
+          "present": 0,
+          "total": 11172
+        },
+        "latinDigits": {
+          "present": 75,
+          "total": 75
+        }
+      },
+      "originalNames": {
+        "1": "Kiwi Maru",
+        "2": "Regular",
+        "4": "Kiwi Maru Regular",
+        "5": "Version 1.100",
+        "6": "KiwiMaru-Regular"
+      },
+      "languageCompanions": {
+        "ko": "jua"
+      },
+      "combinationCoverage": {
+        "zh": {
+          "tested": 21,
+          "native": 14,
+          "missing": [
+            "乐",
+            "刚",
+            "开",
+            "时",
+            "经",
+            "过",
+            "风"
+          ],
+          "percent": 66.7,
+          "scope": "language letters / digits in shown samples; punctuation excluded from percentage",
+          "allSampleChars": 23,
+          "allSampleNative": 16
+        },
+        "en": {
+          "tested": 20,
+          "native": 20,
+          "missing": [],
+          "percent": 100.0,
+          "scope": "language letters / digits in shown samples; punctuation excluded from percentage",
+          "allSampleChars": 32,
+          "allSampleNative": 32
+        },
+        "ja": {
+          "tested": 17,
+          "native": 17,
+          "missing": [],
+          "percent": 100.0,
+          "scope": "language letters / digits in shown samples; punctuation excluded from percentage",
+          "allSampleChars": 19,
+          "allSampleNative": 19
+        },
+        "ko": {
+          "tested": 20,
+          "native": 20,
+          "missing": [],
+          "percent": 100.0,
+          "scope": "language letters / digits in shown samples; punctuation excluded from percentage",
+          "allSampleChars": 21,
+          "allSampleNative": 21
+        },
+        "digits": {
+          "tested": 10,
+          "native": 10,
+          "missing": [],
+          "percent": 100.0,
+          "scope": "language letters / digits in shown samples; punctuation excluded from percentage",
+          "allSampleChars": 13,
+          "allSampleNative": 13
+        }
+      },
+      "languageFonts": {
+        "zh": "Kiwi Maru",
+        "en": "Kiwi Maru",
+        "ja": "Kiwi Maru",
+        "ko": "Jua",
+        "digits": "Kiwi Maru"
+      }
+    },
+    {
+      "id": "kurenaido",
+      "code": "D",
+      "name": "Zen Kurenaido",
+      "family": "P110D",
+      "kind": "轻松手写",
+      "description": "细笔触、不刻意对齐，有日记一样的自然感。",
+      "reference": false,
+      "asset": "assets/preview-d.woff",
+      "format": "woff",
+      "source": "https://fonts.google.com/specimen/Zen+Kurenaido",
+      "repository": "https://github.com/google/fonts",
+      "revision": "bd8f81ddb5c74d5c8897b36ad88b440266245103",
+      "license": "SIL OFL 1.1",
+      "licenseFile": "licenses/preview-d.txt",
+      "licenseUrl": "https://github.com/google/fonts/blob/bd8f81ddb5c74d5c8897b36ad88b440266245103/ofl/zenkurenaido/OFL.txt",
+      "sourceScope": "Google official text subset only",
+      "unicodeRangeScope": "preview sample subset, not total family coverage",
+      "deliveryUrl": "https://fonts.gstatic.com/l/font?kit=3XFsEr0515BK2u6UUptu_gWJZfzuTv5qTma8cJNn9bS32bEDLOjnD_U8SZxVCCuheruA-uLgtyY9LXYX5CYhxpDY6IKlYLwwUXVq9X2-F9wmtpdWRFj87R1HqBDTVnziB9O23-FB2aedGJ7Us1nmweXMsKCamq-LBIUO3mei1JSCgIIbQDIvF4-doUxBc5fyD9RhaSUtWlpZ8gzMy-jQz3E0PMzkyTzE7oTYwbWjGfq0Q0zCOYq93KJzTdz5_MLOwTBWbmgeB5f6rOb0oNtCT-y4_3kuRMy6y5y_7wrqPv7PN4bQXvBF1icZcZQ2DYGr_T6QO6FqBnVBBvTQqRb1S2ZWh_Ixrxw1XI0H-jH9PN8ag52a-DsbhoWwwnJt7ELcRp588KVxa2jJ&skey=afcdb1d01bec0731&v=v20",
+      "cssUrl": "https://fonts.googleapis.com/css2?family=Zen%20Kurenaido:wght@400&text=%E9%A3%8E%E7%BB%8F%E8%BF%87%E8%8A%B1%E7%93%A3%EF%BC%8C%E9%9F%B3%E4%B9%90%E5%88%9A%E5%A5%BD%E3%80%82%E6%98%A5%E6%A1%83%E6%9D%8E%E5%BC%80%E6%97%A5%E7%A7%8B%E9%9B%A8%E6%A2%A7%E6%A1%90%E5%8F%B6%E8%90%BD%E6%97%B6Music%20blomwherya.LtRdF%C2%B70123456789%E3%81%B3%E3%82%89%E3%81%8C%E9%A2%A8%E3%81%AB%E3%82%86%E3%82%8C%E3%82%8B%E5%90%9B%E3%81%AE%E5%A3%B0%E3%80%81%E3%82%92%E9%80%A3%E3%81%A6%E3%81%8F%EA%BD%83%EC%9E%8E%EC%82%AC%EC%9D%B4%EB%A1%9C%EC%9D%8C%EC%95%85%ED%9D%98%EB%9F%AC%EC%9A%94%EB%84%88%EC%9D%98%EB%AA%A9%EC%86%8C%EB%A6%AC%EC%97%90%EB%B4%84%EC%B0%BE%EC%95%84%EC%99%80%3A%2F!%22%23%24%25%26'()*%2B%2C-%3B%3C%3D%3E%3F%40ABCDEGHIJKNOPQSTUVWXYZ%5B%5C%5D%5E_%60fgjknpqvxz%7B%7C%7D~",
+      "sourceSha256": "7e282e6f8525a033ea84ee1c037a368e62d7c7c7427bd267cf18450168ad84a0",
+      "sourceBytes": 28296,
+      "previewSha256": "9d86308a954ccf232d3b0cde4ed14c3802d9956b817e097e2160585f8fd12fc2",
+      "previewBytes": 17388,
+      "sampleCoverage": {
+        "zh": {
+          "tested": 21,
+          "native": 14,
+          "missing": [
+            "乐",
+            "刚",
+            "开",
+            "时",
+            "经",
+            "过",
+            "风"
+          ],
+          "percent": 66.7,
+          "scope": "language letters / digits in shown samples; punctuation excluded from percentage",
+          "allSampleChars": 23,
+          "allSampleNative": 16
+        },
+        "en": {
+          "tested": 20,
+          "native": 20,
+          "missing": [],
+          "percent": 100.0,
+          "scope": "language letters / digits in shown samples; punctuation excluded from percentage",
+          "allSampleChars": 32,
+          "allSampleNative": 32
+        },
+        "ja": {
+          "tested": 17,
+          "native": 17,
+          "missing": [],
+          "percent": 100.0,
+          "scope": "language letters / digits in shown samples; punctuation excluded from percentage",
+          "allSampleChars": 19,
+          "allSampleNative": 19
+        },
+        "ko": {
+          "tested": 20,
+          "native": 0,
+          "missing": [
+            "꽃",
+            "너",
+            "러",
+            "로",
+            "리",
+            "목",
+            "봄",
+            "사",
+            "소",
+            "아",
+            "악",
+            "에",
+            "와",
+            "요",
+            "음",
+            "의",
+            "이",
+            "잎",
+            "찾",
+            "흘"
+          ],
+          "percent": 0.0,
+          "scope": "language letters / digits in shown samples; punctuation excluded from percentage",
+          "allSampleChars": 21,
+          "allSampleNative": 1
+        },
+        "digits": {
+          "tested": 10,
+          "native": 10,
+          "missing": [],
+          "percent": 100.0,
+          "scope": "language letters / digits in shown samples; punctuation excluded from percentage",
+          "allSampleChars": 13,
+          "allSampleNative": 13
+        }
+      },
+      "unicodeRanges": {
+        "basicCjk": {
+          "present": 18,
+          "total": 20992
+        },
+        "hiragana": {
+          "present": 11,
+          "total": 86
+        },
+        "katakana": {
+          "present": 0,
+          "total": 90
+        },
+        "hangulSyllables": {
+          "present": 0,
+          "total": 11172
+        },
+        "latinDigits": {
+          "present": 75,
+          "total": 75
+        }
+      },
+      "originalNames": {
+        "1": "Zen Kurenaido",
+        "2": "Regular",
+        "4": "Zen Kurenaido Regular",
+        "5": "Version 1.001",
+        "6": "ZenKurenaido-Regular"
+      },
+      "languageCompanions": {
+        "ko": "nanumpen"
+      },
+      "combinationCoverage": {
+        "zh": {
+          "tested": 21,
+          "native": 14,
+          "missing": [
+            "乐",
+            "刚",
+            "开",
+            "时",
+            "经",
+            "过",
+            "风"
+          ],
+          "percent": 66.7,
+          "scope": "language letters / digits in shown samples; punctuation excluded from percentage",
+          "allSampleChars": 23,
+          "allSampleNative": 16
+        },
+        "en": {
+          "tested": 20,
+          "native": 20,
+          "missing": [],
+          "percent": 100.0,
+          "scope": "language letters / digits in shown samples; punctuation excluded from percentage",
+          "allSampleChars": 32,
+          "allSampleNative": 32
+        },
+        "ja": {
+          "tested": 17,
+          "native": 17,
+          "missing": [],
+          "percent": 100.0,
+          "scope": "language letters / digits in shown samples; punctuation excluded from percentage",
+          "allSampleChars": 19,
+          "allSampleNative": 19
+        },
+        "ko": {
+          "tested": 20,
+          "native": 20,
+          "missing": [],
+          "percent": 100.0,
+          "scope": "language letters / digits in shown samples; punctuation excluded from percentage",
+          "allSampleChars": 21,
+          "allSampleNative": 21
+        },
+        "digits": {
+          "tested": 10,
+          "native": 10,
+          "missing": [],
+          "percent": 100.0,
+          "scope": "language letters / digits in shown samples; punctuation excluded from percentage",
+          "allSampleChars": 13,
+          "allSampleNative": 13
+        }
+      },
+      "languageFonts": {
+        "zh": "Zen Kurenaido",
+        "en": "Zen Kurenaido",
+        "ja": "Zen Kurenaido",
+        "ko": "Nanum Pen Script",
+        "digits": "Zen Kurenaido"
+      }
+    },
+    {
+      "id": "mashan",
+      "code": "E",
+      "name": "马善政毛笔",
+      "family": "P110E",
+      "kind": "利落毛笔",
+      "description": "笔画有粗细和收锋。个性鲜明，适合中文歌词。",
+      "reference": false,
+      "asset": "assets/preview-e.woff",
+      "format": "woff",
+      "source": "https://fonts.google.com/specimen/Ma+Shan+Zheng",
+      "repository": "https://github.com/google/fonts",
+      "revision": "bd8f81ddb5c74d5c8897b36ad88b440266245103",
+      "license": "SIL OFL 1.1",
+      "licenseFile": "licenses/preview-e.txt",
+      "licenseUrl": "https://github.com/google/fonts/blob/bd8f81ddb5c74d5c8897b36ad88b440266245103/ofl/mashanzheng/OFL.txt",
+      "sourceScope": "Google official text subset only",
+      "unicodeRangeScope": "preview sample subset, not total family coverage",
+      "deliveryUrl": "https://fonts.gstatic.com/l/font?kit=NaPecZTRCLxvwo41b4gvzkXaRMT0mo5zR566lUcY4tCnlVSyiWBQQ1SFF8M0gsRB7AcsLKZwZmFZNFABgPihccce-swMZOrE0mPczU8U1uGlwdCNqcnXFioBppeQqqprbBn0O6GUDgmQzCHFL65nkmhWTit4Ii6-pZ-DvgA1Bd2drQIzzxE0trnkyjRHjC-S17eZBGSP8WPj9jPbWO9CkwIv_XzeNOYPsDY0H7zWxACkKFpsaksWyGl1hykhfrbN1maAEUAJG5l8oiob4x9c8rjZr7iNnV7RUAiJ-8IvLxdU-QPQiHSMqCtZq8HzkNeWPWga9ij1HwEzdV4ViFTIJbKCe0lhm45qfKY-3UNCgmgnMd7Ak_gdHIdOxhRAV6Q78oY6OjvlK-Xc&skey=13c999d73b164fc8&v=v18",
+      "cssUrl": "https://fonts.googleapis.com/css2?family=Ma%20Shan%20Zheng:wght@400&text=%E9%A3%8E%E7%BB%8F%E8%BF%87%E8%8A%B1%E7%93%A3%EF%BC%8C%E9%9F%B3%E4%B9%90%E5%88%9A%E5%A5%BD%E3%80%82%E6%98%A5%E6%A1%83%E6%9D%8E%E5%BC%80%E6%97%A5%E7%A7%8B%E9%9B%A8%E6%A2%A7%E6%A1%90%E5%8F%B6%E8%90%BD%E6%97%B6Music%20blomwherya.LtRdF%C2%B70123456789%E3%81%B3%E3%82%89%E3%81%8C%E9%A2%A8%E3%81%AB%E3%82%86%E3%82%8C%E3%82%8B%E5%90%9B%E3%81%AE%E5%A3%B0%E3%80%81%E3%82%92%E9%80%A3%E3%81%A6%E3%81%8F%EA%BD%83%EC%9E%8E%EC%82%AC%EC%9D%B4%EB%A1%9C%EC%9D%8C%EC%95%85%ED%9D%98%EB%9F%AC%EC%9A%94%EB%84%88%EC%9D%98%EB%AA%A9%EC%86%8C%EB%A6%AC%EC%97%90%EB%B4%84%EC%B0%BE%EC%95%84%EC%99%80%3A%2F!%22%23%24%25%26'()*%2B%2C-%3B%3C%3D%3E%3F%40ABCDEGHIJKNOPQSTUVWXYZ%5B%5C%5D%5E_%60fgjknpqvxz%7B%7C%7D~",
+      "sourceSha256": "2c2da8a0cbfc44f8f933002f0f01d63664ff68ca7ced5c5c76817f7a8cda7f8e",
+      "sourceBytes": 37140,
+      "previewSha256": "4a75a0406b2c0c3f946529a8660793741a628388829a7a1c0104bcc22a078421",
+      "previewBytes": 23752,
+      "sampleCoverage": {
+        "zh": {
+          "tested": 21,
+          "native": 21,
+          "missing": [],
+          "percent": 100.0,
+          "scope": "language letters / digits in shown samples; punctuation excluded from percentage",
+          "allSampleChars": 23,
+          "allSampleNative": 23
+        },
+        "en": {
+          "tested": 20,
+          "native": 20,
+          "missing": [
+            "·"
+          ],
+          "percent": 100.0,
+          "scope": "language letters / digits in shown samples; punctuation excluded from percentage",
+          "allSampleChars": 32,
+          "allSampleNative": 31
+        },
+        "ja": {
+          "tested": 17,
+          "native": 4,
+          "missing": [
+            "が",
+            "く",
+            "て",
+            "に",
+            "の",
+            "び",
+            "ゆ",
+            "ら",
+            "る",
+            "れ",
+            "を",
+            "連",
+            "風"
+          ],
+          "percent": 23.5,
+          "scope": "language letters / digits in shown samples; punctuation excluded from percentage",
+          "allSampleChars": 19,
+          "allSampleNative": 6
+        },
+        "ko": {
+          "tested": 20,
+          "native": 0,
+          "missing": [
+            "꽃",
+            "너",
+            "러",
+            "로",
+            "리",
+            "목",
+            "봄",
+            "사",
+            "소",
+            "아",
+            "악",
+            "에",
+            "와",
+            "요",
+            "음",
+            "의",
+            "이",
+            "잎",
+            "찾",
+            "흘"
+          ],
+          "percent": 0.0,
+          "scope": "language letters / digits in shown samples; punctuation excluded from percentage",
+          "allSampleChars": 21,
+          "allSampleNative": 1
+        },
+        "digits": {
+          "tested": 10,
+          "native": 10,
+          "missing": [
+            "·"
+          ],
+          "percent": 100.0,
+          "scope": "language letters / digits in shown samples; punctuation excluded from percentage",
+          "allSampleChars": 13,
+          "allSampleNative": 12
+        }
+      },
+      "unicodeRanges": {
+        "basicCjk": {
+          "present": 23,
+          "total": 20992
+        },
+        "hiragana": {
+          "present": 0,
+          "total": 86
+        },
+        "katakana": {
+          "present": 0,
+          "total": 90
+        },
+        "hangulSyllables": {
+          "present": 0,
+          "total": 11172
+        },
+        "latinDigits": {
+          "present": 75,
+          "total": 75
+        }
+      },
+      "originalNames": {
+        "1": "Ma Shan Zheng",
+        "2": "Regular",
+        "4": "Ma Shan Zheng Regular",
+        "5": "Version 2.003",
+        "6": "MaShanZheng-Regular"
+      },
+      "languageCompanions": {
+        "ja": "yuji",
+        "ko": "nanumpen"
+      },
+      "combinationCoverage": {
+        "zh": {
+          "tested": 21,
+          "native": 21,
+          "missing": [],
+          "percent": 100.0,
+          "scope": "language letters / digits in shown samples; punctuation excluded from percentage",
+          "allSampleChars": 23,
+          "allSampleNative": 23
+        },
+        "en": {
+          "tested": 20,
+          "native": 20,
+          "missing": [
+            "·"
+          ],
+          "percent": 100.0,
+          "scope": "language letters / digits in shown samples; punctuation excluded from percentage",
+          "allSampleChars": 32,
+          "allSampleNative": 31
+        },
+        "ja": {
+          "tested": 17,
+          "native": 17,
+          "missing": [],
+          "percent": 100.0,
+          "scope": "language letters / digits in shown samples; punctuation excluded from percentage",
+          "allSampleChars": 19,
+          "allSampleNative": 19
+        },
+        "ko": {
+          "tested": 20,
+          "native": 20,
+          "missing": [],
+          "percent": 100.0,
+          "scope": "language letters / digits in shown samples; punctuation excluded from percentage",
+          "allSampleChars": 21,
+          "allSampleNative": 21
+        },
+        "digits": {
+          "tested": 10,
+          "native": 10,
+          "missing": [
+            "·"
+          ],
+          "percent": 100.0,
+          "scope": "language letters / digits in shown samples; punctuation excluded from percentage",
+          "allSampleChars": 13,
+          "allSampleNative": 12
+        }
+      },
+      "languageFonts": {
+        "zh": "马善政毛笔",
+        "en": "马善政毛笔",
+        "ja": "Yuji Syuku",
+        "ko": "Nanum Pen Script",
+        "digits": "马善政毛笔"
+      }
+    },
+    {
+      "id": "longcang",
+      "code": "F",
+      "name": "龙藏手书",
+      "family": "P110F",
+      "kind": "随性行书",
+      "description": "纤细、松弛，带一点挥笔而成的自由感。",
+      "reference": false,
+      "asset": "assets/preview-f.woff",
+      "format": "woff",
+      "source": "https://fonts.google.com/specimen/Long+Cang",
+      "repository": "https://github.com/google/fonts",
+      "revision": "bd8f81ddb5c74d5c8897b36ad88b440266245103",
+      "license": "SIL OFL 1.1",
+      "licenseFile": "licenses/preview-f.txt",
+      "licenseUrl": "https://github.com/google/fonts/blob/bd8f81ddb5c74d5c8897b36ad88b440266245103/ofl/longcang/OFL.txt",
+      "sourceScope": "Google official text subset only",
+      "unicodeRangeScope": "preview sample subset, not total family coverage",
+      "deliveryUrl": "https://fonts.gstatic.com/l/font?kit=LYjAdGP8kkgoTec8zkRgrWi9Vv_-ereW0hCrl3GudIUoKILZwaEaTQYxW_6URqeNzejM94F3OSB1mIvocx4DXeAyj565D-Uzz4FQe2v3QC7itzm-QCcoJIYL5wc9qjPQz2pL-JBf9l8Z_SV1UlxBNDbUDCRbGVKgXmJoSNUY7-_lUqOi5VvVrbrAFLhaD07emMuUciytqPkgcB7SwRlglKj6vdHReWvhxUhNZc_Ad6LyVR7kTYI0UC6Hm87yDlZjr2Z4jdPXNQ8fdJ8aGDbt2gHGTr60Dq7jGpqNKqNtWzzwdGe7uDKW8afWBYraVm-TWgIqN9fXlfyfrzsuUfZHrIp7x3Nc_CNJgProEtJKBSkHR-NrW3JKDlv6tOou-kIIATW4O_Q&skey=429db178d90bd0ed&v=v21",
+      "cssUrl": "https://fonts.googleapis.com/css2?family=Long%20Cang:wght@400&text=%E9%A3%8E%E7%BB%8F%E8%BF%87%E8%8A%B1%E7%93%A3%EF%BC%8C%E9%9F%B3%E4%B9%90%E5%88%9A%E5%A5%BD%E3%80%82%E6%98%A5%E6%A1%83%E6%9D%8E%E5%BC%80%E6%97%A5%E7%A7%8B%E9%9B%A8%E6%A2%A7%E6%A1%90%E5%8F%B6%E8%90%BD%E6%97%B6Music%20blomwherya.LtRdF%C2%B70123456789%E3%81%B3%E3%82%89%E3%81%8C%E9%A2%A8%E3%81%AB%E3%82%86%E3%82%8C%E3%82%8B%E5%90%9B%E3%81%AE%E5%A3%B0%E3%80%81%E3%82%92%E9%80%A3%E3%81%A6%E3%81%8F%EA%BD%83%EC%9E%8E%EC%82%AC%EC%9D%B4%EB%A1%9C%EC%9D%8C%EC%95%85%ED%9D%98%EB%9F%AC%EC%9A%94%EB%84%88%EC%9D%98%EB%AA%A9%EC%86%8C%EB%A6%AC%EC%97%90%EB%B4%84%EC%B0%BE%EC%95%84%EC%99%80%3A%2F!%22%23%24%25%26'()*%2B%2C-%3B%3C%3D%3E%3F%40ABCDEGHIJKNOPQSTUVWXYZ%5B%5C%5D%5E_%60fgjknpqvxz%7B%7C%7D~",
+      "sourceSha256": "76573436153a127ceeb9ed1bee165f2e7be1a44cee0e4e6a8d85aa1ed82e9921",
+      "sourceBytes": 31368,
+      "previewSha256": "950ed6f217784897b1dd5de98f495dc0726e619bfe2041980d40c1ae6ff78e7d",
+      "previewBytes": 22472,
+      "sampleCoverage": {
+        "zh": {
+          "tested": 21,
+          "native": 21,
+          "missing": [],
+          "percent": 100.0,
+          "scope": "language letters / digits in shown samples; punctuation excluded from percentage",
+          "allSampleChars": 23,
+          "allSampleNative": 23
+        },
+        "en": {
+          "tested": 20,
+          "native": 20,
+          "missing": [
+            "·"
+          ],
+          "percent": 100.0,
+          "scope": "language letters / digits in shown samples; punctuation excluded from percentage",
+          "allSampleChars": 32,
+          "allSampleNative": 31
+        },
+        "ja": {
+          "tested": 17,
+          "native": 4,
+          "missing": [
+            "が",
+            "く",
+            "て",
+            "に",
+            "の",
+            "び",
+            "ゆ",
+            "ら",
+            "る",
+            "れ",
+            "を",
+            "連",
+            "風"
+          ],
+          "percent": 23.5,
+          "scope": "language letters / digits in shown samples; punctuation excluded from percentage",
+          "allSampleChars": 19,
+          "allSampleNative": 6
+        },
+        "ko": {
+          "tested": 20,
+          "native": 0,
+          "missing": [
+            "꽃",
+            "너",
+            "러",
+            "로",
+            "리",
+            "목",
+            "봄",
+            "사",
+            "소",
+            "아",
+            "악",
+            "에",
+            "와",
+            "요",
+            "음",
+            "의",
+            "이",
+            "잎",
+            "찾",
+            "흘"
+          ],
+          "percent": 0.0,
+          "scope": "language letters / digits in shown samples; punctuation excluded from percentage",
+          "allSampleChars": 21,
+          "allSampleNative": 1
+        },
+        "digits": {
+          "tested": 10,
+          "native": 10,
+          "missing": [
+            "·"
+          ],
+          "percent": 100.0,
+          "scope": "language letters / digits in shown samples; punctuation excluded from percentage",
+          "allSampleChars": 13,
+          "allSampleNative": 12
+        }
+      },
+      "unicodeRanges": {
+        "basicCjk": {
+          "present": 23,
+          "total": 20992
+        },
+        "hiragana": {
+          "present": 0,
+          "total": 86
+        },
+        "katakana": {
+          "present": 0,
+          "total": 90
+        },
+        "hangulSyllables": {
+          "present": 0,
+          "total": 11172
+        },
+        "latinDigits": {
+          "present": 75,
+          "total": 75
+        }
+      },
+      "originalNames": {
+        "1": "Long Cang",
+        "2": "Regular",
+        "4": "Long Cang Regular",
+        "5": "Version 2.001",
+        "6": "LongCang-Regular"
+      },
+      "languageCompanions": {
+        "ja": "yuji",
+        "ko": "nanumpen"
+      },
+      "combinationCoverage": {
+        "zh": {
+          "tested": 21,
+          "native": 21,
+          "missing": [],
+          "percent": 100.0,
+          "scope": "language letters / digits in shown samples; punctuation excluded from percentage",
+          "allSampleChars": 23,
+          "allSampleNative": 23
+        },
+        "en": {
+          "tested": 20,
+          "native": 20,
+          "missing": [
+            "·"
+          ],
+          "percent": 100.0,
+          "scope": "language letters / digits in shown samples; punctuation excluded from percentage",
+          "allSampleChars": 32,
+          "allSampleNative": 31
+        },
+        "ja": {
+          "tested": 17,
+          "native": 17,
+          "missing": [],
+          "percent": 100.0,
+          "scope": "language letters / digits in shown samples; punctuation excluded from percentage",
+          "allSampleChars": 19,
+          "allSampleNative": 19
+        },
+        "ko": {
+          "tested": 20,
+          "native": 20,
+          "missing": [],
+          "percent": 100.0,
+          "scope": "language letters / digits in shown samples; punctuation excluded from percentage",
+          "allSampleChars": 21,
+          "allSampleNative": 21
+        },
+        "digits": {
+          "tested": 10,
+          "native": 10,
+          "missing": [
+            "·"
+          ],
+          "percent": 100.0,
+          "scope": "language letters / digits in shown samples; punctuation excluded from percentage",
+          "allSampleChars": 13,
+          "allSampleNative": 12
+        }
+      },
+      "languageFonts": {
+        "zh": "龙藏手书",
+        "en": "龙藏手书",
+        "ja": "Yuji Syuku",
+        "ko": "Nanum Pen Script",
+        "digits": "龙藏手书"
+      }
+    },
+    {
+      "id": "wenkai",
+      "code": "G",
+      "name": "文楷 · 现有对照",
+      "family": "P110G",
+      "kind": "现有字体",
+      "description": "保留熟悉的文楷，直接比较手写感与可读性。",
+      "reference": true,
+      "asset": "assets/preview-g.woff",
+      "format": "woff",
+      "source": "https://github.com/lxgw/LxgwWenKai/releases/tag/v1.522",
+      "repository": "https://github.com/lxgw/LxgwWenKai",
+      "revision": "v1.522",
+      "license": "SIL OFL 1.1",
+      "licenseFile": "licenses/preview-g.txt",
+      "licenseUrl": "https://github.com/lxgw/LxgwWenKai/blob/v1.522/OFL.txt",
+      "sourceScope": "full bundled face",
+      "unicodeRangeScope": "full bundled face",
+      "deliveryUrl": null,
+      "cssUrl": null,
+      "sourceSha256": "39ad71264b588165b469e35e6afb162a378dacd1f95348160240ba9038ac3009",
+      "sourceBytes": 25575676,
+      "previewSha256": "031340de5083bea7ae671993f12c413016e4f5ec26675ad400464ad124be4b7e",
+      "previewBytes": 41072,
+      "sampleCoverage": {
+        "zh": {
+          "tested": 21,
+          "native": 21,
+          "missing": [],
+          "percent": 100.0,
+          "scope": "language letters / digits in shown samples; punctuation excluded from percentage",
+          "allSampleChars": 23,
+          "allSampleNative": 23
+        },
+        "en": {
+          "tested": 20,
+          "native": 20,
+          "missing": [],
+          "percent": 100.0,
+          "scope": "language letters / digits in shown samples; punctuation excluded from percentage",
+          "allSampleChars": 32,
+          "allSampleNative": 32
+        },
+        "ja": {
+          "tested": 17,
+          "native": 17,
+          "missing": [],
+          "percent": 100.0,
+          "scope": "language letters / digits in shown samples; punctuation excluded from percentage",
+          "allSampleChars": 19,
+          "allSampleNative": 19
+        },
+        "ko": {
+          "tested": 20,
+          "native": 20,
+          "missing": [],
+          "percent": 100.0,
+          "scope": "language letters / digits in shown samples; punctuation excluded from percentage",
+          "allSampleChars": 21,
+          "allSampleNative": 21
+        },
+        "digits": {
+          "tested": 10,
+          "native": 10,
+          "missing": [],
+          "percent": 100.0,
+          "scope": "language letters / digits in shown samples; punctuation excluded from percentage",
+          "allSampleChars": 13,
+          "allSampleNative": 13
+        }
+      },
+      "unicodeRanges": {
+        "basicCjk": {
+          "present": 20992,
+          "total": 20992
+        },
+        "hiragana": {
+          "present": 86,
+          "total": 86
+        },
+        "katakana": {
+          "present": 90,
+          "total": 90
+        },
+        "hangulSyllables": {
+          "present": 11172,
+          "total": 11172
+        },
+        "latinDigits": {
+          "present": 75,
+          "total": 75
+        }
+      },
+      "originalNames": {
+        "1": "LXGW WenKai",
+        "2": "Regular",
+        "4": "LXGW WenKai",
+        "5": "Version 1.522; March 17, 2026",
+        "6": "LXGWWenKai-Regular"
+      },
+      "languageCompanions": {},
+      "combinationCoverage": {
+        "zh": {
+          "tested": 21,
+          "native": 21,
+          "missing": [],
+          "percent": 100.0,
+          "scope": "language letters / digits in shown samples; punctuation excluded from percentage",
+          "allSampleChars": 23,
+          "allSampleNative": 23
+        },
+        "en": {
+          "tested": 20,
+          "native": 20,
+          "missing": [],
+          "percent": 100.0,
+          "scope": "language letters / digits in shown samples; punctuation excluded from percentage",
+          "allSampleChars": 32,
+          "allSampleNative": 32
+        },
+        "ja": {
+          "tested": 17,
+          "native": 17,
+          "missing": [],
+          "percent": 100.0,
+          "scope": "language letters / digits in shown samples; punctuation excluded from percentage",
+          "allSampleChars": 19,
+          "allSampleNative": 19
+        },
+        "ko": {
+          "tested": 20,
+          "native": 20,
+          "missing": [],
+          "percent": 100.0,
+          "scope": "language letters / digits in shown samples; punctuation excluded from percentage",
+          "allSampleChars": 21,
+          "allSampleNative": 21
+        },
+        "digits": {
+          "tested": 10,
+          "native": 10,
+          "missing": [],
+          "percent": 100.0,
+          "scope": "language letters / digits in shown samples; punctuation excluded from percentage",
+          "allSampleChars": 13,
+          "allSampleNative": 13
+        }
+      },
+      "languageFonts": {
+        "zh": "文楷 · 现有对照",
+        "en": "文楷 · 现有对照",
+        "ja": "文楷 · 现有对照",
+        "ko": "文楷 · 现有对照",
+        "digits": "文楷 · 现有对照"
+      }
+    },
+    {
+      "id": "song",
+      "code": "H",
+      "name": "宋体 · 现有对照",
+      "family": "P110H",
+      "kind": "现有字体",
+      "description": "现有宋体对照；来自 1.0.9 离线组合字体。",
+      "reference": true,
+      "asset": "assets/preview-h.woff",
+      "format": "woff",
+      "source": "https://github.com/adobe-fonts/source-han-serif",
+      "repository": "https://github.com/adobe-fonts/source-han-serif",
+      "revision": "1.0.9 existing derivative",
+      "license": "SIL OFL 1.1",
+      "licenseFile": "licenses/preview-h.txt",
+      "licenseUrl": "https://github.com/adobe-fonts/source-han-serif/blob/7889f11bf31170b5d092a083b357c8c8130f89e0/LICENSE.txt",
+      "sourceScope": "full bundled face",
+      "unicodeRangeScope": "full bundled face",
+      "deliveryUrl": null,
+      "cssUrl": null,
+      "sourceSha256": "ec1f58cca57d2700b28372fb9eaad612bdf77b00bf860a9b6fd897aa6c1c3369",
+      "sourceBytes": 17397452,
+      "previewSha256": "60d957a65f4500406d3420c71ddaf1a22495be0a9347d62c669e5e7946e00e53",
+      "previewBytes": 33388,
+      "sampleCoverage": {
+        "zh": {
+          "tested": 21,
+          "native": 21,
+          "missing": [],
+          "percent": 100.0,
+          "scope": "language letters / digits in shown samples; punctuation excluded from percentage",
+          "allSampleChars": 23,
+          "allSampleNative": 23
+        },
+        "en": {
+          "tested": 20,
+          "native": 20,
+          "missing": [],
+          "percent": 100.0,
+          "scope": "language letters / digits in shown samples; punctuation excluded from percentage",
+          "allSampleChars": 32,
+          "allSampleNative": 32
+        },
+        "ja": {
+          "tested": 17,
+          "native": 17,
+          "missing": [],
+          "percent": 100.0,
+          "scope": "language letters / digits in shown samples; punctuation excluded from percentage",
+          "allSampleChars": 19,
+          "allSampleNative": 19
+        },
+        "ko": {
+          "tested": 20,
+          "native": 20,
+          "missing": [],
+          "percent": 100.0,
+          "scope": "language letters / digits in shown samples; punctuation excluded from percentage",
+          "allSampleChars": 21,
+          "allSampleNative": 21
+        },
+        "digits": {
+          "tested": 10,
+          "native": 10,
+          "missing": [],
+          "percent": 100.0,
+          "scope": "language letters / digits in shown samples; punctuation excluded from percentage",
+          "allSampleChars": 13,
+          "allSampleNative": 13
+        }
+      },
+      "unicodeRanges": {
+        "basicCjk": {
+          "present": 20992,
+          "total": 20992
+        },
+        "hiragana": {
+          "present": 86,
+          "total": 86
+        },
+        "katakana": {
+          "present": 90,
+          "total": 90
+        },
+        "hangulSyllables": {
+          "present": 11172,
+          "total": 11172
+        },
+        "latinDigits": {
+          "present": 75,
+          "total": 75
+        }
+      },
+      "originalNames": {
+        "1": "Little Flower Serif",
+        "2": "Regular",
+        "4": "Little Flower Serif Regular",
+        "5": "Version 2.003;hotconv 1.1.1;makeotfexe 2.6.0",
+        "6": "LittleFlowerSerif-Regular"
+      },
+      "languageCompanions": {},
+      "combinationCoverage": {
+        "zh": {
+          "tested": 21,
+          "native": 21,
+          "missing": [],
+          "percent": 100.0,
+          "scope": "language letters / digits in shown samples; punctuation excluded from percentage",
+          "allSampleChars": 23,
+          "allSampleNative": 23
+        },
+        "en": {
+          "tested": 20,
+          "native": 20,
+          "missing": [],
+          "percent": 100.0,
+          "scope": "language letters / digits in shown samples; punctuation excluded from percentage",
+          "allSampleChars": 32,
+          "allSampleNative": 32
+        },
+        "ja": {
+          "tested": 17,
+          "native": 17,
+          "missing": [],
+          "percent": 100.0,
+          "scope": "language letters / digits in shown samples; punctuation excluded from percentage",
+          "allSampleChars": 19,
+          "allSampleNative": 19
+        },
+        "ko": {
+          "tested": 20,
+          "native": 20,
+          "missing": [],
+          "percent": 100.0,
+          "scope": "language letters / digits in shown samples; punctuation excluded from percentage",
+          "allSampleChars": 21,
+          "allSampleNative": 21
+        },
+        "digits": {
+          "tested": 10,
+          "native": 10,
+          "missing": [],
+          "percent": 100.0,
+          "scope": "language letters / digits in shown samples; punctuation excluded from percentage",
+          "allSampleChars": 13,
+          "allSampleNative": 13
+        }
+      },
+      "languageFonts": {
+        "zh": "宋体 · 现有对照",
+        "en": "宋体 · 现有对照",
+        "ja": "宋体 · 现有对照",
+        "ko": "宋体 · 现有对照",
+        "digits": "宋体 · 现有对照"
+      }
+    }
+  ],
+  "companionFonts": [
+    {
+      "id": "gowun",
+      "code": "I",
+      "name": "Gowun Batang",
+      "family": "P110I",
+      "kind": "韩文配套",
+      "description": "温润的韩文衬线，配合文艺宋体方向。",
+      "reference": false,
+      "asset": "assets/preview-i.woff",
+      "format": "woff",
+      "source": "https://fonts.google.com/specimen/Gowun+Batang",
+      "repository": "https://github.com/google/fonts",
+      "revision": "bd8f81ddb5c74d5c8897b36ad88b440266245103",
+      "license": "SIL OFL 1.1",
+      "licenseFile": "licenses/preview-i.txt",
+      "licenseUrl": "https://github.com/google/fonts/blob/bd8f81ddb5c74d5c8897b36ad88b440266245103/ofl/gowunbatang/OFL.txt",
+      "sourceScope": "Google official text subset only",
+      "unicodeRangeScope": "preview sample subset, not total family coverage",
+      "deliveryUrl": "https://fonts.gstatic.com/l/font?kit=ijwSs5nhRMIjYsdSgcMa3wRhXKlowMEUDAqK-_y-6w4HfHIIUQnS_10Lbb5zdITBgDnfSf6-lWrJ2uXTIC-jbxrJIl6aWWGlrOM8cMX-q_sCO0M8odTq10g9D5xbnU3oDFFS-gPMFzwa8PgyglXD8JUOBA7o5uy4LxExJBAeVOK4HBTeePnsKLm0i4ShmtoKurNSDj5YFeBRfFyFnUqGGZoFZf0MaF9aIAi8azPf5CIhNlGRzfmR8lbLwaionyPUbZcTQNWUMxmpY9DXGB73kaebpw5PRas8wFPM6GbCx_8JNBpA1umRcZHYjXYqzrjN7Aumo5bGf3CM5zmUFzNSRKbq6bV-F5_96DFwiIPAk3M_5BLgDfA3uzFA74XSZiZmcSjmIZcJUsM&skey=ed23a5cfd33d4d33&v=v12",
+      "cssUrl": "https://fonts.googleapis.com/css2?family=Gowun%20Batang:wght@400&text=%E9%A3%8E%E7%BB%8F%E8%BF%87%E8%8A%B1%E7%93%A3%EF%BC%8C%E9%9F%B3%E4%B9%90%E5%88%9A%E5%A5%BD%E3%80%82%E6%98%A5%E6%A1%83%E6%9D%8E%E5%BC%80%E6%97%A5%E7%A7%8B%E9%9B%A8%E6%A2%A7%E6%A1%90%E5%8F%B6%E8%90%BD%E6%97%B6Music%20blomwherya.LtRdF%C2%B70123456789%E3%81%B3%E3%82%89%E3%81%8C%E9%A2%A8%E3%81%AB%E3%82%86%E3%82%8C%E3%82%8B%E5%90%9B%E3%81%AE%E5%A3%B0%E3%80%81%E3%82%92%E9%80%A3%E3%81%A6%E3%81%8F%EA%BD%83%EC%9E%8E%EC%82%AC%EC%9D%B4%EB%A1%9C%EC%9D%8C%EC%95%85%ED%9D%98%EB%9F%AC%EC%9A%94%EB%84%88%EC%9D%98%EB%AA%A9%EC%86%8C%EB%A6%AC%EC%97%90%EB%B4%84%EC%B0%BE%EC%95%84%EC%99%80%3A%2F!%22%23%24%25%26'()*%2B%2C-%3B%3C%3D%3E%3F%40ABCDEGHIJKNOPQSTUVWXYZ%5B%5C%5D%5E_%60fgjknpqvxz%7B%7C%7D~",
+      "sourceSha256": "f611d45d43bba3a8aad9f4414d0e75c045076477870c8d6807d3303e440852ab",
+      "sourceBytes": 30688,
+      "previewSha256": "8b2d159426b065aec405b5957ca32c2a20336acb2d5571f7b78fe005ecee612e",
+      "previewBytes": 17352,
+      "sampleCoverage": {
+        "zh": {
+          "tested": 21,
+          "native": 0,
+          "missing": [
+            "乐",
+            "刚",
+            "叶",
+            "好",
+            "开",
+            "日",
+            "时",
+            "春",
+            "李",
+            "桃",
+            "桐",
+            "梧",
+            "瓣",
+            "秋",
+            "经",
+            "花",
+            "落",
+            "过",
+            "雨",
+            "音",
+            "风"
+          ],
+          "percent": 0.0,
+          "scope": "language letters / digits in shown samples; punctuation excluded from percentage",
+          "allSampleChars": 23,
+          "allSampleNative": 2
+        },
+        "en": {
+          "tested": 20,
+          "native": 20,
+          "missing": [],
+          "percent": 100.0,
+          "scope": "language letters / digits in shown samples; punctuation excluded from percentage",
+          "allSampleChars": 32,
+          "allSampleNative": 32
+        },
+        "ja": {
+          "tested": 17,
+          "native": 0,
+          "missing": [
+            "が",
+            "く",
+            "て",
+            "に",
+            "の",
+            "び",
+            "ゆ",
+            "ら",
+            "る",
+            "れ",
+            "を",
+            "君",
+            "声",
+            "春",
+            "花",
+            "連",
+            "風"
+          ],
+          "percent": 0.0,
+          "scope": "language letters / digits in shown samples; punctuation excluded from percentage",
+          "allSampleChars": 19,
+          "allSampleNative": 2
+        },
+        "ko": {
+          "tested": 20,
+          "native": 20,
+          "missing": [],
+          "percent": 100.0,
+          "scope": "language letters / digits in shown samples; punctuation excluded from percentage",
+          "allSampleChars": 21,
+          "allSampleNative": 21
+        },
+        "digits": {
+          "tested": 10,
+          "native": 10,
+          "missing": [],
+          "percent": 100.0,
+          "scope": "language letters / digits in shown samples; punctuation excluded from percentage",
+          "allSampleChars": 13,
+          "allSampleNative": 13
+        }
+      },
+      "unicodeRanges": {
+        "basicCjk": {
+          "present": 0,
+          "total": 20992
+        },
+        "hiragana": {
+          "present": 0,
+          "total": 86
+        },
+        "katakana": {
+          "present": 0,
+          "total": 90
+        },
+        "hangulSyllables": {
+          "present": 20,
+          "total": 11172
+        },
+        "latinDigits": {
+          "present": 75,
+          "total": 75
+        }
+      },
+      "originalNames": {
+        "1": "Gowun Batang",
+        "2": "Regular",
+        "4": "Gowun Batang Regular",
+        "5": "Version 2.000",
+        "6": "GowunBatang-Regular"
+      }
+    },
+    {
+      "id": "jua",
+      "code": "J",
+      "name": "Jua",
+      "family": "P110J",
+      "kind": "韩文配套",
+      "description": "圆润饱满的韩文，配合柔和圆体方向。",
+      "reference": false,
+      "asset": "assets/preview-j.woff",
+      "format": "woff",
+      "source": "https://fonts.google.com/specimen/Jua",
+      "repository": "https://github.com/google/fonts",
+      "revision": "bd8f81ddb5c74d5c8897b36ad88b440266245103",
+      "license": "SIL OFL 1.1",
+      "licenseFile": "licenses/preview-j.txt",
+      "licenseUrl": "https://github.com/google/fonts/blob/bd8f81ddb5c74d5c8897b36ad88b440266245103/ofl/jua/OFL.txt",
+      "sourceScope": "Google official text subset only",
+      "unicodeRangeScope": "preview sample subset, not total family coverage",
+      "deliveryUrl": "https://fonts.gstatic.com/l/font?kit=co3KmW9ljjAjc_hPAOOZkYDthl7EwWXihXdilwC93ySwygJPDUvXtcgFFMSeEP2-wUwVWZ7qraR95LiT-fm5TK2iaF8fTv7brDGP1ALib5Xo1t1fpiEERS3yapDsNYciSxlRRu_NNodcG_NsWX_N-U1CnWDMpo29eC4EbdQuRbsSisDzDRMUkABDuQDNYPJXl2TuW0m6wiiJZRX-qvNJTwqYJK_OdccvhFQSGXRT-8kS-pLhklodByXpnUpUS_j5-jmD_DcINdlbB14XD-Ngl52faCqXA8TALfTNG_ITb-GJVJdSGdGWIuQlLmUmXi0WMI6HcNxLwyDNJsbWsNL46B72GpDpWqylQo7ukzkzJajhbqem9Q13drgOqey20ZI&skey=95a5f5d34191ae20&v=v18",
+      "cssUrl": "https://fonts.googleapis.com/css2?family=Jua:wght@400&text=%E9%A3%8E%E7%BB%8F%E8%BF%87%E8%8A%B1%E7%93%A3%EF%BC%8C%E9%9F%B3%E4%B9%90%E5%88%9A%E5%A5%BD%E3%80%82%E6%98%A5%E6%A1%83%E6%9D%8E%E5%BC%80%E6%97%A5%E7%A7%8B%E9%9B%A8%E6%A2%A7%E6%A1%90%E5%8F%B6%E8%90%BD%E6%97%B6Music%20blomwherya.LtRdF%C2%B70123456789%E3%81%B3%E3%82%89%E3%81%8C%E9%A2%A8%E3%81%AB%E3%82%86%E3%82%8C%E3%82%8B%E5%90%9B%E3%81%AE%E5%A3%B0%E3%80%81%E3%82%92%E9%80%A3%E3%81%A6%E3%81%8F%EA%BD%83%EC%9E%8E%EC%82%AC%EC%9D%B4%EB%A1%9C%EC%9D%8C%EC%95%85%ED%9D%98%EB%9F%AC%EC%9A%94%EB%84%88%EC%9D%98%EB%AA%A9%EC%86%8C%EB%A6%AC%EC%97%90%EB%B4%84%EC%B0%BE%EC%95%84%EC%99%80%3A%2F!%22%23%24%25%26'()*%2B%2C-%3B%3C%3D%3E%3F%40ABCDEGHIJKNOPQSTUVWXYZ%5B%5C%5D%5E_%60fgjknpqvxz%7B%7C%7D~",
+      "sourceSha256": "fadd2d06805b8bd2474d85233061fc0a5110db241e35cab93a56d1455fa018ce",
+      "sourceBytes": 49904,
+      "previewSha256": "fb9718f5a7d954cdc116cba926a29b237c11e2e0bf98d8737ebbd71e02773b7d",
+      "previewBytes": 29624,
+      "sampleCoverage": {
+        "zh": {
+          "tested": 21,
+          "native": 0,
+          "missing": [
+            "。",
+            "乐",
+            "刚",
+            "叶",
+            "好",
+            "开",
+            "日",
+            "时",
+            "春",
+            "李",
+            "桃",
+            "桐",
+            "梧",
+            "瓣",
+            "秋",
+            "经",
+            "花",
+            "落",
+            "过",
+            "雨",
+            "音",
+            "风",
+            "，"
+          ],
+          "percent": 0.0,
+          "scope": "language letters / digits in shown samples; punctuation excluded from percentage",
+          "allSampleChars": 23,
+          "allSampleNative": 0
+        },
+        "en": {
+          "tested": 20,
+          "native": 20,
+          "missing": [
+            "·"
+          ],
+          "percent": 100.0,
+          "scope": "language letters / digits in shown samples; punctuation excluded from percentage",
+          "allSampleChars": 32,
+          "allSampleNative": 31
+        },
+        "ja": {
+          "tested": 17,
+          "native": 0,
+          "missing": [
+            "、",
+            "。",
+            "が",
+            "く",
+            "て",
+            "に",
+            "の",
+            "び",
+            "ゆ",
+            "ら",
+            "る",
+            "れ",
+            "を",
+            "君",
+            "声",
+            "春",
+            "花",
+            "連",
+            "風"
+          ],
+          "percent": 0.0,
+          "scope": "language letters / digits in shown samples; punctuation excluded from percentage",
+          "allSampleChars": 19,
+          "allSampleNative": 0
+        },
+        "ko": {
+          "tested": 20,
+          "native": 20,
+          "missing": [],
+          "percent": 100.0,
+          "scope": "language letters / digits in shown samples; punctuation excluded from percentage",
+          "allSampleChars": 21,
+          "allSampleNative": 21
+        },
+        "digits": {
+          "tested": 10,
+          "native": 10,
+          "missing": [
+            "·"
+          ],
+          "percent": 100.0,
+          "scope": "language letters / digits in shown samples; punctuation excluded from percentage",
+          "allSampleChars": 13,
+          "allSampleNative": 12
+        }
+      },
+      "unicodeRanges": {
+        "basicCjk": {
+          "present": 0,
+          "total": 20992
+        },
+        "hiragana": {
+          "present": 0,
+          "total": 86
+        },
+        "katakana": {
+          "present": 0,
+          "total": 90
+        },
+        "hangulSyllables": {
+          "present": 20,
+          "total": 11172
+        },
+        "latinDigits": {
+          "present": 74,
+          "total": 75
+        }
+      },
+      "originalNames": {
+        "1": "Jua",
+        "2": "Regular",
+        "4": "Jua Regular",
+        "5": "Version 1.001",
+        "6": "Jua-Regular"
+      }
+    },
+    {
+      "id": "nanumpen",
+      "code": "K",
+      "name": "Nanum Pen Script",
+      "family": "P110K",
+      "kind": "韩文配套",
+      "description": "自然松弛的韩文手写，配合手写和毛笔方向。",
+      "reference": false,
+      "asset": "assets/preview-k.woff",
+      "format": "woff",
+      "source": "https://fonts.google.com/specimen/Nanum+Pen+Script",
+      "repository": "https://github.com/google/fonts",
+      "revision": "bd8f81ddb5c74d5c8897b36ad88b440266245103",
+      "license": "SIL OFL 1.1",
+      "licenseFile": "licenses/preview-k.txt",
+      "licenseUrl": "https://github.com/google/fonts/blob/bd8f81ddb5c74d5c8897b36ad88b440266245103/ofl/nanumpenscript/OFL.txt",
+      "sourceScope": "Google official text subset only",
+      "unicodeRangeScope": "preview sample subset, not total family coverage",
+      "deliveryUrl": "https://fonts.gstatic.com/l/font?kit=daaDSSYiLGqEal3MvdA_FOL_3FkN2z7m_stjSBagsDjj8mwkT850upRqdjPjjbseo1UlDOEOId7059HmZCAxZ3R25v4ljnUIOsnGkNDOd8Q-nRlndiJRqKL0SLhQ1buTeftZfcKP9_oFsRoPIvc5zYDROIKwhutdnMggXorGVe_5NVaqlpIM0LdgMGoovutH7AZeGcNH0XZaboDWbha39bHPP82stx2_Z6tDQr-TN6E2agjV7EqfWC-avi5m0oKrOMi4aRDushx9weg-pm3-BuVmvrvZo6rAsm538zcYSBCOKqMCjB5q9EP_WUt7g0PhTGUE2o4g3RzXnDLoaLDUDysB2Tg1xtIzoLq0rJLHavFEDRqIs6g42FFa1BZy_Vr0kd5dxoxR_yRmiZFt&skey=ec72c2295b136164&v=v25",
+      "cssUrl": "https://fonts.googleapis.com/css2?family=Nanum%20Pen%20Script:wght@400&text=%E9%A3%8E%E7%BB%8F%E8%BF%87%E8%8A%B1%E7%93%A3%EF%BC%8C%E9%9F%B3%E4%B9%90%E5%88%9A%E5%A5%BD%E3%80%82%E6%98%A5%E6%A1%83%E6%9D%8E%E5%BC%80%E6%97%A5%E7%A7%8B%E9%9B%A8%E6%A2%A7%E6%A1%90%E5%8F%B6%E8%90%BD%E6%97%B6Music%20blomwherya.LtRdF%C2%B70123456789%E3%81%B3%E3%82%89%E3%81%8C%E9%A2%A8%E3%81%AB%E3%82%86%E3%82%8C%E3%82%8B%E5%90%9B%E3%81%AE%E5%A3%B0%E3%80%81%E3%82%92%E9%80%A3%E3%81%A6%E3%81%8F%EA%BD%83%EC%9E%8E%EC%82%AC%EC%9D%B4%EB%A1%9C%EC%9D%8C%EC%95%85%ED%9D%98%EB%9F%AC%EC%9A%94%EB%84%88%EC%9D%98%EB%AA%A9%EC%86%8C%EB%A6%AC%EC%97%90%EB%B4%84%EC%B0%BE%EC%95%84%EC%99%80%3A%2F!%22%23%24%25%26'()*%2B%2C-%3B%3C%3D%3E%3F%40ABCDEGHIJKNOPQSTUVWXYZ%5B%5C%5D%5E_%60fgjknpqvxz%7B%7C%7D~",
+      "sourceSha256": "f44fb74bb88c704b11d46bf9c3863fc766f4314e202e5da9edb8788ad4801482",
+      "sourceBytes": 35728,
+      "previewSha256": "7b3c00fa205b4fd5691794c72717141d269fa4708e39589ae642c40ffbc291b0",
+      "previewBytes": 22452,
+      "sampleCoverage": {
+        "zh": {
+          "tested": 21,
+          "native": 0,
+          "missing": [
+            "。",
+            "乐",
+            "刚",
+            "叶",
+            "好",
+            "开",
+            "日",
+            "时",
+            "春",
+            "李",
+            "桃",
+            "桐",
+            "梧",
+            "瓣",
+            "秋",
+            "经",
+            "花",
+            "落",
+            "过",
+            "雨",
+            "音",
+            "风"
+          ],
+          "percent": 0.0,
+          "scope": "language letters / digits in shown samples; punctuation excluded from percentage",
+          "allSampleChars": 23,
+          "allSampleNative": 1
+        },
+        "en": {
+          "tested": 20,
+          "native": 20,
+          "missing": [
+            "·"
+          ],
+          "percent": 100.0,
+          "scope": "language letters / digits in shown samples; punctuation excluded from percentage",
+          "allSampleChars": 32,
+          "allSampleNative": 31
+        },
+        "ja": {
+          "tested": 17,
+          "native": 0,
+          "missing": [
+            "、",
+            "。",
+            "が",
+            "く",
+            "て",
+            "に",
+            "の",
+            "び",
+            "ゆ",
+            "ら",
+            "る",
+            "れ",
+            "を",
+            "君",
+            "声",
+            "春",
+            "花",
+            "連",
+            "風"
+          ],
+          "percent": 0.0,
+          "scope": "language letters / digits in shown samples; punctuation excluded from percentage",
+          "allSampleChars": 19,
+          "allSampleNative": 0
+        },
+        "ko": {
+          "tested": 20,
+          "native": 20,
+          "missing": [],
+          "percent": 100.0,
+          "scope": "language letters / digits in shown samples; punctuation excluded from percentage",
+          "allSampleChars": 21,
+          "allSampleNative": 21
+        },
+        "digits": {
+          "tested": 10,
+          "native": 10,
+          "missing": [
+            "·"
+          ],
+          "percent": 100.0,
+          "scope": "language letters / digits in shown samples; punctuation excluded from percentage",
+          "allSampleChars": 13,
+          "allSampleNative": 12
+        }
+      },
+      "unicodeRanges": {
+        "basicCjk": {
+          "present": 0,
+          "total": 20992
+        },
+        "hiragana": {
+          "present": 0,
+          "total": 86
+        },
+        "katakana": {
+          "present": 0,
+          "total": 90
+        },
+        "hangulSyllables": {
+          "present": 20,
+          "total": 11172
+        },
+        "latinDigits": {
+          "present": 75,
+          "total": 75
+        }
+      },
+      "originalNames": {
+        "1": "Nanum Pen",
+        "2": "Regular",
+        "4": "Nanum Pen Regular",
+        "5": "Version 1.10",
+        "6": "NanumPen-Regular"
+      }
+    },
+    {
+      "id": "klee",
+      "code": "L",
+      "name": "Klee One",
+      "family": "P110L",
+      "kind": "日文配套",
+      "description": "清楚柔软的日文手写，用于中文文艺字体的日文配套。",
+      "reference": false,
+      "asset": "assets/preview-l.woff",
+      "format": "woff",
+      "source": "https://fonts.google.com/specimen/Klee+One",
+      "repository": "https://github.com/google/fonts",
+      "revision": "bd8f81ddb5c74d5c8897b36ad88b440266245103",
+      "license": "SIL OFL 1.1",
+      "licenseFile": "licenses/preview-l.txt",
+      "licenseUrl": "https://github.com/google/fonts/blob/bd8f81ddb5c74d5c8897b36ad88b440266245103/ofl/kleeone/OFL.txt",
+      "sourceScope": "Google official text subset only",
+      "unicodeRangeScope": "preview sample subset, not total family coverage",
+      "deliveryUrl": "https://fonts.gstatic.com/l/font?kit=LDIxapCLNRc6A8oT4q4AIXGuecPssJ4U1Q6iqNnwY80RTj3ceAzkLZ-Xfuyf02Z-kVmxcpaVtNyzHMwtcy1W2wI3Vkrh54hZcad1F7V7bQWbgVn1bFChlkYUDKL3cmOa6cEp0xGQnOxkOyxNVzwwM-ph539t_zuAi_eTWtg06hB0q2P_jbY1n2oo4Cy3X97Ef1m6JMU39xFy4NMVXErgvRgfNQrxYA8d91mAw4xuuDTXebNIy3tzMwFlj5UFjhF-2MEbKWB-pxGwhjV5f0_Mvrc3x9D7U1lyY1JM5MlTmRogPQEGKagxaRHnU9NDiOkCnzx2EugRAO4Opd-emmrMB1XPbWm-XgnVgkyyL5gSIybS7h6pqN4NveIIexW9SVVvtfXmmg&skey=48220a278ffbe990&v=v14",
+      "cssUrl": "https://fonts.googleapis.com/css2?family=Klee%20One:wght@400&text=%E9%A3%8E%E7%BB%8F%E8%BF%87%E8%8A%B1%E7%93%A3%EF%BC%8C%E9%9F%B3%E4%B9%90%E5%88%9A%E5%A5%BD%E3%80%82%E6%98%A5%E6%A1%83%E6%9D%8E%E5%BC%80%E6%97%A5%E7%A7%8B%E9%9B%A8%E6%A2%A7%E6%A1%90%E5%8F%B6%E8%90%BD%E6%97%B6Music%20blomwherya.LtRdF%C2%B70123456789%E3%81%B3%E3%82%89%E3%81%8C%E9%A2%A8%E3%81%AB%E3%82%86%E3%82%8C%E3%82%8B%E5%90%9B%E3%81%AE%E5%A3%B0%E3%80%81%E3%82%92%E9%80%A3%E3%81%A6%E3%81%8F%EA%BD%83%EC%9E%8E%EC%82%AC%EC%9D%B4%EB%A1%9C%EC%9D%8C%EC%95%85%ED%9D%98%EB%9F%AC%EC%9A%94%EB%84%88%EC%9D%98%EB%AA%A9%EC%86%8C%EB%A6%AC%EC%97%90%EB%B4%84%EC%B0%BE%EC%95%84%EC%99%80%3A%2F!%22%23%24%25%26'()*%2B%2C-%3B%3C%3D%3E%3F%40ABCDEGHIJKNOPQSTUVWXYZ%5B%5C%5D%5E_%60fgjknpqvxz%7B%7C%7D~",
+      "sourceSha256": "8aa20975e1067555636e489099dca66b3bfab9825cdb954cda0ed2adb7ec9951",
+      "sourceBytes": 78504,
+      "previewSha256": "9052cb892d4aeecda48270010b4d2f4f9d339b6b0247f6ca1d93005609998930",
+      "previewBytes": 34472,
+      "sampleCoverage": {
+        "zh": {
+          "tested": 21,
+          "native": 14,
+          "missing": [
+            "乐",
+            "刚",
+            "开",
+            "时",
+            "经",
+            "过",
+            "风"
+          ],
+          "percent": 66.7,
+          "scope": "language letters / digits in shown samples; punctuation excluded from percentage",
+          "allSampleChars": 23,
+          "allSampleNative": 16
+        },
+        "en": {
+          "tested": 20,
+          "native": 20,
+          "missing": [],
+          "percent": 100.0,
+          "scope": "language letters / digits in shown samples; punctuation excluded from percentage",
+          "allSampleChars": 32,
+          "allSampleNative": 32
+        },
+        "ja": {
+          "tested": 17,
+          "native": 17,
+          "missing": [],
+          "percent": 100.0,
+          "scope": "language letters / digits in shown samples; punctuation excluded from percentage",
+          "allSampleChars": 19,
+          "allSampleNative": 19
+        },
+        "ko": {
+          "tested": 20,
+          "native": 0,
+          "missing": [
+            "꽃",
+            "너",
+            "러",
+            "로",
+            "리",
+            "목",
+            "봄",
+            "사",
+            "소",
+            "아",
+            "악",
+            "에",
+            "와",
+            "요",
+            "음",
+            "의",
+            "이",
+            "잎",
+            "찾",
+            "흘"
+          ],
+          "percent": 0.0,
+          "scope": "language letters / digits in shown samples; punctuation excluded from percentage",
+          "allSampleChars": 21,
+          "allSampleNative": 1
+        },
+        "digits": {
+          "tested": 10,
+          "native": 10,
+          "missing": [],
+          "percent": 100.0,
+          "scope": "language letters / digits in shown samples; punctuation excluded from percentage",
+          "allSampleChars": 13,
+          "allSampleNative": 13
+        }
+      },
+      "unicodeRanges": {
+        "basicCjk": {
+          "present": 18,
+          "total": 20992
+        },
+        "hiragana": {
+          "present": 11,
+          "total": 86
+        },
+        "katakana": {
+          "present": 0,
+          "total": 90
+        },
+        "hangulSyllables": {
+          "present": 0,
+          "total": 11172
+        },
+        "latinDigits": {
+          "present": 75,
+          "total": 75
+        }
+      },
+      "originalNames": {
+        "1": "Klee One",
+        "2": "Regular",
+        "4": "Klee One Regular",
+        "5": "Version 1.100",
+        "6": "KleeOne-Regular"
+      }
+    },
+    {
+      "id": "yuji",
+      "code": "M",
+      "name": "Yuji Syuku",
+      "family": "P110M",
+      "kind": "日文配套",
+      "description": "自然毛笔感，用于中文行书和毛笔的日文配套。",
+      "reference": false,
+      "asset": "assets/preview-m.woff",
+      "format": "woff",
+      "source": "https://fonts.google.com/specimen/Yuji+Syuku",
+      "repository": "https://github.com/google/fonts",
+      "revision": "bd8f81ddb5c74d5c8897b36ad88b440266245103",
+      "license": "SIL OFL 1.1",
+      "licenseFile": "licenses/preview-m.txt",
+      "licenseUrl": "https://github.com/google/fonts/blob/bd8f81ddb5c74d5c8897b36ad88b440266245103/ofl/yujisyuku/OFL.txt",
+      "sourceScope": "Google official text subset only",
+      "unicodeRangeScope": "preview sample subset, not total family coverage",
+      "deliveryUrl": "https://fonts.gstatic.com/l/font?kit=BngNUXdTV3vO6Lw5ApOPqPf4VKKhwDqhX93OY--fQm9KUP6J5eeRRm8Lyqwy-uDGbHEvCIdsc7pOatmJxjjUM9Mx5JxZ_-7t7O1RwzICfwfO8W8FtvoC4Bd6r-ZTLK5z84P4C7O13BJbba3Gjk66s16EUhg7zhLW2STqx1T5VaVXZes948CzDC7t2oy29mTBGaRFvfk2Lm68BvNNOblPQSR1eLUJHvLg564UphRRQaOC0FndW9NxQKQgdJYWLyQXFQ67bli4yHcNwD_99Ut4DDbOJWmPf4PxLHvu-Wx8llx-S3HA-WbozWmjvf0QYBX7LpYv8sV9AWu-kJXZeVdHf9WjHmPt8GhJxj4I5qUfbCr3IWFNqcQvHIo0ZmSAHfsVvBR2fgEC&skey=9ffd14150d67040a&v=v9",
+      "cssUrl": "https://fonts.googleapis.com/css2?family=Yuji%20Syuku:wght@400&text=%E9%A3%8E%E7%BB%8F%E8%BF%87%E8%8A%B1%E7%93%A3%EF%BC%8C%E9%9F%B3%E4%B9%90%E5%88%9A%E5%A5%BD%E3%80%82%E6%98%A5%E6%A1%83%E6%9D%8E%E5%BC%80%E6%97%A5%E7%A7%8B%E9%9B%A8%E6%A2%A7%E6%A1%90%E5%8F%B6%E8%90%BD%E6%97%B6Music%20blomwherya.LtRdF%C2%B70123456789%E3%81%B3%E3%82%89%E3%81%8C%E9%A2%A8%E3%81%AB%E3%82%86%E3%82%8C%E3%82%8B%E5%90%9B%E3%81%AE%E5%A3%B0%E3%80%81%E3%82%92%E9%80%A3%E3%81%A6%E3%81%8F%EA%BD%83%EC%9E%8E%EC%82%AC%EC%9D%B4%EB%A1%9C%EC%9D%8C%EC%95%85%ED%9D%98%EB%9F%AC%EC%9A%94%EB%84%88%EC%9D%98%EB%AA%A9%EC%86%8C%EB%A6%AC%EC%97%90%EB%B4%84%EC%B0%BE%EC%95%84%EC%99%80%3A%2F!%22%23%24%25%26'()*%2B%2C-%3B%3C%3D%3E%3F%40ABCDEGHIJKNOPQSTUVWXYZ%5B%5C%5D%5E_%60fgjknpqvxz%7B%7C%7D~",
+      "sourceSha256": "27754968ac9ac7009b5f88a61fd192846df99a5bc34c68d4093e30acbe9e7427",
+      "sourceBytes": 74916,
+      "previewSha256": "7b79e942c77fe73f03b397351282126caaf019a9d71ba048df616e73685a7e69",
+      "previewBytes": 40496,
+      "sampleCoverage": {
+        "zh": {
+          "tested": 21,
+          "native": 14,
+          "missing": [
+            "乐",
+            "刚",
+            "开",
+            "时",
+            "经",
+            "过",
+            "风"
+          ],
+          "percent": 66.7,
+          "scope": "language letters / digits in shown samples; punctuation excluded from percentage",
+          "allSampleChars": 23,
+          "allSampleNative": 16
+        },
+        "en": {
+          "tested": 20,
+          "native": 20,
+          "missing": [],
+          "percent": 100.0,
+          "scope": "language letters / digits in shown samples; punctuation excluded from percentage",
+          "allSampleChars": 32,
+          "allSampleNative": 32
+        },
+        "ja": {
+          "tested": 17,
+          "native": 17,
+          "missing": [],
+          "percent": 100.0,
+          "scope": "language letters / digits in shown samples; punctuation excluded from percentage",
+          "allSampleChars": 19,
+          "allSampleNative": 19
+        },
+        "ko": {
+          "tested": 20,
+          "native": 0,
+          "missing": [
+            "꽃",
+            "너",
+            "러",
+            "로",
+            "리",
+            "목",
+            "봄",
+            "사",
+            "소",
+            "아",
+            "악",
+            "에",
+            "와",
+            "요",
+            "음",
+            "의",
+            "이",
+            "잎",
+            "찾",
+            "흘"
+          ],
+          "percent": 0.0,
+          "scope": "language letters / digits in shown samples; punctuation excluded from percentage",
+          "allSampleChars": 21,
+          "allSampleNative": 1
+        },
+        "digits": {
+          "tested": 10,
+          "native": 10,
+          "missing": [],
+          "percent": 100.0,
+          "scope": "language letters / digits in shown samples; punctuation excluded from percentage",
+          "allSampleChars": 13,
+          "allSampleNative": 13
+        }
+      },
+      "unicodeRanges": {
+        "basicCjk": {
+          "present": 18,
+          "total": 20992
+        },
+        "hiragana": {
+          "present": 11,
+          "total": 86
+        },
+        "katakana": {
+          "present": 0,
+          "total": 90
+        },
+        "hangulSyllables": {
+          "present": 0,
+          "total": 11172
+        },
+        "latinDigits": {
+          "present": 75,
+          "total": 75
+        }
+      },
+      "originalNames": {
+        "1": "Yuji Syuku",
+        "2": "Regular",
+        "4": "Yuji Syuku Regular",
+        "5": "Version 3.002",
+        "6": "YujiSyuku-Regular"
+      }
+    }
+  ],
+  "fallback": "Browser/OS sans-serif, explicitly marked per character; does not claim Android-identical fallback",
+  "subset": "Only demonstration characters and printable ASCII. Names changed to P110A-P110M, outlines unchanged. Original distributions linked.",
+  "fontTools": "4.66.1",
+  "combinationRule": "A-F are cross-language preview combinations. Japanese/Korean whole sample uses named companion. Primary native coverage is preserved separately. Missing Chinese uses system fallback."
+}

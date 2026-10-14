@@ -1,0 +1,19 @@
+{
+  "date": "2026-10-14",
+  "scope": "Offline preview only; Android resources unchanged",
+  "candidateStyles": 6,
+  "existingReferences": 2,
+  "companionFonts": 5,
+  "fontResources": 13,
+  "totalWoffBytes": 346072,
+  "embeddedFaces": 13,
+  "htmlBytes": 556023,
+  "allSources": "Official Google Fonts text subsets / existing licensed local references",
+  "cmap": "PASS: every selected native sample character preserved after subset; unavailable characters remain absent",
+  "licenses": "13 complete OFL texts copied and linked",
+  "primaryCoverageKeptSeparate": true,
+  "scriptSyntax": "PASS via node --check",
+  "browserRendering": "PASS: 8 styles and 13 real faces loaded; offline file opening, size controls, mobile layout and screenshots checked.",
+  "productionAndroidFontsChanged": false,
+  "browserCheckFile": "../FONT-BROWSER-CHECK.json"
+}

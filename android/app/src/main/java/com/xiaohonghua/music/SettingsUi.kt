@@ -58,7 +58,7 @@ import kotlinx.coroutines.withContext
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(bottom=24.dp)) {
         GroupLabel("播放与歌词")
         SettingRow(Icons.Outlined.Lock,"系统锁屏音乐控件","前往手机通知设置管理锁屏显示",onSystemLock)
-        SettingRow(Icons.Outlined.TextFields,"歌词样式","歌词导入、时间校准、字体与动态滚动") {onPage("lyric-style")}
+        SettingRow(Icons.Outlined.TextFields,"歌词样式","歌词导入、字体与动态滚动") {onPage("lyric-style")}
         GroupLabel("外观")
         SettingRow(Icons.Outlined.Palette,"主题颜色","夜间主题 · 红花、森林、海蓝、陶土、暮紫") {onPage("theme")}
         GroupLabel("本地音乐")
@@ -88,8 +88,7 @@ import kotlinx.coroutines.withContext
 }
 private fun UriLabel(uri: String)=android.net.Uri.decode(uri.substringAfter("/tree/"))
 
-@Composable internal fun LyricSettings(settings: Settings,song: Song?=null,onImport:(()->Unit)?=null,onComplete:(String)->Unit={},offsetMillis:Long=0L,onOffset:((Long)->Unit)?=null,
-    lyricText:String=song?.lyrics.orEmpty(),playbackPosition:()->Long={0L},onChange:(Settings)->Unit) {
+@Composable internal fun LyricSettings(settings: Settings,song: Song?=null,onImport:(()->Unit)?=null,onComplete:(String)->Unit={},onChange:(Settings)->Unit) {
     var licenses by remember {mutableStateOf(false)}
     var draft by remember(settings) {mutableStateOf(settings)}
     val haptic=rememberActionHaptic()
@@ -101,7 +100,6 @@ private fun UriLabel(uri: String)=android.net.Uri.decode(uri.substringAfter("/tr
         OutlinedButton(onClick={onImport?.invoke()},enabled=song != null && onImport != null,modifier=Modifier.testTag("import-current-lyrics").fillMaxWidth().padding(top=12.dp,bottom=24.dp)) {
             Icon(Icons.Outlined.Description,null,Modifier.size(18.dp));Spacer(Modifier.width(8.dp));Text("导入当前歌曲歌词")
         }
-        LyricTimingControl(song,lyricText,offsetMillis,playbackPosition,onOffset)
         Text("字体",fontWeight=FontWeight.Medium)
         Column(Modifier.selectableGroup().padding(top=8.dp)) {lyricFontOptions.forEach { (key,label) ->
             val selected=draft.lyricFont == key
@@ -164,7 +162,7 @@ private fun UriLabel(uri: String)=android.net.Uri.decode(uri.substringAfter("/tr
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(24.dp),verticalArrangement=Arrangement.spacedBy(20.dp)) {
         Icon(Icons.Outlined.Backup,null,Modifier.size(48.dp),tint=MaterialTheme.colorScheme.primary)
         Text("把喜欢的顺序，一起带走",fontSize=21.sp,fontWeight=FontWeight.Medium)
-        Text("备份包含音乐索引、歌单、自定义排序、手动歌词、每首时间校准、封面图案和设置（含夜间主题）。音乐文件与歌单照片请另行复制；换手机后重新选择照片。",fontSize=14.sp,lineHeight=24.sp,color=muted)
+        Text("备份包含音乐索引、歌单、自定义排序、手动歌词、封面图案和设置（含夜间主题）。音乐文件与歌单照片请另行复制；换手机后重新选择照片。",fontSize=14.sp,lineHeight=24.sp,color=muted)
         Button(onClick=onExport,modifier=Modifier.fillMaxWidth()) {Text("导出备份")}
         OutlinedButton(onClick=onRestore,modifier=Modifier.fillMaxWidth()) {Text("从备份恢复")}
         Text("更换手机：先复制音乐文件，恢复此备份，再选择对应文件夹授权。应用会按文件名和大小匹配；重名且相同大小的多个文件需要避免混用。\n\n版本升级：使用相同包名和签名直接覆盖安装，保留内部数据。卸载会清除应用数据，请先导出备份。",fontSize=12.sp,lineHeight=21.sp,color=muted)

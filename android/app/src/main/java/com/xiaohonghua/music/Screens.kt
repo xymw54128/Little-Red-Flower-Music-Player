@@ -326,9 +326,7 @@ fun MusicApp(model: MusicModel,showStartup: Boolean = false) {
                         "folders" -> FolderPage(library,onAdd={folder.launch(null)},onRefresh={model.repository.requestRefresh()},onRemove={removeFolder=it},onFiles={files.launch(arrayOf("audio/*","application/ogg","application/octet-stream"))})
                         "lyric-style" -> LyricSettings(library.settings,song=current,onImport={
                             if(current != null) {lyricTarget=current.id;lyrics.launch(arrayOf("*/*"))}
-                        },onComplete={completed(it)},offsetMillis=library.lyricOffsets[current?.id] ?: 0L,
-                            onOffset={millis -> current?.id?.let {model.repository.lyricOffset(it,millis)}},
-                            lyricText=library.manualLyrics[current?.id] ?: current?.lyrics.orEmpty(),playbackPosition=model::playbackPosition) {model.repository.settings(it)}
+                        },onComplete={completed(it)}) {model.repository.settings(it)}
                         "theme" -> ThemeSettings(library.settings) {model.repository.settings(it);completed("已应用主题颜色")}
                         "backup" -> BackupPage(onExport={export.launch("小红花备份-${java.time.LocalDate.now()}.json")},onRestore={restore.launch(arrayOf("application/json","text/plain","application/octet-stream"))})
                     }

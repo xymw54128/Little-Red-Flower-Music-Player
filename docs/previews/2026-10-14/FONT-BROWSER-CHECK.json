@@ -1,0 +1,137 @@
+{
+  "date": "2026-10-14",
+  "errors": [],
+  "styles": [
+    {
+      "code": "A",
+      "name": "站酷小薇",
+      "primaryLoaded": true,
+      "companions": {
+        "ja": "klee",
+        "ko": "gowun"
+      },
+      "zhSampleCoverage": 100
+    },
+    {
+      "code": "B",
+      "name": "Zen Maru Gothic",
+      "primaryLoaded": true,
+      "companions": {
+        "ko": "jua"
+      },
+      "zhSampleCoverage": 66.7
+    },
+    {
+      "code": "C",
+      "name": "Kiwi Maru",
+      "primaryLoaded": true,
+      "companions": {
+        "ko": "jua"
+      },
+      "zhSampleCoverage": 66.7
+    },
+    {
+      "code": "D",
+      "name": "Zen Kurenaido",
+      "primaryLoaded": true,
+      "companions": {
+        "ko": "nanumpen"
+      },
+      "zhSampleCoverage": 66.7
+    },
+    {
+      "code": "E",
+      "name": "马善政毛笔",
+      "primaryLoaded": true,
+      "companions": {
+        "ja": "yuji",
+        "ko": "nanumpen"
+      },
+      "zhSampleCoverage": 100
+    },
+    {
+      "code": "F",
+      "name": "龙藏手书",
+      "primaryLoaded": true,
+      "companions": {
+        "ja": "yuji",
+        "ko": "nanumpen"
+      },
+      "zhSampleCoverage": 100
+    },
+    {
+      "code": "G",
+      "name": "文楷 · 现有对照",
+      "primaryLoaded": true,
+      "companions": {},
+      "zhSampleCoverage": 100
+    },
+    {
+      "code": "H",
+      "name": "宋体 · 现有对照",
+      "primaryLoaded": true,
+      "companions": {},
+      "zhSampleCoverage": 100
+    }
+  ],
+  "fontsArePreviewSubsets": true,
+  "productionFontsChanged": false,
+  "loadedFonts": [
+    {
+      "family": "P110A",
+      "status": "loaded"
+    },
+    {
+      "family": "P110B",
+      "status": "loaded"
+    },
+    {
+      "family": "P110C",
+      "status": "loaded"
+    },
+    {
+      "family": "P110D",
+      "status": "loaded"
+    },
+    {
+      "family": "P110E",
+      "status": "loaded"
+    },
+    {
+      "family": "P110F",
+      "status": "loaded"
+    },
+    {
+      "family": "P110G",
+      "status": "loaded"
+    },
+    {
+      "family": "P110H",
+      "status": "loaded"
+    },
+    {
+      "family": "P110I",
+      "status": "loaded"
+    },
+    {
+      "family": "P110J",
+      "status": "loaded"
+    },
+    {
+      "family": "P110K",
+      "status": "loaded"
+    },
+    {
+      "family": "P110L",
+      "status": "loaded"
+    },
+    {
+      "family": "P110M",
+      "status": "loaded"
+    }
+  ],
+  "mobileNoOverflow": true,
+  "offlineFileFontsLoaded": true,
+  "comparisonSamples": 6,
+  "passed": true
+}

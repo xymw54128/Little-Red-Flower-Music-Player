@@ -71,8 +71,7 @@ import kotlinx.coroutines.isActive
     val artworkPress=remember {MutableInteractionSource()}
     val lyricText=library.manualLyrics[song?.id] ?: song?.lyrics.orEmpty()
     val lines=remember(lyricText,song?.duration) {Lrc.parse(lyricText,song?.duration?.takeIf {it > 0})}
-    val lyricOffset=library.lyricOffsets[song?.id] ?: 0L
-    val lyricIndex=remember(lines,model,lyricOffset) {model.playback.map {Lrc.current(lines,lyricPosition(it.position,lyricOffset))}.distinctUntilChanged()}
+    val lyricIndex=remember(lines,model) {model.playback.map {Lrc.current(lines,it.position)}.distinctUntilChanged()}
     val current by lyricIndex.collectAsStateWithLifecycle(initialValue=-1)
     val pageMotion=tween<Float>(360,easing=FastOutSlowInEasing)
     val lyricsVisible by remember {derivedStateOf {pager.currentPage == 1 || pager.currentPageOffsetFraction > 0f}}
@@ -104,7 +103,7 @@ import kotlinx.coroutines.isActive
                         Text(listOfNotNull(song.format.takeIf {it.isNotBlank()},song.bitDepth.takeIf {it > 0}?.let {"$it bit"},song.sampleRate.takeIf {it > 0}?.let {"${it/1000f} kHz"}).joinToString(" · "),Modifier.padding(top=12.dp),fontSize=11.sp,color=muted,textAlign=TextAlign.Center)
                         Text(lines.getOrNull(current)?.text ?: "点击封面或左滑查看歌词",Modifier.testTag("player-lyric-preview").fillMaxWidth().padding(top=24.dp).clickable(onClickLabel="查看歌词",onClick=::openLyrics),textAlign=TextAlign.Center,fontSize=library.settings.lyricSize.coerceAtMost(24f).sp,fontFamily=lyricFont(library.settings.lyricFont),color=MaterialTheme.colorScheme.primary,maxLines=2,overflow=TextOverflow.Ellipsis)
                     }
-                } else LyricsPage(lines,lyricText,library.settings,lyricsVisible,p,model,lyricOffset)
+                } else LyricsPage(lines,lyricText,library.settings,lyricsVisible,p,model)
             }
             Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.Center) {
                 repeat(2) { index ->
@@ -170,7 +169,7 @@ import kotlinx.coroutines.isActive
             if(fraction > 0f) drawLine(accent,start,Offset(size.width*fraction,end.y),strokeWidth=size.height,cap=StrokeCap.Round)
         } })
 }
-@Composable private fun LyricsPage(lines: List<LyricLine>,text: String,settings: Settings,visible: Boolean,p: PlaybackState,model: MusicModel,lyricOffset:Long=0L) {
+@Composable private fun LyricsPage(lines: List<LyricLine>,text: String,settings: Settings,visible: Boolean,p: PlaybackState,model: MusicModel) {
     val density=LocalDensity.current
     val measurer=rememberTextMeasurer()
     val lifecycle=LocalLifecycleOwner.current.lifecycle
@@ -180,7 +179,6 @@ import kotlinx.coroutines.isActive
     val latestVisible by rememberUpdatedState(visible)
     val latestPlayback by rememberUpdatedState(p)
     val latestDynamic by rememberUpdatedState(settings.dynamicLyrics)
-    val latestOffset by rememberUpdatedState(lyricOffset)
     val inactiveColor=muted
     BoxWithConstraints(Modifier.testTag("player-lyrics-page").fillMaxSize().background(pageColor)) {
         if(lines.isEmpty()) Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(32.dp),horizontalAlignment=Alignment.CenterHorizontally,verticalArrangement=Arrangement.Center) {
@@ -202,7 +200,7 @@ import kotlinx.coroutines.isActive
             val tops=remember(heights) {var top=0f;heights.map {height -> top.also {top+=height}}}
             val activeColor=MaterialTheme.colorScheme.primary
             key(lines,p.currentId,width,style,settings.lyricGap,typeface) {
-                val initial=Lrc.current(lines,lyricPosition(model.playbackPosition(),lyricOffset))
+                val initial=Lrc.current(lines,model.playbackPosition())
                 val scroll=rememberLazyListState(initialFirstVisibleItemIndex=initial.coerceAtLeast(0),
                     initialFirstVisibleItemScrollOffset=if(initial >= 0) heights[initial]/2 else 0)
                 fun offset(): Float=tops.getOrElse(scroll.firstVisibleItemIndex) {0f}+scroll.firstVisibleItemScrollOffset
@@ -228,7 +226,6 @@ import kotlinx.coroutines.isActive
                         var suppressedLead=-1
                         var lastSeek=latestPlayback.seekRevision
                         var lastRequest=seekRequest
-                        var lastOffset=latestOffset
                         val initialClock=android.os.SystemClock.elapsedRealtime()
                         var wasVisible=latestVisible
                         var wasFollowing=follow
@@ -237,12 +234,12 @@ import kotlinx.coroutines.isActive
                             if(follow) centers.getOrElse(current) {0f} else offset(),initialClock,300L,300L)
                         while(isActive) {
                             val now=android.os.SystemClock.elapsedRealtime()
-                            val position=lyricPosition(model.playbackPosition(),latestOffset)
+                            val position=model.playbackPosition()
                             val actual=Lrc.current(lines,position)
                             val state=latestPlayback
                             // Media3 reports real discontinuities. A delayed frame or a speed
                             // change must not be mistaken for a seek and restart the animation.
-                            val seeking=seekRequest != lastRequest || state.seekRevision != lastSeek || latestOffset != lastOffset
+                            val seeking=seekRequest != lastRequest || state.seekRevision != lastSeek
                             val entering=latestVisible && !wasVisible
                             if(seeking || entering || !latestVisible) follow=true
                             val returning=follow && !wasFollowing
@@ -296,7 +293,7 @@ import kotlinx.coroutines.isActive
                                 }
                                 if(!frame.running) transition=null
                             }
-                            lastSeek=state.seekRevision;lastRequest=seekRequest;lastOffset=latestOffset;wasVisible=latestVisible;wasFollowing=follow
+                            lastSeek=state.seekRevision;lastRequest=seekRequest;wasVisible=latestVisible;wasFollowing=follow
                             if(latestVisible && (state.playing || transition != null && !mediaClock)) withFrameNanos {} else delay(50)
                         }
                     }
@@ -307,7 +304,7 @@ import kotlinx.coroutines.isActive
                     itemsIndexed(lines,key={index,_ -> index}) {index,line ->
                         val weight=remember(index) {derivedStateOf(structuralEqualityPolicy()) {visual.value.weights[index] ?: 0f}}
                         Box(Modifier.fillMaxWidth().height(with(density) {heights[index].toDp()}).testTag(if(index == current) "current-lyric" else "lyric-$index")
-                            .clickable {model.seek(mediaPosition(line.startTime,latestOffset,latestPlayback.duration.takeIf {it > 0} ?: Long.MAX_VALUE));seekRequest++;follow=true},contentAlignment=Alignment.Center) {
+                            .clickable {model.seek(line.startTime.coerceIn(0,latestPlayback.duration.takeIf {it > 0} ?: Long.MAX_VALUE));seekRequest++;follow=true},contentAlignment=Alignment.Center) {
                             // Static glyph layers: only alpha and the shared transform change per frame.
                             // Keep one accessible text label, despite the two visual color layers.
                             Box(Modifier.fillMaxWidth().graphicsLayer {scaleX=1f+.05f*weight.value;scaleY=scaleX}) {

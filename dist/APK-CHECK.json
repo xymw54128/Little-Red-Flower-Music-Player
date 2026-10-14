@@ -1,14 +1,14 @@
 {
-  "date": "2026-10-12T17:13:59.589Z",
-  "apk": "D:\\music player app\\dist\\小红花-1.0.9.apk",
+  "date": "2026-10-14T12:40:42.100Z",
+  "apk": "D:\\music player app\\dist\\小红花-1.0.10.apk",
   "buildType": "release",
   "debuggable": false,
   "testComponentsAbsent": true,
   "networkPermissionAbsent": true,
-  "size": 45722987,
-  "sha256": "229371b5480ba0702f45014898209eb60b49476ece035c83b612737f507bc23b",
+  "size": 45706599,
+  "sha256": "aee68f0f4716d77311a1cc0784eb1b6b6195b5f84567918dd1c72abf4772a954",
   "metadata": [
-    "package: name='com.xiaohonghua.music' versionCode='16' versionName='1.0.9' platformBuildVersionName='16' platformBuildVersionCode='36' compileSdkVersion='36' compileSdkVersionCodename='16'",
+    "package: name='com.xiaohonghua.music' versionCode='17' versionName='1.0.10' platformBuildVersionName='16' platformBuildVersionCode='36' compileSdkVersion='36' compileSdkVersionCodename='16'",
     "minSdkVersion:'26'",
     "targetSdkVersion:'36'",
     "application-label:'小红花'",
@@ -59,6 +59,10 @@
     },
     {
       "version": "1.0.8",
+      "sameSigningCertificate": true
+    },
+    {
+      "version": "1.0.9",
       "sameSigningCertificate": true
     }
   ],
@@ -205,7 +209,7 @@
     },
     {
       "name": "com.xiaohonghua.music.CoreTest",
-      "tests": 5,
+      "tests": 6,
       "failures": 0,
       "errors": 0
     },
@@ -228,8 +232,8 @@
       "errors": 0
     },
     {
-      "name": "com.xiaohonghua.music.LibraryCalibrationTest",
-      "tests": 3,
+      "name": "com.xiaohonghua.music.LibraryCacheTest",
+      "tests": 1,
       "failures": 0,
       "errors": 0
     },
@@ -296,8 +300,8 @@
   ],
   "lint": {
     "errors": 0,
-    "warnings": 18
+    "warnings": 17
   },
-  "acceptance": "1.0.9 removes eight legacy covers, adds a blue cornflower and notification flower, retires sleep/history/custom background/automatic monitoring, fully rereads tags on manual refresh, resets multilingual fonts and completes app theme container roles. Native UI and lock-screen behavior require device acceptance.",
-  "nativeTests": "Instrumented tests compile successfully. Device execution status is recorded separately in ANDROID-1.0.9-UI-CHECK.json; compilation alone does not confirm runtime behavior or native frame performance."
+  "acceptance": "1.0.10 removes manual lyric timing calibration, ignores retired saved offsets and preserves standard LRC offset metadata. New font candidates and four player layouts are independent previews, not installed App changes. Native behavior requires device acceptance.",
+  "nativeTests": "Instrumented tests compile successfully. Device execution status is recorded separately in ANDROID-1.0.10-UI-CHECK.json; compilation alone does not confirm runtime behavior or native frame performance."
 }

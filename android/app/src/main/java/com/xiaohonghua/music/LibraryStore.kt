@@ -43,13 +43,6 @@ private fun JSONObject.bounded(key: String,default: Float,min: Float,max: Float)
 fun settingsFromJson(j: JSONObject): Settings = Settings(j.optInt("theme").coerceIn(0,4), normalizeLyricFontName(j.optString("font", "system")),
     j.bounded("size",23f,18f,34f), j.bounded("gap",24f,0f,48f), j.optBoolean("dynamic",true),j.optBoolean("nightMode",false))
 
-fun lyricOffsetsFromJson(json: JSONObject, known: Set<String>): Map<String,Long> =
-    json.keys().asSequence().filter(known::contains).mapNotNull {id ->
-        val value=json.opt(id)
-        val number=(value as? Number)?.toDouble()
-        if(number == null || !number.isFinite()) null else id to number.coerceIn(-MAX_LYRIC_OFFSET.toDouble(),MAX_LYRIC_OFFSET.toDouble()).toLong()
-    }.filter {it.second != 0L}.toMap()
-
 class LibraryStore(val context: Context) : SQLiteOpenHelper(context, "music.db", null, 1) {
     val prefs = context.getSharedPreferences("music", Context.MODE_PRIVATE)
     override fun onCreate(db: SQLiteDatabase) { db.execSQL("CREATE TABLE songs (id TEXT PRIMARY KEY, data TEXT NOT NULL)") }
@@ -98,10 +91,6 @@ class LibraryStore(val context: Context) : SQLiteOpenHelper(context, "music.db",
     fun saveFolders(list: List<Folder>) { prefs.edit().putString("folders", JSONArray(list.map { JSONObject().put("uri", it.uri).put("name", it.name) }).toString()).apply() }
     fun array(key: String): JSONArray = runCatching { JSONArray(prefs.getString(key, "[]")) }.getOrDefault(JSONArray())
     fun manualLyrics(): Map<String,String> = runCatching { JSONObject(prefs.getString("manualLyrics", "{}")!!).let { obj -> obj.keys().asSequence().associateWith { obj.getString(it) } } }.getOrDefault(emptyMap())
-    fun lyricOffsets(known: Set<String>): Map<String,Long> = runCatching {
-        lyricOffsetsFromJson(JSONObject(prefs.getString("lyricOffsets","{}")!!),known)
-    }.getOrDefault(emptyMap())
-    fun saveLyricOffsets(values: Map<String,Long>) { prefs.edit().putString("lyricOffsets",JSONObject(values).toString()).apply() }
     fun saveManualLyrics(values: Map<String,String>) { prefs.edit().putString("manualLyrics",JSONObject(values).toString()).apply() }
 }
 
