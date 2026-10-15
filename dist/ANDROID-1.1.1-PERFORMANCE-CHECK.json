@@ -1,0 +1,83 @@
+{
+  "date": "2026-10-15T11:28:48.115Z",
+  "platform": "Windows desktop JVM plus Android static/build checks",
+  "version": "1.1.1",
+  "versionCode": 21,
+  "apkSha256": "40409d59feb55828a84fbce367870c6ac8c616bd6cc4813ab8928484a1a4ee59",
+  "syntheticSongCount": 1000,
+  "realFlacFolderImported": false,
+  "real100GbLibraryTested": false,
+  "nativeFramePerformanceMeasured": false,
+  "instrumentedTestsExecuted": false,
+  "unitTestsPassed": 112,
+  "newJvmSuites": [
+    {
+      "name": "com.xiaohonghua.music.TagStreamingTest",
+      "tests": 2,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "name": "com.xiaohonghua.music.ThousandCollectionLogicTest",
+      "tests": 8,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "name": "com.xiaohonghua.music.ThousandSongSearchTest",
+      "tests": 3,
+      "failures": 0,
+      "errors": 0
+    }
+  ],
+  "regressionEvidence": {
+    "before": {
+      "collectionCases": 8,
+      "failures": 2,
+      "failedCases": [
+        "duplicateScansOfAThousandFilesProduceOneLatestEntryPerIdAndUnionSources",
+        "duplicateCustomIdsUseTheFirstSavedPositionLikeMergedOrders"
+      ]
+    },
+    "after": {
+      "collectionCases": 8,
+      "failures": 0
+    }
+  },
+  "benchmark": {
+    "scenario": "Restore all 1000 removed playlist members from an empty playlist, preserving custom and reverse random traversal",
+    "runtime": "Windows desktop JDK 17.0.20.1, same input and process setup for before/after",
+    "warmupIterations": 15,
+    "measuredIterations": 30,
+    "before": {
+      "medianMs": 35.772,
+      "p95Ms": 40.693
+    },
+    "after": {
+      "medianMs": 0.442,
+      "p95Ms": 0.856
+    },
+    "boundary": "Only this pure playlist-undo operation is measured. This is not overall app speed, import throughput, or phone FPS."
+  },
+  "reviewedPaths": [
+    "IO initialization with UI ready gate",
+    "Single ordered IO metadata writer and restore lock",
+    "IO file permission batching and selected-folder scan",
+    "FLAC metadata streaming and bounded padding skip",
+    "Map/Set merges and stable unique IDs",
+    "SQLite UPDATE preserves row order; cancellation rolls back",
+    "Byte-bounded LRU, sampled artwork, two decoders and versioned state",
+    "Default dispatcher A-Z sorting and search index; remembered grouping and drag IDs",
+    "IO saved-queue restore and serialization; native event coalescing",
+    "Contiguous metadata replacements and time-budgeted queue moves",
+    "IO backup JSON generation"
+  ],
+  "pendingDeviceChecks": [
+    "1000 real FLAC folder first import while scrolling/navigating",
+    "Manual full metadata refresh with unchanged file timestamps",
+    "Peak memory, sustained cover scrolling and native frame metrics",
+    "Large playlist edits/undo/reorder plus actual next-song order",
+    "Playback continuity, restart restoration, notification and lockscreen",
+    "Small display/large font cover and long-lyric marquee"
+  ]
+}

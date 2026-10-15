@@ -8,6 +8,7 @@ import android.net.Uri
 import android.provider.DocumentsContract
 import android.provider.OpenableColumns
 import androidx.core.content.edit
+import kotlinx.coroutines.CancellationException
 import org.json.JSONArray
 import org.json.JSONObject
 import java.io.File
@@ -44,13 +45,14 @@ fun settingsFromJson(j: JSONObject): Settings = Settings(j.optInt("theme").coerc
     j.bounded("size",23f,18f,34f), j.bounded("gap",24f,0f,48f), j.optBoolean("dynamic",true),j.optBoolean("nightMode",false))
 
 class LibraryStore(val context: Context) : SQLiteOpenHelper(context, "music.db", null, 1) {
-    val prefs = context.getSharedPreferences("music", Context.MODE_PRIVATE)
+    val prefs by lazy {context.getSharedPreferences("music", Context.MODE_PRIVATE)}
     override fun onCreate(db: SQLiteDatabase) { db.execSQL("CREATE TABLE songs (id TEXT PRIMARY KEY, data TEXT NOT NULL)") }
     override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) { error("未定义从 $oldVersion 到 $newVersion 的迁移") }
     fun songs(): List<Song> = readableDatabase.rawQuery("SELECT data FROM songs ORDER BY rowid", null).use { cursor ->
         buildList { while (cursor.moveToNext()) add(songFromJson(JSONObject(cursor.getString(0)))) }
     }
-    fun replaceSongs(songs: List<Song>) {
+    fun replaceSongs(songs: List<Song>, checkActive: () -> Unit = {}) {
+        checkActive()
         val db = writableDatabase
         db.beginTransaction()
         try {
@@ -58,11 +60,16 @@ class LibraryStore(val context: Context) : SQLiteOpenHelper(context, "music.db",
             val previous = db.rawQuery("SELECT id,data FROM songs", null).use { cursor ->
                 buildMap<String,String> {while(cursor.moveToNext()) put(cursor.getString(0),cursor.getString(1))}
             }
-            previous.keys.filter {it !in ids}.forEach {db.delete("songs","id=?",arrayOf(it))}
+            previous.keys.filter {it !in ids}.forEach {checkActive();db.delete("songs","id=?",arrayOf(it))}
             songs.forEach { song ->
+                checkActive()
                 val data=song.toJson().toString()
-                if(previous[song.id] != data) db.insertWithOnConflict("songs", null, ContentValues().apply {put("id",song.id);put("data",data)},SQLiteDatabase.CONFLICT_REPLACE)
+                if(previous[song.id] != data) {
+                    if(song.id in previous) db.update("songs",ContentValues().apply {put("data",data)},"id=?",arrayOf(song.id))
+                    else db.insertOrThrow("songs", null, ContentValues().apply {put("id",song.id);put("data",data)})
+                }
             }
+            checkActive()
             db.setTransactionSuccessful()
         } finally { db.endTransaction() }
     }
@@ -105,18 +112,20 @@ class LibraryScanner(private val context: Context) {
         require(doc.name.substringAfterLast('.', "").lowercase() in extensions) { "请选择支持的音乐文件" }
         return reader.read(uri,doc.name,doc.size,doc.modified,source)
     }
-    fun folder(uri: Uri, old: List<Song>, force: Boolean): ScanResult {
+    fun folder(uri: Uri, old: List<Song>, force: Boolean, checkActive: () -> Unit = {}): ScanResult {
         val output = mutableListOf<Song>()
         val errors = mutableListOf<String>()
         val existing = old.associateBy { it.id }
         val byUri=old.associateBy {it.uri}
         val visited = mutableSetOf<String>()
         fun walk(documentId: String, depth: Int) {
+            checkActive()
             require(depth <= 100 && visited.size < 100_000) { "文件夹层级或数量超过扫描限制" }
             if (!visited.add(documentId)) return
-            val children = children(uri, documentId)
+            val children = children(uri, documentId,checkActive)
             val lyrics = children.filter { !it.directory && it.name.endsWith(".lrc",true) }.associateBy { it.name.substringBeforeLast('.').lowercase() }
             children.forEach { doc ->
+                checkActive()
                 if (doc.directory) walk(DocumentsContract.getDocumentId(doc.uri), depth+1)
                 else if (doc.name.substringAfterLast('.', "").lowercase() in extensions) {
                     val previous = existing[documentIdentity(doc.uri)] ?: byUri[doc.uri.toString()]
@@ -144,6 +153,7 @@ class LibraryScanner(private val context: Context) {
                         }
                         // Relinked backups retain their library ID across later folder checks.
                         output += resolved.copy(id=previous?.id ?: resolved.id)
+                    } catch(e: CancellationException) {throw e
                     } catch (e: Exception) {
                         errors += "${doc.name}：${e.message ?: "无法读取"}"
                         // A corrupt/unreadable existing file must not be treated as deleted.
@@ -155,13 +165,13 @@ class LibraryScanner(private val context: Context) {
         walk(DocumentsContract.getTreeDocumentId(uri), 0)
         return ScanResult(output,errors)
     }
-    private fun children(tree: Uri, id: String): List<Document> {
+    private fun children(tree: Uri, id: String, checkActive: () -> Unit): List<Document> {
         val children = DocumentsContract.buildChildDocumentsUriUsingTree(tree,id)
         val projection = arrayOf(DocumentsContract.Document.COLUMN_DOCUMENT_ID, DocumentsContract.Document.COLUMN_DISPLAY_NAME,
             DocumentsContract.Document.COLUMN_MIME_TYPE, DocumentsContract.Document.COLUMN_SIZE, DocumentsContract.Document.COLUMN_LAST_MODIFIED)
         val cursor = context.contentResolver.query(children, projection, null,null,null) ?: error("文件夹无法读取，请重新授权")
         return cursor.use { c -> buildList {
-            while (c.moveToNext()) add(Document(DocumentsContract.buildDocumentUriUsingTree(tree,c.getString(0)),c.getString(1),c.getLong(3),c.getLong(4),c.getString(2) == DocumentsContract.Document.MIME_TYPE_DIR))
+            while (c.moveToNext()) {checkActive();add(Document(DocumentsContract.buildDocumentUriUsingTree(tree,c.getString(0)),c.getString(1),c.getLong(3),c.getLong(4),c.getString(2) == DocumentsContract.Document.MIME_TYPE_DIR))}
         } }
     }
     fun info(uri: Uri): Document = context.contentResolver.query(uri,arrayOf(OpenableColumns.DISPLAY_NAME,OpenableColumns.SIZE),null,null,null)?.use { c ->

@@ -22,6 +22,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.Role
@@ -41,9 +42,11 @@ private val coverNames=listOf("桃枝","雏菊","郁金香","铃兰","鸢尾","�
 @Composable internal fun PlaylistCover(playlist: Playlist,modifier: Modifier=Modifier) {
     val index=normalizePlaylistCover(playlist.id,playlist.coverPreset)-8
     val photo=playlist.coverPhoto.takeIf {it.matches(Regex("[a-f0-9-]{36}\\.jpg"))}
-    val image=rememberImage(photo?.let {File(LocalContext.current.filesDir,"playlist-covers/$it").absolutePath}.orEmpty())
+    val path=photo?.let {File(LocalContext.current.filesDir,"playlist-covers/$it").absolutePath}.orEmpty()
     val color by animateColorAsState(coverColors[index],tween(180),label="playlist-cover-color")
-    Box(modifier.testTag("playlist-cover-${playlist.id}").clip(RoundedCornerShape(14.dp)).background(color.copy(alpha=.12f)),contentAlignment=Alignment.Center) {
+    BoxWithConstraints(modifier.testTag("playlist-cover-${playlist.id}").clip(RoundedCornerShape(14.dp)).background(color.copy(alpha=.12f)),contentAlignment=Alignment.Center) {
+        val pixels=with(LocalDensity.current) {maxWidth.coerceAtMost(400.dp).roundToPx()}
+        val image=rememberCachedArtwork(path,pixels,photo.orEmpty())
         if(image != null) Image(image,null,Modifier.fillMaxSize(),contentScale=ContentScale.Crop)
         else {
             Crossfade(index,modifier=Modifier.fillMaxSize(),animationSpec=tween(160),label="playlist-cover-icon") {preset ->

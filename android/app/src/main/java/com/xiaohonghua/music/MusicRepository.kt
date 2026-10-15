@@ -3,6 +3,7 @@ package com.xiaohonghua.music
 import android.content.Context
 import android.net.Uri
 import kotlinx.coroutines.*
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.getAndUpdate
@@ -24,34 +25,71 @@ class MusicRepository private constructor(private val context: Context) {
     val store = LibraryStore(context)
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private val scanMutex = Mutex()
-    private val mutable = MutableStateFlow(LibraryState(settings=store.settings()))
+    private val persistenceMutex = Mutex()
+    private val initialized = CompletableDeferred<Unit>()
+    private val persistenceRequests = Channel<Unit>(Channel.CONFLATED)
+    private var persistedMetadata: LibraryState? = null
+    private val mutable = MutableStateFlow(LibraryState())
     val state = mutable.asStateFlow()
     init {
-        scope.launch {
+        scope.launch { try { scanMutex.withLock { persistenceMutex.withLock {
             val songs=store.songs()
             val known=songs.map {it.id}.toSet()
             val playlists=normalizeFavorites(store.playlists().map {playlist ->
                 val members=playlist.songIds.filter(known::contains).distinct()
                 playlist.copy(songIds=members,randomIds=mergeSongOrder(playlist.randomIds,members))
             },known)
-            store.savePlaylists(playlists)
             mutable.value = LibraryState(songs,playlists,store.folders(),store.settings(),
                 runCatching { SortMode.valueOf(store.prefs.getString("sort","TITLE")!!) }.getOrDefault(SortMode.TITLE),
                 mergeSongOrder(store.array("custom").strings(),songs.map {it.id}),
                 mergeSongOrder(store.array("random").strings(),songs.map {it.id}),store.manualLyrics().filterKeys(known::contains),ready=true)
-            store.saveManualLyrics(state.value.manualLyrics)
+            writeMetadata(state.value)
+        } }; initialized.complete(Unit)
+        } catch(e: Exception) {
+            initialized.completeExceptionally(e)
+            if(e is CancellationException) throw e
+            mutable.update {it.copy(status="音乐库读取失败：${e.message ?: "请重新打开应用"}")}
+        } }
+        scope.launch {
+            runCatching {initialized.await()}.getOrElse {return@launch}
+            for(request in persistenceRequests) {
+                try {persistenceMutex.withLock {writeMetadata(state.value)}}
+                catch(e: CancellationException) {throw e}
+                catch(e: Exception) {mutable.update {it.copy(status="保存失败：${e.message ?: "请检查存储空间"}")}}
+            }
         }
     }
-    fun settings(value: Settings) { store.saveSettings(value); mutable.update { it.copy(settings=value) } }
-    fun addFolder(uri: Uri, name: String) {
-        val folders = (state.value.folders.filter { it.uri != uri.toString() } + Folder(uri.toString(),name))
-        store.saveFolders(folders); mutable.update { it.copy(folders=folders) }; requestRefresh()
+    // UI changes publish immediately; serialization and disk writes share one ordered IO writer.
+    private fun persistMetadata() {persistenceRequests.trySend(Unit)}
+    private fun writeMetadata(value: LibraryState) {
+        val previous=persistedMetadata
+        val edit=store.prefs.edit()
+        if(previous?.settings != value.settings) edit.putString("settings",value.settings.toJson().toString())
+        if(previous?.playlists !== value.playlists) edit.putString("playlists",JSONArray(normalizeFavorites(value.playlists).map {it.toJson()}).toString())
+        if(previous?.folders !== value.folders) edit.putString("folders",JSONArray(value.folders.map {JSONObject().put("uri",it.uri).put("name",it.name)}).toString())
+        if(previous?.manualLyrics !== value.manualLyrics) edit.putString("manualLyrics",JSONObject(value.manualLyrics).toString())
+        if(previous?.sort != value.sort) edit.putString("sort",value.sort.name)
+        if(previous?.custom !== value.custom) edit.putString("custom",JSONArray(value.custom).toString())
+        if(previous?.random !== value.random) edit.putString("random",JSONArray(value.random).toString())
+        edit.apply()
+        persistedMetadata=value
+    }
+    fun settings(value: Settings) { mutable.update { it.copy(settings=value) }; persistMetadata() }
+    fun addFolder(uri: Uri, name: String) = scope.launch {
+        initialized.await()
+        scanMutex.withLock {
+            mutable.update {it.copy(folders=it.folders.filter {folder -> folder.uri != uri.toString()}+Folder(uri.toString(),name))}
+            persistMetadata()
+        }
+        refresh(true,uri.toString())
     }
     fun removeFolder(folder: Folder) = scope.launch {
+        initialized.await()
         try {scanMutex.withLock {
             val folders = state.value.folders.filter { it.uri != folder.uri }
             val songs = reconcileSongs(state.value.songs,emptyList(),folder.uri)
-            store.replaceSongs(songs); store.saveFolders(folders)
+            val task=currentCoroutineContext()
+            store.replaceSongs(songs) {task.ensureActive()}
             mutable.update { it.copy(folders=folders) }; publishSongs(songs,"已移除文件夹索引，原文件保留")
         }} catch(e: CancellationException) {throw e}
         catch(e: Exception) {
@@ -59,28 +97,40 @@ class MusicRepository private constructor(private val context: Context) {
             mutable.update {it.copy(status=message,events=(listOf(message)+it.events).take(20))}
         }
     }
-    fun importFiles(uris: List<Uri>) = scope.launch { scanMutex.withLock {
+    fun importFiles(uris: List<Uri>) = scope.launch { initialized.await(); scanMutex.withLock {
         mutable.update { it.copy(busy=true,showScanProgress=true,status="正在读取音乐标签…") }
         try {
             val scanner = LibraryScanner(context)
-            var songs = state.value.songs
+            val before = state.value.songs
+            val scanned = LinkedHashMap<String,Song>()
             var added = 0
             val errors = mutableListOf<String>()
             uris.forEach { uri ->
+                ensureActive()
                 try {
-                    val fresh = relink(listOf(scanner.single(uri)),songs).single()
-                    val old = songs.find { it.id == fresh.id }
-                    songs = songs.filter { it.id != fresh.id } + fresh.copy(sources=(old?.sources ?: emptySet())+"files")
-                    if(old == null) added++
+                    val fresh = scanner.single(uri)
+                    scanned[fresh.id] = fresh
+                } catch(e: CancellationException) {throw e
                 } catch (e: Exception) { errors += e.message ?: "文件无法读取" }
             }
-            store.replaceSongs(songs)
+            val merged = before.associateByTo(LinkedHashMap()) {it.id}
+            relink(scanned.values.toList(),before).forEach {fresh ->
+                val old=merged[fresh.id]
+                merged[fresh.id]=fresh.copy(sources=(old?.sources ?: emptySet())+"files")
+                if(old == null) added++
+            }
+            val songs=merged.values.toList()
+            val task=currentCoroutineContext()
+            store.replaceSongs(songs) {task.ensureActive()}
             publishSongs(songs,"新增 $added 首，读取失败 ${errors.size} 首",errors)
+        } catch(e: CancellationException) {throw e
+        } catch(e: Exception) {mutable.update {it.copy(status="导入失败：${e.message ?: "请重试"}")}
         } finally { mutable.update { it.copy(busy=false,showScanProgress=false) } }
     } }
     // Every user refresh rereads all tags, even when a provider reports unchanged timestamps.
     fun requestRefresh(showProgress: Boolean = true) { scope.launch { refresh(showProgress) } }
-    private suspend fun refresh(showProgress: Boolean) {
+    private suspend fun refresh(showProgress: Boolean, onlyFolderUri: String? = null) {
+        initialized.await()
         scanMutex.withLock {
             if(!state.value.ready) return
             mutable.update { it.copy(busy=true,showScanProgress=showProgress,status="正在刷新文件与全部标签…") }
@@ -91,23 +141,28 @@ class MusicRepository private constructor(private val context: Context) {
             var songs = before
             try {
                 val scanner = LibraryScanner(context)
-                state.value.folders.forEach { folder ->
+                val task=currentCoroutineContext()
+                state.value.folders.filter {onlyFolderUri == null || it.uri == onlyFolderUri}.forEach { folder ->
+                    task.ensureActive()
                     try {
-                        val result = scanner.folder(Uri.parse(folder.uri),songs,true)
+                        val result = scanner.folder(Uri.parse(folder.uri),songs,true) {task.ensureActive()}
                         val fresh=relink(result.songs,songs)
                         rescanned += fresh.map {it.id}
                         songs = reconcileSongs(songs,fresh,folder.uri)
                         errors += result.errors
+                    } catch(e: CancellationException) {throw e
                     } catch (e: Exception) { failedSources += folder.uri; errors += "${folder.name}：${e.message ?: "请重新授权"}" }
                 }
-                run {
+                if(onlyFolderUri == null) {
                     // Folder scans and standalone imports both receive a complete metadata read.
                     songs=songs.map {song ->
+                        task.ensureActive()
                         if("files" !in song.sources || song.id in rescanned) song else try {
                             val fresh=scanner.single(Uri.parse(song.uri)).copy(id=song.id,sources=song.sources)
                             // Failed folder listing cannot prove its external LRC was deleted.
                             if(song.lyricFile.isNotEmpty() && song.sources.any(failedSources::contains))
                                 fresh.copy(lyrics=song.lyrics,lyricFile=song.lyricFile,lyricRevision="") else fresh
+                        } catch(e: CancellationException) {throw e
                         } catch(e: Exception) {
                             errors += "${song.name}：${e.message ?: "文件无法读取"}"
                             song.copy(available=false)
@@ -119,9 +174,11 @@ class MusicRepository private constructor(private val context: Context) {
                 val newIds = songs.map { it.id }.toSet()
                 val oldById = before.associateBy { it.id }
                 val changed = songs.count { song -> oldById[song.id]?.let { it != song } == true }
-                store.replaceSongs(songs)
+                store.replaceSongs(songs) {task.ensureActive()}
                 val summary = "新增 ${(newIds-oldIds).size} · 移除 ${(oldIds-newIds).size} · 更新 $changed"
                 publishSongs(songs,summary,errors)
+            } catch(e: CancellationException) {throw e
+            } catch(e: Exception) {mutable.update {it.copy(status="刷新失败：${e.message ?: "请重试"}")}
             } finally { mutable.update { it.copy(busy=false,showScanProgress=false) } }
         }
     }
@@ -136,14 +193,15 @@ class MusicRepository private constructor(private val context: Context) {
     }
     private fun publishSongs(songs: List<Song>, status: String, errors: List<String> = emptyList()) {
         val known = songs.map { it.id }.toSet()
-        mutable.update { old -> old.copy(songs=songs,status=status,events=(errors.take(8)+listOf(status)+old.events).take(20),
+        mutable.update { old ->
+            val custom=old.custom.toSet()
+            val random=old.random.toSet()
+            old.copy(songs=songs,status=status,events=(errors.take(8)+listOf(status)+old.events).take(20),
             playlists=normalizeFavorites(old.playlists.map { it.copy(songIds=it.songIds.filter(known::contains),randomIds=it.randomIds.filter(known::contains)) },known),
-            custom=old.custom.filter(known::contains)+songs.filter { it.id !in old.custom }.map { it.id },
-            random=old.random.filter(known::contains)+songs.filter { it.id !in old.random }.shuffled().map { it.id },
+            custom=old.custom.filter(known::contains)+songs.filter { it.id !in custom }.map { it.id },
+            random=old.random.filter(known::contains)+songs.filter { it.id !in random }.shuffled().map { it.id },
             manualLyrics=old.manualLyrics.filterKeys(known::contains)) }
-        store.savePlaylists(state.value.playlists)
-        store.saveManualLyrics(state.value.manualLyrics)
-        saveOrder()
+        persistMetadata()
     }
     fun playlist(value: Playlist) {
         mutable.update { old ->
@@ -154,13 +212,13 @@ class MusicRepository private constructor(private val context: Context) {
             val playlists=if(old.playlists.any {it.id == updated.id}) old.playlists.map {if(it.id == updated.id) updated else it} else old.playlists+updated
             old.copy(playlists=normalizeFavorites(playlists,known))
         }
-        store.savePlaylists(state.value.playlists)
+        persistMetadata()
     }
     fun toggleFavorite(songId: String) {
         mutable.update { old ->
             if(old.songs.none {it.id == songId}) old else old.copy(playlists=toggleFavorite(old.playlists,songId))
         }
-        store.savePlaylists(state.value.playlists)
+        persistMetadata()
     }
     fun createPlaylist(name: String): Playlist {
         if(name.trim() == "我喜欢") return state.value.playlists.first {it.isFavorites}
@@ -175,7 +233,7 @@ class MusicRepository private constructor(private val context: Context) {
                 description=description.trim().take(PLAYLIST_DESCRIPTION_LIMIT)) else playlist
         })}
         if(before.playlists.none {it.id == id}) return false
-        store.savePlaylists(state.value.playlists)
+        persistMetadata()
         return true
     }
     fun addPlaylistSongs(id: String, ids: List<String>): Int {
@@ -184,7 +242,7 @@ class MusicRepository private constructor(private val context: Context) {
         })}
         val previous=before.playlists.find {it.id == id} ?: return 0
         val updated=addPlaylistMembers(previous,ids,before.songs.map {it.id}.toSet())
-        if(updated != previous) store.savePlaylists(state.value.playlists)
+        if(updated != previous) persistMetadata()
         return (updated.songIds.toSet()-previous.songIds.toSet()).size
     }
     fun removePlaylistSongs(id: String, ids: List<String>): RemovedPlaylistSongs? {
@@ -195,7 +253,7 @@ class MusicRepository private constructor(private val context: Context) {
         val previous=before.playlists.find {it.id == id} ?: return null
         val removed=previous.songIds.filter(selected::contains).distinct()
         if(removed.isEmpty()) return null
-        store.savePlaylists(state.value.playlists)
+        persistMetadata()
         return RemovedPlaylistSongs(previous,removed)
     }
     fun restorePlaylistSongs(removed: RemovedPlaylistSongs): Boolean {
@@ -204,13 +262,13 @@ class MusicRepository private constructor(private val context: Context) {
         })}
         val playlist=before.playlists.find {it.id == removed.playlist.id} ?: return false
         val changed=restoreRemovedPlaylistSongs(playlist,removed,before.songs.map {it.id}.toSet()) != playlist
-        if(changed) store.savePlaylists(state.value.playlists)
+        if(changed) persistMetadata()
         return changed
     }
     fun playlistCover(id: String, preset: Int, photo: String = ""): Boolean {
         if(state.value.playlists.none {it.id == id}) return false
         mutable.update {s -> s.copy(playlists=s.playlists.map {if(it.id == id) it.copy(coverPreset=normalizePlaylistCover(id,preset),coverPhoto=photo) else it})}
-        store.savePlaylists(state.value.playlists)
+        persistMetadata()
         return true
     }
     fun deletePlaylist(id: String): DeletedPlaylist? {
@@ -218,13 +276,13 @@ class MusicRepository private constructor(private val context: Context) {
         val before=mutable.getAndUpdate {it.copy(playlists=it.playlists.filter {p -> p.id != id})}
         val index=before.playlists.indexOfFirst {it.id == id}
         if(index < 0) return null
-        store.savePlaylists(state.value.playlists)
+        persistMetadata()
         return DeletedPlaylist(before.playlists[index],index)
     }
     fun restorePlaylist(deleted: DeletedPlaylist): Boolean {
         val before=mutable.getAndUpdate {old -> old.copy(playlists=restoreDeletedPlaylist(old.playlists,deleted,old.songs.map {it.id}.toSet()))}
         val changed=restoreDeletedPlaylist(before.playlists,deleted,before.songs.map {it.id}.toSet()) != before.playlists
-        if(changed) store.savePlaylists(state.value.playlists)
+        if(changed) persistMetadata()
         return changed
     }
     fun removePlaylistSong(playlistId: String, songId: String): RemovedPlaylistSong? {
@@ -232,7 +290,7 @@ class MusicRepository private constructor(private val context: Context) {
             if(playlist.id == playlistId && songId in playlist.songIds) playlist.copy(songIds=playlist.songIds-songId,randomIds=playlist.randomIds-songId) else playlist
         })}
         val playlist=before.playlists.find {it.id == playlistId && songId in it.songIds} ?: return null
-        store.savePlaylists(state.value.playlists)
+        persistMetadata()
         return RemovedPlaylistSong(playlist,songId)
     }
     fun restorePlaylistSong(removed: RemovedPlaylistSong): Boolean {
@@ -241,7 +299,7 @@ class MusicRepository private constructor(private val context: Context) {
         })}
         val playlist=before.playlists.find {it.id == removed.playlist.id} ?: return false
         val changed=restoreRemovedPlaylistSong(playlist,removed,before.songs.map {it.id}.toSet()) != playlist
-        if(changed) store.savePlaylists(state.value.playlists)
+        if(changed) persistMetadata()
         return changed
     }
     fun sort(mode: SortMode, playlistId: String? = null): Boolean {
@@ -253,7 +311,7 @@ class MusicRepository private constructor(private val context: Context) {
         }
         if(playlistId != null) {
             if(before.playlists.none {it.id == playlistId}) return false
-            store.savePlaylists(state.value.playlists)
+            persistMetadata()
         } else saveOrder()
         return true
     }
@@ -265,14 +323,14 @@ class MusicRepository private constructor(private val context: Context) {
         }
         if(playlistId != null) {
             if(before.playlists.none {it.id == playlistId}) return false
-            store.savePlaylists(state.value.playlists)
+            persistMetadata()
         } else saveOrder()
         return true
     }
-    private fun saveOrder() { state.value.let { store.prefs.edit().putString("sort",it.sort.name).putString("custom",JSONArray(it.custom).toString()).putString("random",JSONArray(it.random).toString()).apply() } }
+    private fun saveOrder() {persistMetadata()}
     fun lyrics(id: String, text: String?) {
         mutable.update { it.copy(manualLyrics=if(text == null) it.manualLyrics-id else it.manualLyrics+(id to text)) }
-        store.saveManualLyrics(state.value.manualLyrics)
+        persistMetadata()
     }
     fun backup(): String = state.value.let { s -> JSONObject().apply {
         put("kind","xiaohonghua-android"); put("version",1); put("songs",JSONArray(s.songs.map { it.toJson(true) }))
@@ -280,7 +338,7 @@ class MusicRepository private constructor(private val context: Context) {
         put("settings",s.settings.toJson())
         put("manualLyrics",JSONObject(s.manualLyrics)); put("sort",s.sort.name); put("custom",JSONArray(s.custom)); put("random",JSONArray(s.random))
     }.toString(2) }
-    suspend fun restore(text: String) = withContext(Dispatchers.IO) { scanMutex.withLock {
+    suspend fun restore(text: String) = withContext(Dispatchers.IO) { initialized.await(); scanMutex.withLock {
         require(text.toByteArray().size <= 64*1024*1024) { "备份文件过大" }
         val data = JSONObject(text)
         require(data.optString("kind") == "xiaohonghua-android" && data.optInt("version") == 1) { "不是支持的小红花安卓备份" }
@@ -308,9 +366,12 @@ class MusicRepository private constructor(private val context: Context) {
         val custom = data.getJSONArray("custom").strings().filter(known::contains).distinct()
         val random = data.getJSONArray("random").strings().filter(known::contains).distinct()
         // Parse and validate everything before replacing any current data.
-        store.replaceSongs(songs); store.savePlaylists(playlists); store.saveFolders(folders); store.saveSettings(settings); store.saveManualLyrics(lyrics)
-        mutable.value = LibraryState(songs,playlists,folders,settings,sort,custom,random,lyrics,status="备份已恢复，请重新授权音乐文件夹",ready=true)
-        saveOrder()
+        val task=currentCoroutineContext()
+        persistenceMutex.withLock {
+            store.replaceSongs(songs) {task.ensureActive()}
+            mutable.value = LibraryState(songs,playlists,folders,settings,sort,custom,random,lyrics,status="备份已恢复，请重新授权音乐文件夹",ready=true)
+            writeMetadata(state.value)
+        }
     } }
     companion object {
         @Volatile private var instance: MusicRepository? = null

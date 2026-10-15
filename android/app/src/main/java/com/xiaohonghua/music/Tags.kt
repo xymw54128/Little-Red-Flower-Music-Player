@@ -48,10 +48,21 @@ object TagParser {
             val length = (stream.readUnsignedByte() shl 16) or (stream.readUnsignedByte() shl 8) or stream.readUnsignedByte()
             total += length
             require(length <= MAX_BLOCK && total <= 64 * 1024 * 1024) { "FLAC 标签过大" }
-            val block = stream.readLimited(length)
-            require(block.size == length) { "FLAC 标签被截断" }
-            when (type and 127) {
-                0 -> if (block.size >= 18) {
+            val blockType=type and 127
+            // Padding/application/seek blocks can be large and contain no displayed tags.
+            val block = if(blockType == 0 || blockType == 4 || blockType == 6 && picture == null) stream.readLimited(length) else {
+                val scratch=ByteArray(minOf(length,8192))
+                var remaining=length
+                while(remaining > 0) {
+                    val read=stream.read(scratch,0,minOf(scratch.size,remaining))
+                    require(read > 0) {"FLAC 标签被截断"}
+                    remaining-=read
+                }
+                null
+            }
+            require(block == null || block.size == length) { "FLAC 标签被截断" }
+            when (blockType) {
+                0 -> if (block != null && block.size >= 18) {
                     var packed = 0L
                     for (i in 10..17) packed = (packed shl 8) or (block[i].toLong() and 255)
                     rate = (packed ushr 44).toInt()
@@ -59,8 +70,8 @@ object TagParser {
                     val samples = packed and 0xFFFFFFFFFL
                     if (rate > 0) duration = samples * 1000 / rate
                 }
-                4 -> values.putAll(vorbis(block))
-                6 -> if (picture == null) picture = flacPicture(block)
+                4 -> values.putAll(vorbis(block!!))
+                6 -> if (block != null) picture = flacPicture(block)
             }
             if (type and 128 != 0) break
         }
@@ -182,6 +193,9 @@ class TagReader(private val context: Context) {
         var rate = 0
         var bits = 0
         var picture: ByteArray? = null
+        // FLAC contains the complete tags, duration and artwork in its metadata blocks.
+        // Avoid extracting the same multi-megabyte cover twice through two decoders.
+        if(format != "FLAC") {
         val retriever = MediaMetadataRetriever()
         try {
             retriever.setDataSource(context, uri)
@@ -198,6 +212,7 @@ class TagReader(private val context: Context) {
         } catch (_: RuntimeException) {
             // FLAC's own metadata can still be read when a provider rejects the retriever.
         } finally { retriever.release() }
+        }
         context.contentResolver.openInputStream(uri)?.buffered()?.use { input ->
             val parsed = when (format) {
                 "FLAC" -> TagParser.flac(input)
@@ -220,7 +235,17 @@ class TagReader(private val context: Context) {
         val cover = File(context.filesDir, "covers/$id.img")
         if (picture != null && picture!!.size <= 16 * 1024 * 1024) {
             cover.parentFile!!.mkdirs()
-            if(!cover.exists() || cover.length() != picture!!.size.toLong() || !cover.readBytes().contentEquals(picture!!)) cover.writeBytes(picture!!)
+            val unchanged=cover.exists() && cover.length() == picture!!.size.toLong() && cover.inputStream().buffered().use {input ->
+                val buffer=ByteArray(8192)
+                var offset=0
+                while(offset < picture!!.size) {
+                    val count=input.read(buffer,0,minOf(buffer.size,picture!!.size-offset))
+                    if(count <= 0 || (0 until count).any {buffer[it] != picture!![offset+it]}) return@use false
+                    offset+=count
+                }
+                true
+            }
+            if(!unchanged) cover.writeBytes(picture!!)
         }
         else if (cover.exists()) cover.delete()
         val revision=picture?.takeIf {cover.exists()}?.let {MessageDigest.getInstance("SHA-256").digest(it).joinToString("") {byte->"%02x".format(byte)}}.orEmpty()

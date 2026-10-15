@@ -4,6 +4,7 @@ import android.icu.text.Transliterator
 import android.os.Build
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.produceState
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.currentCoroutineContext
@@ -11,6 +12,16 @@ import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.withContext
 import java.text.Normalizer
 import java.util.Locale
+
+@Composable internal fun rememberOrderedSongs(songs: List<Song>,mode: SortMode,custom: List<String>,random: List<String>): List<Song>? {
+    if(songs.isEmpty()) return emptyList()
+    return key(songs,mode,custom,random) {
+        val result by produceState<List<Song>?>(null) {
+            value=withContext(Dispatchers.Default) {orderedSongs(songs,mode,custom,random)}
+        }
+        result
+    }
+}
 
 internal fun normalizeSongSearch(text: String): String =
     Normalizer.normalize(text,Normalizer.Form.NFKD).lowercase(Locale.ROOT).filter {it.isLetterOrDigit()}

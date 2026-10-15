@@ -128,8 +128,8 @@ class CollectionPersistenceTest {
             val constructor=MusicRepository::class.java.getDeclaredConstructor(Context::class.java).apply {isAccessible=true}
             val repo=constructor.newInstance(isolated)
             repository=repo
-            assertTrue(repo.state.value.settings.nightMode)
             runBlocking {withTimeout(10_000) {repo.state.first {it.ready}}}
+            assertTrue(repo.state.value.settings.nightMode)
             context.contentResolver.call(base,"configure",null,Bundle().apply {putBoolean("failListing",true)})
             repo.requestRefresh()
             val refreshed=runBlocking {withTimeout(10_000) {repo.state.first {!it.busy && it.status.startsWith("新增 ")}}}.songs.single()

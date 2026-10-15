@@ -46,6 +46,10 @@ class MusicModel(application: Application) : AndroidViewModel(application) {
     val playback = mutablePlayback.asStateFlow()
     private var controller: MediaController? = null
     private var seekRevision = 0L
+    private val playbackHandler=Handler(Looper.getMainLooper())
+    private val refreshQueue=Runnable {updatePlayback(queueChanged=true)}
+    private var sortJob: Job?=null
+    private var queueOrderJob: Job?=null
     private val future: ListenableFuture<MediaController>
     init {
         future = MediaController.Builder(application,SessionToken(application,ComponentName(application,PlaybackService::class.java))).buildAsync()
@@ -53,7 +57,12 @@ class MusicModel(application: Application) : AndroidViewModel(application) {
             try {
                 controller = future.get().also { it.addListener(object : Player.Listener {
                     override fun onPositionDiscontinuity(oldPosition: Player.PositionInfo, newPosition: Player.PositionInfo, reason: Int) { seekRevision++ }
-                    override fun onEvents(player: Player, events: Player.Events) { updatePlayback(events.contains(Player.EVENT_TIMELINE_CHANGED)) }
+                    override fun onEvents(player: Player, events: Player.Events) {
+                        if(events.contains(Player.EVENT_TIMELINE_CHANGED)) {
+                            playbackHandler.removeCallbacks(refreshQueue)
+                            playbackHandler.postDelayed(refreshQueue,16)
+                        } else updatePlayback()
+                    }
                 }) }
                 updatePlayback(queueChanged=true)
             } catch (e: Exception) { mutablePlayback.value=PlaybackState(error="播放器连接失败：${e.cause?.message ?: e.message}") }
@@ -65,10 +74,27 @@ class MusicModel(application: Application) : AndroidViewModel(application) {
                 if (previous != null && previous != state.songs) controller?.let { player ->
                     val byId = state.songs.associateBy { it.id }
                     val oldById = previous!!.associateBy {it.id}
-                    for (i in player.mediaItemCount-1 downTo 0) {
-                        val song = byId[player.getMediaItemAt(i).mediaId]
-                        if(song == null || (!song.available && song.id != player.currentMediaItem?.mediaId)) player.removeMediaItem(i)
-                        else if(song.available && oldById[song.id] != song) player.replaceMediaItem(i,song.mediaItem(player.queueSource))
+                    val source=player.queueSource
+                    fun removed(index: Int): Boolean {
+                        val song=byId[player.getMediaItemAt(index).mediaId]
+                        return song == null || (!song.available && song.id != player.currentMediaItem?.mediaId)
+                    }
+                    fun changed(index: Int): Boolean = byId[player.getMediaItemAt(index).mediaId]?.let {
+                        it.available && oldById[it.id] != it
+                    } == true
+                    var i=player.mediaItemCount-1
+                    while(i >= 0) {
+                        if(removed(i)) {
+                            val end=i+1
+                            while(i >= 0 && removed(i)) i--
+                            player.removeMediaItems(i+1,end)
+                        } else if(changed(i)) {
+                            val end=i+1
+                            while(i >= 0 && !removed(i) && changed(i)) i--
+                            // Same URI/configuration: Media3 updates metadata without replacing audio sources.
+                            val items=(i+1 until end).map {byId.getValue(player.getMediaItemAt(it).mediaId).mediaItem(source)}
+                            player.replaceMediaItems(i+1,end,items)
+                        } else i--
                     }
                 }
                 previous=state.songs
@@ -90,9 +116,11 @@ class MusicModel(application: Application) : AndroidViewModel(application) {
     // Called on the UI thread's frame clock; no per-frame StateFlow emissions or timeline scans.
     fun playbackPosition(): Long = controller?.currentPosition?.coerceAtLeast(0) ?: playback.value.position
     fun play(songs: List<Song>, id: String? = null, playlistId: String? = null) {
-        val playable=songs.filter { it.available }.distinctBy {it.id}
+        sortJob?.cancel()
+        queueOrderJob?.cancel()
+        val playable=songs.filter {it.available}.distinctBy {it.id}
         if(playable.isEmpty()) return
-        controller?.apply { setMediaItems(playable.map { it.mediaItem(playlistId ?: LIBRARY_QUEUE_SOURCE) },playable.indexOfFirst { it.id == id }.coerceAtLeast(0),0); prepare(); play() }
+        controller?.apply {setMediaItems(playable.map {it.mediaItem(playlistId ?: LIBRARY_QUEUE_SOURCE)},playable.indexOfFirst {it.id == id}.coerceAtLeast(0),0);prepare();play()}
     }
     fun playNext(song: Song): Boolean = enqueue(song,QUEUE_NEXT_COMMAND)
     fun appendQueue(song: Song): Boolean = enqueue(song,QUEUE_LAST_COMMAND)
@@ -111,19 +139,40 @@ class MusicModel(application: Application) : AndroidViewModel(application) {
     private fun syncSourceOrder(playlistId: String?) {
         val state=library.value
         val playlist=playlistId?.let {id -> state.playlists.find {it.id == id} ?: return}
-        val members=playlist?.songIds?.toSet()
-        val songs=if(members == null) state.songs else state.songs.filter {it.id in members}
-        val ordered=orderedSongs(songs,playlist?.sort ?: state.sort,playlist?.songIds ?: state.custom,playlist?.randomIds ?: state.random)
-        reorderQueue(ordered.map {it.id},playlistId ?: LIBRARY_QUEUE_SOURCE)
+        sortJob?.cancel()
+        sortJob=viewModelScope.launch {
+            val ids=withContext(Dispatchers.Default) {
+                val members=playlist?.songIds?.toSet()
+                val songs=if(members == null) state.songs else state.songs.filter {it.id in members}
+                orderedSongs(songs,playlist?.sort ?: state.sort,playlist?.songIds ?: state.custom,playlist?.randomIds ?: state.random).map {it.id}
+            }
+            reorderQueue(ids,playlistId ?: LIBRARY_QUEUE_SOURCE)
+        }
     }
     private fun reorderQueue(ids: List<String>, source: String?) {
         val player=controller ?: return
         if(player.queueSource != source) return
+        queueOrderJob?.cancel()
         val queue=(0 until player.mediaItemCount).map {player.getMediaItemAt(it).mediaId}
         val ordered=orderedQueueIds(queue,player.queueSource,ids,source)
-        queueMovePlan(queue,ordered).forEach {(from,to) -> player.moveMediaItem(from,to)}
-        player.shuffleModeEnabled=false
-        updatePlayback(queueChanged=true)
+        val moves=queueMovePlan(queue,ordered)
+        queueOrderJob=viewModelScope.launch(start=CoroutineStart.UNDISPATCHED) {
+            player.shuffleModeEnabled=false
+            val expected=queue.toMutableList()
+            var frameStarted=System.nanoTime()
+            moves.forEachIndexed {index,(from,to) ->
+                ensureActive()
+                player.moveMediaItem(from,to)
+                expected.add(to,expected.removeAt(from))
+                if(index < moves.lastIndex && System.nanoTime()-frameStarted >= 4_000_000) {
+                    updatePlayback(queueChanged=true)
+                    delay(1) // Let input/drawing run between costly native timeline updates.
+                    if(player.queueSource != source || (0 until player.mediaItemCount).map {player.getMediaItemAt(it).mediaId} != expected) return@launch
+                    frameStarted=System.nanoTime()
+                }
+            }
+            updatePlayback(queueChanged=true)
+        }
     }
     fun toggle() { controller?.let { if(it.isPlaying) it.pause() else { if(it.playbackState == Player.STATE_ENDED) it.seekToDefaultPosition(); it.prepare(); it.play() } } }
     fun previous() { controller?.apply {if(hasPreviousMediaItem()) seekToPreviousMediaItem() else seekTo(0)} }
@@ -137,14 +186,14 @@ class MusicModel(application: Application) : AndroidViewModel(application) {
             else -> { shuffleModeEnabled=false; repeatMode=Player.REPEAT_MODE_OFF }
         }
     } }
-    fun queueMove(from: Int, to: Int) { controller?.moveMediaItem(from,to) }
+    fun queueMove(from: Int, to: Int) { queueOrderJob?.cancel();controller?.moveMediaItem(from,to) }
     fun queueOrder(ids: List<String>) { reorderQueue(ids,controller?.queueSource) }
-    fun queueRemove(index: Int) { controller?.removeMediaItem(index) }
+    fun queueRemove(index: Int) { queueOrderJob?.cancel();controller?.removeMediaItem(index) }
     fun queuePlay(index: Int) { controller?.apply { seekToDefaultPosition(index); play() } }
     fun queueRemove(id: String) { queuedIndex(id)?.let(::queueRemove) }
     fun queuePlay(id: String) { queuedIndex(id)?.let(::queuePlay) }
     private fun queuedIndex(id: String): Int? = controller?.let {player -> (0 until player.mediaItemCount).firstOrNull {player.getMediaItemAt(it).mediaId == id}}
-    fun stopForRestore() { controller?.apply { stop(); clearMediaItems() } }
+    fun stopForRestore() { sortJob?.cancel();queueOrderJob?.cancel();controller?.apply { stop(); clearMediaItems() } }
     fun importLyrics(id: String, uri: Uri, onResult: (String) -> Unit) = viewModelScope.launch {
         val result=runCatching { withContext(Dispatchers.IO) { TagReader(getApplication()).lyricText(uri) } }
         result.fold({ repository.lyrics(id,it); onResult("歌词已导入") },{ onResult(it.message ?: "歌词读取失败") })
@@ -191,8 +240,10 @@ class MusicModel(application: Application) : AndroidViewModel(application) {
         },{onResult("照片导入失败：${it.message ?: "格式不支持"}")})
     }
     fun exportBackup(uri: Uri, onResult: (String)->Unit) = viewModelScope.launch {
-        val text=repository.backup()
-        val result=runCatching { withContext(Dispatchers.IO) { getApplication<Application>().contentResolver.openOutputStream(uri,"wt")!!.bufferedWriter().use { it.write(text) } } }
+        val result=runCatching { withContext(Dispatchers.IO) {
+            val text=repository.backup()
+            getApplication<Application>().contentResolver.openOutputStream(uri,"wt")!!.bufferedWriter().use { it.write(text) }
+        } }
         onResult(if(result.isSuccess) "备份已导出，音乐与歌单照片请另行保存" else "导出失败：${result.exceptionOrNull()?.message}")
     }
     fun restoreBackup(uri: Uri, onResult: (String)->Unit) = viewModelScope.launch {
@@ -205,5 +256,5 @@ class MusicModel(application: Application) : AndroidViewModel(application) {
         }
         onResult(if(result.isSuccess) "备份已恢复，请重新授权原音乐文件夹" else "恢复失败，原数据保留：${result.exceptionOrNull()?.message}")
     }
-    override fun onCleared() { MediaController.releaseFuture(future); super.onCleared() }
+    override fun onCleared() { playbackHandler.removeCallbacks(refreshQueue);MediaController.releaseFuture(future);super.onCleared() }
 }

@@ -75,10 +75,10 @@ class PlayerNavigationUiTest {
         tags.forEach {assertEquals("Downward swipe moved $it",original.getValue(it),compose.onNodeWithTag(it).fetchSemanticsNode().boundsInRoot)}
         compose.onNodeWithText("正在播放").assertIsDisplayed()
     }
-    @Test fun compactCoverReservesTwoLyricLinesBelowLongMetadataAtLargeFontScale() {
+    @Test fun compactCoverReservesOneCompleteMarqueeLyricBelowLongMetadataAtLargeFontScale() {
         val longSong=song.copy(title="一首很长很长需要展示两行的歌曲标题与更多文字",
             artist="这是一位名字很长的测试歌手",album="一张名字很长需要换行展示的测试专辑与特别版本",
-            lyrics="[00:00.00]这是需要换成两行展示的预览歌词以检查有限空间内完整保留两行文字")
+            lyrics="[00:00.00]这是需要单行滚动完整展示的预览歌词以检查有限空间内不会截断或省略歌词文字")
         player(songOverride=longSong,modifier=Modifier.size(320.dp,640.dp),fontScale=1.3f)
         val pages=compose.onNodeWithTag("player-pages").fetchSemanticsNode().boundsInRoot
         val quality=compose.onNodeWithTag("player-quality").fetchSemanticsNode().boundsInRoot
@@ -88,11 +88,18 @@ class PlayerNavigationUiTest {
         textNode.performSemanticsAction(SemanticsActions.GetTextLayoutResult) {assertTrue(it(layouts))}
         val layout=layouts.single()
         val text=textNode.assertIsDisplayed().fetchSemanticsNode().boundsInRoot
-        assertEquals("The long lyric must wrap into two preview lines",2,layout.lineCount)
+        assertEquals("The long lyric stays on one marquee line",1,layout.lineCount)
+        textNode.assertTextEquals(longSong.lyrics.substringAfter("]"))
+        assertEquals("The complete lyric remains in the text layout",longSong.lyrics.substringAfter("]"),layout.layoutInput.text.text)
         assertTrue("Preview must follow the quality metadata",preview.top >= quality.bottom-.5f)
         assertTrue("Preview must stay inside the pager",preview.top >= pages.top && preview.bottom <= pages.bottom+.5f)
-        assertTrue("Both text lines must fit in their visible bounds",text.height+.5f >= layout.size.height)
+        assertTrue("The lyric line must fit in its visible bounds",text.height+.5f >= layout.size.height)
         assertTrue("Text must stay inside its preview space",text.top >= preview.top-.5f && text.bottom <= preview.bottom+.5f)
+    }
+    @Test fun progressLabelsShowElapsedAndFullDurationWithoutRemainingPrefix() {
+        player()
+        compose.onNodeWithTag("player-duration").assertTextEquals("0:10").assertIsDisplayed()
+        compose.onNodeWithTag("player-elapsed").assertTextEquals("0:00").assertIsDisplayed()
     }
     @Test fun tappingArtworkOpensLyricsAndRightSwipeReturnsToCover() {
         player()

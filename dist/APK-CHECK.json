@@ -1,14 +1,14 @@
 {
-  "date": "2026-10-15T07:11:32.197Z",
-  "apk": "D:\\music player app\\dist\\小红花-1.1.0.apk",
+  "date": "2026-10-15T11:27:43.471Z",
+  "apk": "D:\\music player app\\dist\\小红花-1.1.1.apk",
   "buildType": "release",
   "debuggable": false,
   "testComponentsAbsent": true,
   "networkPermissionAbsent": true,
-  "size": 63969679,
-  "sha256": "9336366a9eaa02624c48c19461983304935a5fa0ab89ccba9a7db54b92bb70a5",
+  "size": 63986059,
+  "sha256": "40409d59feb55828a84fbce367870c6ac8c616bd6cc4813ab8928484a1a4ee59",
   "metadata": [
-    "package: name='com.xiaohonghua.music' versionCode='20' versionName='1.1.0' platformBuildVersionName='16' platformBuildVersionCode='36' compileSdkVersion='36' compileSdkVersionCodename='16'",
+    "package: name='com.xiaohonghua.music' versionCode='21' versionName='1.1.1' platformBuildVersionName='16' platformBuildVersionCode='36' compileSdkVersion='36' compileSdkVersionCodename='16'",
     "minSdkVersion:'26'",
     "targetSdkVersion:'36'",
     "application-label:'小红花'",
@@ -71,6 +71,10 @@
     },
     {
       "version": "1.0.11",
+      "sameSigningCertificate": true
+    },
+    {
+      "version": "1.1.0",
       "sameSigningCertificate": true
     }
   ],
@@ -328,12 +332,30 @@
       "tests": 4,
       "failures": 0,
       "errors": 0
+    },
+    {
+      "name": "com.xiaohonghua.music.TagStreamingTest",
+      "tests": 2,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "name": "com.xiaohonghua.music.ThousandCollectionLogicTest",
+      "tests": 8,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "name": "com.xiaohonghua.music.ThousandSongSearchTest",
+      "tests": 3,
+      "failures": 0,
+      "errors": 0
     }
   ],
   "lint": {
     "errors": 0,
-    "warnings": 17
+    "warnings": 15
   },
-  "acceptance": "1.1.0 code 20 fixes the native original B cover page in place, reserving two lyric preview lines before sizing flexible artwork; full lyrics scrolling and horizontal page switching remain. The player includes: large rounded artwork, subtle breathing, title and favorite, quality metadata, interactive header flower, more actions and negative remaining time. Existing playback, lyrics and the selected multilingual fonts remain available. Native visual rendering, gestures and frame performance require device acceptance.",
-  "nativeTests": "Instrumented compilation and execution status is recorded separately in ANDROID-1.1.0-UI-CHECK.json; compilation alone does not confirm runtime behavior or native frame performance."
+  "acceptance": "1.1.1 code 21 enlarges the fixed original B artwork, reserves a single complete marquee lyric line and shows full song duration on the right. Library initialization, folder/file scanning, metadata persistence, sorting, queue restore/serialization and backup export avoid large disk/JSON work on the UI thread. Shared bounded artwork caching and batched timeline updates reduce large-library work. 1000-song JVM logic and search regressions pass; native runtime, real FLAC import throughput and frame performance still require device acceptance.",
+  "nativeTests": "Instrumented compilation and execution status is recorded separately in ANDROID-1.1.1-UI-CHECK.json; compilation alone does not confirm runtime behavior or native frame performance."
 }

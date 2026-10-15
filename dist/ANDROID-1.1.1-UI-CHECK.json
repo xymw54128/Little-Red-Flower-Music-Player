@@ -1,0 +1,106 @@
+{
+  "date": "2026-10-15T11:28:48.115Z",
+  "platform": "Android",
+  "version": "1.1.1",
+  "versionCode": 21,
+  "instrumentedTestsCompiled": true,
+  "instrumentedTestsExecuted": false,
+  "status": "compiled_not_executed",
+  "reason": "User requested fixes and automated checks first. Device tests were not run.",
+  "deviceSnapshot": "List of devices attached: none",
+  "compiledSuites": [
+    {
+      "name": "AppThemeUiTest",
+      "tests": 2
+    },
+    {
+      "name": "ArtworkCacheTest",
+      "tests": 3
+    },
+    {
+      "name": "CollectionPersistenceTest",
+      "tests": 5
+    },
+    {
+      "name": "LargeLibraryPersistenceTest",
+      "tests": 2
+    },
+    {
+      "name": "LyricFontRenderingTest",
+      "tests": 2
+    },
+    {
+      "name": "MainNavigationUiTest",
+      "tests": 10
+    },
+    {
+      "name": "NativeSmokeTest",
+      "tests": 1
+    },
+    {
+      "name": "Playback107Test",
+      "tests": 5
+    },
+    {
+      "name": "PlaybackOrderTest",
+      "tests": 2
+    },
+    {
+      "name": "PlayerNavigationUiTest",
+      "tests": 12
+    },
+    {
+      "name": "PlaylistCoverUiTest",
+      "tests": 3
+    },
+    {
+      "name": "PlaylistDetailUiTest",
+      "tests": 3
+    },
+    {
+      "name": "PlaylistManagementUiTest",
+      "tests": 6
+    },
+    {
+      "name": "ReorderUiTest",
+      "tests": 6
+    },
+    {
+      "name": "SettingsInteractionUiTest",
+      "tests": 8
+    },
+    {
+      "name": "SongArtworkUiTest",
+      "tests": 2
+    },
+    {
+      "name": "SongListUiTest",
+      "tests": 3
+    },
+    {
+      "name": "SongSearchNativeTest",
+      "tests": 3
+    }
+  ],
+  "instrumentedTestCount": 78,
+  "instrumentedApkSha256": "50a7bac3e22bebf2662d563faeb3ec553a7bffad4197a77985df74953b018b8b",
+  "unitTestsPassed": 112,
+  "lint": {
+    "errors": 0,
+    "warnings": 15
+  },
+  "nativeFramePerformanceMeasured": false,
+  "phoneAcceptancePending": true,
+  "playerLayout": "Fixed original B cover page, enlarged artwork with one complete marquee lyric preview line reserved first. Full lyrics scrolling and horizontal switching retained. Elapsed time on left; full song duration on right.",
+  "newNativeCases": [
+    "Single complete marquee lyric line fits below metadata at 320x640 and font scale 1.3",
+    "Elapsed and full-duration labels without remaining-time prefix",
+    "Artwork decode bounds, cache reuse, revision invalidation and failure retry",
+    "1000-song startup/rapid edits avoid main-thread preferences and final writes follow restore",
+    "1000 metadata updates retain row order; cancelled transaction rolls back"
+  ],
+  "appFontChoices": 8,
+  "bundledFontFiles": 7,
+  "apkSha256": "40409d59feb55828a84fbce367870c6ac8c616bd6cc4813ab8928484a1a4ee59",
+  "git": "Local commit only; no GitHub push or release."
+}

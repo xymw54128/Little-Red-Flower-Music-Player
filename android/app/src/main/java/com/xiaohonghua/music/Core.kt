@@ -105,8 +105,27 @@ fun addPlaylistMembers(playlist: Playlist, ids: List<String>, knownSongIds: Set<
 fun removePlaylistMembers(playlist: Playlist, ids: Set<String>): Playlist =
     playlist.copy(songIds=playlist.songIds.filterNot(ids::contains),randomIds=playlist.randomIds.filterNot(ids::contains))
 
-fun restoreRemovedPlaylistSongs(current: Playlist, removed: RemovedPlaylistSongs, knownSongIds: Set<String>): Playlist =
-    removed.songIds.fold(current) {playlist,id -> restoreRemovedPlaylistSong(playlist,RemovedPlaylistSong(removed.playlist,id),knownSongIds)}
+fun restoreRemovedPlaylistSongs(current: Playlist, removed: RemovedPlaylistSongs, knownSongIds: Set<String>): Playlist {
+    if(current.id != removed.playlist.id) return current
+    val originalMembers=removed.playlist.songIds.toSet()
+    val currentMembers=current.songIds.toSet()
+    val restored=removed.songIds.filter {it in knownSongIds && it in originalMembers && it !in currentMembers}.toSet()
+    if(restored.isEmpty()) return current
+    return current.copy(songIds=restoreSongPositions(current.songIds,removed.playlist.songIds,restored),
+        randomIds=restoreSongPositions(current.randomIds,removed.playlist.randomIds,restored))
+}
+
+private fun restoreSongPositions(current: List<String>, original: List<String>, restored: Set<String>): List<String> {
+    val members=current.toSet()
+    // Ordinary bulk removal leaves a subsequence: restore the entire batch in
+    // one pass instead of copying/scanning both thousand-song lists per item.
+    if(members.size == current.size && original.toSet().size == original.size &&
+        current == original.filter(members::contains)) {
+        return original.filter {it in members || it in restored}
+    }
+    // Later reorders/new members keep the existing per-song neighbor anchors.
+    return restored.fold(current) {order,id -> restoreSongPosition(order,original,id)}
+}
 
 fun restoreDeletedPlaylist(playlists: List<Playlist>, deleted: DeletedPlaylist, knownSongIds: Set<String>): List<Playlist> {
     if(deleted.playlist.isFavorites || playlists.any {it.id == deleted.playlist.id}) return playlists
@@ -271,14 +290,16 @@ object Lrc {
 }
 
 fun orderedSongs(songs: List<Song>, mode: SortMode, custom: List<String>, random: List<String>): List<Song> {
-    val collator = Collator.getInstance(Locale.CHINA).apply { strength = Collator.PRIMARY }
     return when (mode) {
-        SortMode.TITLE, SortMode.ARTIST -> songs.sortedWith { a, b ->
-            val main = collator.compare(if (mode == SortMode.TITLE) a.title else a.artist, if (mode == SortMode.TITLE) b.title else b.artist)
-            if (main != 0) main else collator.compare(a.title, b.title).takeIf { it != 0 } ?: a.id.compareTo(b.id)
+        SortMode.TITLE, SortMode.ARTIST -> {
+            val collator = Collator.getInstance(Locale.CHINA).apply { strength = Collator.PRIMARY }
+            songs.sortedWith { a, b ->
+                val main = collator.compare(if (mode == SortMode.TITLE) a.title else a.artist, if (mode == SortMode.TITLE) b.title else b.artist)
+                if (main != 0) main else collator.compare(a.title, b.title).takeIf { it != 0 } ?: a.id.compareTo(b.id)
+            }
         }
         else -> {
-            val rank = (if (mode == SortMode.RANDOM) random else custom).withIndex().associate { it.value to it.index }
+            val rank = (if (mode == SortMode.RANDOM) random else custom).distinct().withIndex().associate { it.value to it.index }
             songs.sortedWith(compareBy<Song> { rank[it.id] ?: Int.MAX_VALUE }.thenBy { it.title })
         }
     }
@@ -302,17 +323,23 @@ fun reuseAudioTags(previous: Song?, name: String, size: Long, modified: Long, fo
     !force && previous != null && previous.available && previous.name == name && previous.size == size && previous.modified == modified
 
 fun reconcileSongs(existing: List<Song>, scanned: List<Song>, source: String): List<Song> {
+    // Document providers and legacy caches can repeat an ID. Keep its first
+    // position, latest tags and all source grants; lazy rows require unique IDs.
+    val existingById=LinkedHashMap<String,Song>(existing.size)
+    existing.forEach {song ->
+        val previous=existingById[song.id]
+        existingById[song.id]=if(previous == null) song else song.copy(sources=previous.sources+song.sources)
+    }
     val scannedById = scanned.associateBy { it.id }
-    val result = existing.mapNotNull { old ->
+    val result = existingById.values.mapNotNull { old ->
         val fresh = scannedById[old.id]
         when {
-            fresh != null -> fresh.copy(sources = old.sources + source)
+            fresh != null -> fresh.copy(sources = old.sources + fresh.sources + source)
             source in old.sources -> (old.sources - source).takeIf { it.isNotEmpty() }?.let { old.copy(sources = it) }
             else -> old
         }
     }.toMutableList()
-    val known = existing.map { it.id }.toSet()
-    result += scanned.filter { it.id !in known }.map { it.copy(sources = it.sources + source) }
+    result += scannedById.values.filter { it.id !in existingById }.map { it.copy(sources = it.sources + source) }
     return result
 }
 

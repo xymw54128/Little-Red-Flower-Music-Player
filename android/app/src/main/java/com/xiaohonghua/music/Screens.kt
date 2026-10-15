@@ -3,7 +3,6 @@
 package com.xiaohonghua.music
 
 import android.content.Intent
-import android.graphics.BitmapFactory
 import android.net.Uri
 import android.os.SystemClock
 import android.provider.Settings as AndroidSettings
@@ -44,7 +43,6 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
@@ -76,7 +74,6 @@ import kotlinx.coroutines.withContext
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.map
-import java.io.File
 
 internal val accents = listOf(Color(0xFFCE3C4C), Color(0xFF527568), Color(0xFF436B92), Color(0xFF98644E), Color(0xFF76668D))
 internal val pageColor: Color @Composable get() = MaterialTheme.colorScheme.background
@@ -87,6 +84,15 @@ internal val menuTint: Color @Composable get() = MaterialTheme.colorScheme.onSur
 @Composable
 fun MusicApp(model: MusicModel,showStartup: Boolean = false) {
     val library by model.library.collectAsStateWithLifecycle()
+    if(!library.ready) {
+        MaterialTheme(colorScheme=appColorScheme(library.settings.theme,library.settings.nightMode)) {
+            Box(Modifier.fillMaxSize().background(pageColor),contentAlignment=Alignment.Center) {
+                if(library.status.isBlank()) CircularProgressIndicator(Modifier.size(28.dp),strokeWidth=2.dp)
+                else Text(library.status,Modifier.padding(24.dp),color=MaterialTheme.colorScheme.error)
+            }
+        }
+        return
+    }
     // Only the seek bar observes position ticks; library/navigation stay stable.
     val details=remember(model) {model.playback.map {it.copy(position=0)}.distinctUntilChanged()}
     val playback by details.collectAsStateWithLifecycle(initialValue=PlaybackState())
@@ -136,8 +142,13 @@ fun MusicApp(model: MusicModel,showStartup: Boolean = false) {
     var restoreUri by remember { mutableStateOf<Uri?>(null) }
     var removeFolder by remember { mutableStateOf<Folder?>(null) }
     val files = rememberLauncherForActivityResult(ActivityResultContracts.OpenMultipleDocuments()) { uris ->
-        uris.forEach { uri -> runCatching { context.contentResolver.takePersistableUriPermission(uri,Intent.FLAG_GRANT_READ_URI_PERMISSION) }.onFailure { message("文件授权未能长期保存，重启后可能需要重新选择") } }
-        if(uris.isNotEmpty()) model.repository.importFiles(uris)
+        if(uris.isNotEmpty()) scope.launch {
+            val failed=withContext(Dispatchers.IO) {uris.count {uri -> runCatching {
+                context.contentResolver.takePersistableUriPermission(uri,Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            }.isFailure}}
+            if(failed > 0) message("$failed 个文件授权未能长期保存，重启后可能需要重新选择")
+            model.repository.importFiles(uris)
+        }
     }
     val folder = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocumentTree()) { uri ->
         if(uri != null) {
@@ -165,7 +176,7 @@ fun MusicApp(model: MusicModel,showStartup: Boolean = false) {
     val activeSort=if(inPlaylist) playlist?.sort ?: SortMode.CUSTOM else library.sort
     val custom=if(inPlaylist) playlist?.songIds.orEmpty() else library.custom
     val random=if(inPlaylist) playlist?.randomIds.orEmpty() else library.random
-    val sorted = remember(sheet,baseSongs,activeSort,custom,random) {if(sheet == "custom-sort") orderedSongs(baseSongs,activeSort,custom,random) else emptyList()}
+    val sorted = if(sheet == "custom-sort") rememberOrderedSongs(baseSongs,activeSort,custom,random) else emptyList()
     fun go(page: String) {
         if(screen == page) return
         returning=false
@@ -231,7 +242,8 @@ fun MusicApp(model: MusicModel,showStartup: Boolean = false) {
                 val pageSort=if(page == "playlist") playlist?.sort ?: SortMode.CUSTOM else library.sort
                 val pageCustom=if(page == "playlist") playlist?.songIds.orEmpty() else library.custom
                 val pageRandom=if(page == "playlist") playlist?.randomIds.orEmpty() else library.random
-                val pageSorted=remember(page,pageBase,pageSort,pageCustom,pageRandom) {if(page in listOf("library","playlist")) orderedSongs(pageBase,pageSort,pageCustom,pageRandom) else emptyList()}
+                val preparedSongs=if(page in listOf("library","playlist")) rememberOrderedSongs(pageBase,pageSort,pageCustom,pageRandom) else emptyList()
+                val pageSorted=preparedSongs.orEmpty()
                 val groupMembers=remember(pageSorted,group,libraryTab) {
                     pageSorted.filter {song -> group == null || if(libraryTab == 1) song.albumKey == group else song.artist == group}
                 }
@@ -273,7 +285,9 @@ fun MusicApp(model: MusicModel,showStartup: Boolean = false) {
                             }
                         }
                     }
-                    when(page) {
+                    if(preparedSongs == null) Box(Modifier.weight(1f).fillMaxWidth(),contentAlignment=Alignment.Center) {
+                        CircularProgressIndicator(Modifier.size(28.dp),strokeWidth=2.dp)
+                    } else when(page) {
                         "library" -> {
                             if(group == null) Row(Modifier.padding(horizontal=24.dp),horizontalArrangement=Arrangement.spacedBy(8.dp)) {
                                 listOf("歌曲","专辑","歌手").forEachIndexed { index,label ->
@@ -358,7 +372,9 @@ fun MusicApp(model: MusicModel,showStartup: Boolean = false) {
             } }; Spacer(Modifier.height(16.dp))
         }
         if(sheet == "custom-sort") key(if(screen == "playlist") playlistId else "library") {
-            OrderSheet(sorted,onCancel={sheet=null},onSave={ids -> model.customOrder(ids,if(screen == "playlist") playlistId else null);sheet=null;completed("已保存歌曲顺序")})
+            if(sorted == null) ModalBottomSheet(onDismissRequest={sheet=null}) {
+                Box(Modifier.fillMaxWidth().height(120.dp),contentAlignment=Alignment.Center) {CircularProgressIndicator(Modifier.size(28.dp),strokeWidth=2.dp)}
+            } else OrderSheet(sorted,onCancel={sheet=null},onSave={ids -> model.customOrder(ids,if(screen == "playlist") playlistId else null);sheet=null;completed("已保存歌曲顺序")})
         }
         if(sheet == "queue") QueueSheet(library,playback,model,onDismiss={sheet=null},onFeedback={completed(it)})
         if(sheet == "edit-playlist" && playlist != null) PlaylistEditSheet(playlist,onDismiss={sheet=null},onSave={name,description ->
@@ -418,23 +434,13 @@ fun MusicApp(model: MusicModel,showStartup: Boolean = false) {
 @Composable internal fun Cover(song: Song?, modifier: Modifier = Modifier) {
     BoxWithConstraints(modifier.clip(RoundedCornerShape(16.dp)).background(MaterialTheme.colorScheme.primary.copy(alpha=.08f)),contentAlignment=Alignment.Center) {
         val pixels=with(androidx.compose.ui.platform.LocalDensity.current) {maxWidth.coerceAtMost(400.dp).roundToPx()}.coerceIn(64,1400)
-        val image = rememberImage(song?.artwork.orEmpty(),pixels)
+        val image = rememberImage(song?.artwork.orEmpty(),pixels,song?.artworkRevision.orEmpty())
         if(image != null) Image(image,null,Modifier.fillMaxSize(),contentScale=ContentScale.Crop)
         else Icon(Icons.Outlined.LocalFlorist,null,Modifier.fillMaxSize(.45f),tint=MaterialTheme.colorScheme.primary.copy(alpha=.8f))
     }
 }
-@Composable internal fun rememberImage(path: String,targetPixels: Int=1600): androidx.compose.ui.graphics.ImageBitmap? {
-    val stamp=if(path.isNotBlank()) File(path).lastModified() else 0L
-    return produceState<androidx.compose.ui.graphics.ImageBitmap?>(null,path,stamp,targetPixels) {
-        value=withContext(Dispatchers.IO) { runCatching {
-            if(path.isBlank()) return@runCatching null
-            val info=BitmapFactory.Options().apply { inJustDecodeBounds=true }
-            BitmapFactory.decodeFile(path,info)
-            val options=BitmapFactory.Options().apply {inSampleSize=1;while(info.outWidth/inSampleSize>targetPixels || info.outHeight/inSampleSize>targetPixels*1.5f) inSampleSize*=2}
-            BitmapFactory.decodeFile(path,options)?.asImageBitmap()
-        }.getOrNull() }
-    }.value
-}
+@Composable internal fun rememberImage(path: String,targetPixels: Int=1600,revision: String=""): androidx.compose.ui.graphics.ImageBitmap? =
+    rememberCachedArtwork(path,targetPixels,revision)
 @Composable private fun LibrarySearchHeader(title: String,query: String,expanded: Boolean,onQuery:(String)->Unit,onExpand:()->Unit,onCollapse:()->Unit,modifier: Modifier=Modifier,tagPrefix: String="library") {
     val focus=remember {FocusRequester()}
     val focusManager=LocalFocusManager.current
@@ -542,9 +548,10 @@ fun MusicApp(model: MusicModel,showStartup: Boolean = false) {
     }
 }
 @Composable private fun GroupList(songs: List<Song>,tab: Int,onSelect:(String)->Unit) {
-    val groups=songs.groupBy { if(tab == 1) it.albumKey else it.artist }.toSortedMap()
+    val groups=remember(songs,tab) {songs.groupBy { if(tab == 1) it.albumKey else it.artist }.toSortedMap()}
+    val keys=remember(groups) {groups.keys.toList()}
     LazyColumn(contentPadding=PaddingValues(24.dp),verticalArrangement=Arrangement.spacedBy(16.dp)) {
-        items(groups.keys.toList(),key={it}) { key -> val tracks=groups.getValue(key)
+        items(keys,key={it}) { key -> val tracks=groups.getValue(key)
             val source=remember {MutableInteractionSource()}
             Row(Modifier.animateItem().fillMaxWidth().pressScale(source,.985f).clickable(interactionSource=source,indication=LocalIndication.current) {onSelect(key)},verticalAlignment=Alignment.CenterVertically) {
                 Cover(tracks.first(),Modifier.size(60.dp))
