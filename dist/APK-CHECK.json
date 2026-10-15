@@ -1,14 +1,14 @@
 {
-  "date": "2026-10-15T06:37:25.822Z",
+  "date": "2026-10-15T07:11:32.197Z",
   "apk": "D:\\music player app\\dist\\小红花-1.1.0.apk",
   "buildType": "release",
   "debuggable": false,
   "testComponentsAbsent": true,
   "networkPermissionAbsent": true,
   "size": 63969679,
-  "sha256": "c342520bb36629299479c63577773024d466e948c15638cf1384b78ddb5e969c",
+  "sha256": "9336366a9eaa02624c48c19461983304935a5fa0ab89ccba9a7db54b92bb70a5",
   "metadata": [
-    "package: name='com.xiaohonghua.music' versionCode='19' versionName='1.1.0' platformBuildVersionName='16' platformBuildVersionCode='36' compileSdkVersion='36' compileSdkVersionCodename='16'",
+    "package: name='com.xiaohonghua.music' versionCode='20' versionName='1.1.0' platformBuildVersionName='16' platformBuildVersionCode='36' compileSdkVersion='36' compileSdkVersionCodename='16'",
     "minSdkVersion:'26'",
     "targetSdkVersion:'36'",
     "application-label:'小红花'",
@@ -334,6 +334,6 @@
     "errors": 0,
     "warnings": 17
   },
-  "acceptance": "1.1.0 adopts the original B cover gallery as the native Android player: large rounded artwork, subtle breathing, title and favorite, quality metadata, interactive header flower, more actions and negative remaining time. Existing playback, lyrics and the selected multilingual fonts remain available. Native visual rendering, gestures and frame performance require device acceptance.",
+  "acceptance": "1.1.0 code 20 fixes the native original B cover page in place, reserving two lyric preview lines before sizing flexible artwork; full lyrics scrolling and horizontal page switching remain. The player includes: large rounded artwork, subtle breathing, title and favorite, quality metadata, interactive header flower, more actions and negative remaining time. Existing playback, lyrics and the selected multilingual fonts remain available. Native visual rendering, gestures and frame performance require device acceptance.",
   "nativeTests": "Instrumented compilation and execution status is recorded separately in ANDROID-1.1.0-UI-CHECK.json; compilation alone does not confirm runtime behavior or native frame performance."
 }

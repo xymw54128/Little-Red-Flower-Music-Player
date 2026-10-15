@@ -1,8 +1,8 @@
 {
-  "date": "2026-10-15T06:38:10.495Z",
+  "date": "2026-10-15T07:11:48.164Z",
   "platform": "Android",
   "version": "1.1.0",
-  "versionCode": 19,
+  "versionCode": 20,
   "instrumentedTestsCompiled": true,
   "instrumentedTestsExecuted": false,
   "status": "compiled_not_executed",
@@ -39,7 +39,7 @@
     },
     {
       "name": "PlayerNavigationUiTest",
-      "tests": 9
+      "tests": 11
     },
     {
       "name": "PlaylistCoverUiTest",
@@ -74,8 +74,8 @@
       "tests": 3
     }
   ],
-  "instrumentedTestCount": 70,
-  "instrumentedApkSha256": "4ff9d98d66500abefe2d62e475b59463c1673b0ae53393a933ded08e480cc5d5",
+  "instrumentedTestCount": 72,
+  "instrumentedApkSha256": "bd496a7c5a9cabd59ce9a3c338ffaf3d1c62eb9ee84e8fdbbeb10395600d8953",
   "unitTestsPassed": 99,
   "lint": {
     "errors": 0,
@@ -84,11 +84,13 @@
   "nativeFramePerformanceMeasured": false,
   "phoneAcceptancePending": true,
   "actualPlayerLayoutUnchanged": false,
-  "playerLayout": "Original B cover gallery implemented natively. No decorative material borders.",
+  "playerLayout": "Original B fixed native cover page. Two lyric lines are measured before flexible artwork; no vertical cover scroll. Full lyrics scrolling and horizontal page switching remain.",
   "newNativeCases": [
     "Cover more menu dispatches add/info and closes",
     "Lyrics hides more menu and restores it on cover",
-    "Favorite state reads existing playlist membership across pages"
+    "Favorite state reads existing playlist membership across pages",
+    "Vertical swipes leave artwork/title/lyric bounds fixed",
+    "Two preview lines remain below metadata at 320x640 and font scale 1.3"
   ],
   "reviewedBoundaries": [
     "320dp control-width budget; device layout unmeasured",
@@ -98,6 +100,14 @@
   ],
   "appFontChoices": 8,
   "bundledFontFiles": 7,
-  "apkSha256": "c342520bb36629299479c63577773024d466e948c15638cf1384b78ddb5e969c",
-  "git": "Local commit only; no GitHub push or release."
+  "apkSha256": "9336366a9eaa02624c48c19461983304935a5fa0ab89ccba9a7db54b92bb70a5",
+  "git": "Local commit only; no GitHub push or release.",
+  "previousBuildUpgrade": {
+    "version": "1.1.0",
+    "fromCode": 19,
+    "toCode": 20,
+    "previousApkSha256": "c342520bb36629299479c63577773024d466e948c15638cf1384b78ddb5e969c",
+    "sameSigningCertificate": true,
+    "previousApkArchived": true
+  }
 }

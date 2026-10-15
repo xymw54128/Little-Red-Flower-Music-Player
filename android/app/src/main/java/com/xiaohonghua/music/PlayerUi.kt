@@ -96,29 +96,32 @@ import kotlinx.coroutines.isActive
             } else HorizontalPager(pager,Modifier.testTag("player-pages").weight(1f).fillMaxWidth(),beyondViewportPageCount=1,
                 flingBehavior=PagerDefaults.flingBehavior(pager,snapAnimationSpec=pageMotion)) { page ->
                 if(page == 0) BoxWithConstraints(Modifier.fillMaxSize()) {
-                    val fontScale=LocalDensity.current.fontScale.coerceAtLeast(1f)
-                    val coverSize=minOf((maxWidth-60.dp).coerceAtLeast(1.dp),330.dp,(maxHeight-(190f*fontScale).dp).coerceAtLeast(120.dp))
                     val favorite=library.playlists.firstOrNull {it.isFavorites}?.songIds?.contains(song.id) == true
-                    Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).heightIn(min=maxHeight).padding(horizontal=23.dp,vertical=10.dp),
-                        verticalArrangement=Arrangement.SpaceBetween,horizontalAlignment=Alignment.CenterHorizontally) {
-                        Column(Modifier.fillMaxWidth(),horizontalAlignment=Alignment.CenterHorizontally) {
-                            GalleryArtwork(song,p.playing,!lyricsVisible,Modifier.size(coverSize),::openLyrics)
-                            Row(Modifier.fillMaxWidth().padding(top=27.dp),verticalAlignment=Alignment.CenterVertically) {
+                    val compact=maxHeight < 400.dp
+                    val previewSize=library.settings.lyricSize.coerceAtMost(20f)
+                    Column(Modifier.testTag("player-cover-content").fillMaxSize().padding(horizontal=23.dp,vertical=10.dp),horizontalAlignment=Alignment.CenterHorizontally) {
+                        // Reserve the actual lyric height first; artwork receives only the remainder.
+                        Column(Modifier.weight(1f).fillMaxWidth().clipToBounds(),horizontalAlignment=Alignment.CenterHorizontally) {
+                            BoxWithConstraints(Modifier.weight(1f).fillMaxWidth(),contentAlignment=Alignment.Center) {
+                                val coverSize=minOf((maxWidth-14.dp).coerceAtLeast(0.dp),maxHeight,330.dp)
+                                if(coverSize > 0.dp) GalleryArtwork(song,p.playing,!lyricsVisible,Modifier.size(coverSize),::openLyrics)
+                            }
+                            Row(Modifier.fillMaxWidth().padding(top=if(compact) 12.dp else 27.dp),verticalAlignment=Alignment.CenterVertically) {
                                 Column(Modifier.weight(1f)) {
                                     Text(song.title,Modifier.testTag("player-title"),fontSize=27.sp,fontWeight=FontWeight.SemiBold,maxLines=2,overflow=TextOverflow.Ellipsis)
                                     Text("${song.artist} · ${song.album}",Modifier.testTag("player-artist-album").padding(top=8.dp),fontSize=12.sp,color=secondary,maxLines=2,overflow=TextOverflow.Ellipsis)
                                 }
                                 FavoriteButton(song,favorite) {model.repository.toggleFavorite(song.id)}
                             }
-                            Row(Modifier.fillMaxWidth().padding(top=10.dp),verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.spacedBy(9.dp)) {
+                            Row(Modifier.testTag("player-quality").fillMaxWidth().padding(top=10.dp),verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.spacedBy(9.dp)) {
                                 if(song.format.isNotBlank()) Text(song.format,Modifier.border(1.dp,secondary.copy(alpha=.20f),RoundedCornerShape(3.dp)).padding(horizontal=4.dp,vertical=1.dp),fontSize=9.sp,color=secondary)
                                 Text(listOfNotNull(song.bitDepth.takeIf {it > 0}?.let {"$it bit"},song.sampleRate.takeIf {it > 0}?.let {"${it/1000f} kHz"}).joinToString(" / "),Modifier.weight(1f),fontSize=10.sp,color=secondary,maxLines=1,overflow=TextOverflow.Ellipsis)
                                 GalleryPlayingIndicator(p.playing,!lyricsVisible)
                             }
                         }
-                        Box(Modifier.testTag("player-lyric-preview").fillMaxWidth().heightIn(min=66.dp).clickable(onClickLabel="查看歌词",onClick=::openLyrics),contentAlignment=Alignment.Center) {
-                            Text(lines.getOrNull(current)?.text ?: "点击封面或左滑查看歌词",textAlign=TextAlign.Center,fontSize=library.settings.lyricSize.coerceAtMost(20f).sp,
-                                fontFamily=lyricFont(library.settings.lyricFont),color=MaterialTheme.colorScheme.primary,maxLines=2,overflow=TextOverflow.Ellipsis)
+                        Box(Modifier.testTag("player-lyric-preview").fillMaxWidth().heightIn(min=66.dp).clickable(onClickLabel="查看歌词",onClick=::openLyrics).padding(vertical=10.dp),contentAlignment=Alignment.Center) {
+                            Text(lines.getOrNull(current)?.text ?: "点击封面或左滑查看歌词",Modifier.testTag("player-lyric-preview-text"),textAlign=TextAlign.Center,fontSize=previewSize.sp,lineHeight=(previewSize*1.5f).sp,
+                                fontFamily=lyricFont(library.settings.lyricFont),color=MaterialTheme.colorScheme.primary,minLines=2,maxLines=2,overflow=TextOverflow.Ellipsis)
                         }
                     }
                 } else LyricsPage(lines,lyricText,library.settings,lyricsVisible,p,model)
