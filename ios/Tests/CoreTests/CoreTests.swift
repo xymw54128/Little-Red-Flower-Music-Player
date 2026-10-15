@@ -93,16 +93,18 @@ final class CoreTests: XCTestCase {
         let backup = MusicBackup(state: old)
         var new = MusicState(); new.songs = [song("new", title: "一首歌")]
         XCTAssertEqual(MusicOrder.restore(backup, into: &new), 1)
-        XCTAssertEqual(new.playlists[0].songIDs, ["new"])
+        let restored = new.playlists.first { $0.id == old.playlists[0].id }
+        XCTAssertEqual(restored?.songIDs, ["new"])
+        XCTAssertTrue(new.playlists.first?.isFavorites == true)
         XCTAssertEqual(new.manualLyrics["new"], "[00:01]歌词")
-        XCTAssertEqual(new.playlists[0].coverPhoto, "")
+        XCTAssertEqual(restored?.coverPhoto, "")
         XCTAssertEqual(new.settings.background, "plain")
     }
     func testBackupDoesNotGuessAmbiguousFilenames() {
         var old = MusicState(); old.songs = [song("old", title: "歌")]; old.playlists = [Playlist(name: "歌单", songIDs: ["old"])]
         var new = MusicState(); new.songs = [song("one", title: "歌"), song("two", title: "另一个同名文件")]
         XCTAssertEqual(MusicOrder.restore(MusicBackup(state: old), into: &new), 0)
-        XCTAssertTrue(new.playlists[0].songIDs.isEmpty)
+        XCTAssertTrue(new.playlists.first { $0.id == old.playlists[0].id }?.songIDs.isEmpty == true)
     }
     func testSettingsClampInvalidValues() {
         var settings = MusicSettings()

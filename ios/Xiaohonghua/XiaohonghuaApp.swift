@@ -10,7 +10,7 @@ struct XiaohonghuaApp: App {
         _ = Brand.font("kai", size: 24)
     }
     var body: some Scene {
-        WindowGroup { RootView().environmentObject(library).environmentObject(playback).preferredColorScheme(.light) }
+        WindowGroup { RootView().environmentObject(library).environmentObject(playback).preferredColorScheme(library.state.settings.nightMode ? .dark : .light) }
     }
 }
 
@@ -23,6 +23,7 @@ struct RootView: View {
     @State private var showPlayer = false
     @State private var launchFinished = false
     @State private var flowerFrame = CGRect.zero
+    @State private var rootPages: [Int: Bool] = [:]
 
     var body: some View {
         ZStack {
@@ -37,9 +38,16 @@ struct RootView: View {
                 NavigationStack {
                     SettingsView().safeAreaInset(edge: .bottom, spacing: 0) { miniPlayer }
                 }.tabItem { Label("设置", systemImage: "gearshape") }.tag(2)
-            }.tint(Brand.accent(library.state.settings))
+            }.tint(Brand.accent(library.state.settings)).allowsHitTesting(library.ready && launchFinished)
+                .simultaneousGesture(DragGesture(minimumDistance: 30).onEnded { value in
+                    guard rootPages[tab] == true, value.startLocation.x > 44,
+                          abs(value.translation.width) > 70, abs(value.translation.width) > abs(value.translation.height) * 1.5 else { return }
+                    let target = min(max(tab + (value.translation.width < 0 ? 1 : -1), 0), 2)
+                    withAnimation(reduceMotion ? nil : .easeOut(duration: 0.28)) { tab = target }
+                })
             if !launchFinished, !reduceMotion { LaunchView(target: flowerFrame, active: phase == .active) { launchFinished = true }.zIndex(10) }
         }.background(Brand.paper).foregroundStyle(Brand.ink)
+            .onPreferenceChange(RootPagePreferenceKey.self) { rootPages = $0 }
             .onPreferenceChange(FlowerFrameKey.self) { if $0 != .zero { flowerFrame = $0 } }
             .fullScreenCover(isPresented: $showPlayer) { PlayerView() }
             .alert("小红花", isPresented: Binding(get: { library.message != nil && !showPlayer }, set: { if !$0 { library.message = nil } })) {
@@ -55,17 +63,8 @@ struct RootView: View {
             }
             .task(id: phase) {
                 playback.setForeground(phase == .active)
-                guard phase == .active else {
-                    if library.ready { playback.savePosition(); library.persist(immediate: true) }
-                    return
-                }
-                while !Task.isCancelled {
-                    if library.state.settings.monitor { await library.refresh(visible: false) }
-                    do { try await Task.sleep(for: .seconds(5)) } catch { break }
-                }
+                if phase != .active && library.ready { playback.savePosition(); library.persist(immediate: true) }
             }
-            .onChange(of: library.state.songs) { _, _ in playback.updateCurrentMetadata() }
-            .onChange(of: library.state.settings.lockScreen) { _, _ in playback.refreshLockScreen() }
             .onChange(of: reduceMotion) { _, value in if value { launchFinished = true } }
     }
     @ViewBuilder private var miniPlayer: some View {

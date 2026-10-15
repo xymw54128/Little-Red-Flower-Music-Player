@@ -1,7 +1,8 @@
 import Foundation
 
 struct AudioTags {
-    var title = "", artist = "", album = "", lyrics = ""
+    var title = "", artist = "", album = "", albumArtist = "", lyrics = ""
+    var track = 0, disc = 0
     var duration: Double = 0
     var sampleRate = 0, bitDepth = 0
     var artwork: Data?
@@ -28,13 +29,23 @@ enum TagReader {
 
     private static func flac(_ file: FileHandle) -> AudioTags {
         var result = AudioTags(), total = 0
+        guard let end = try? file.seekToEnd() else { return result }
+        try? file.seek(toOffset: 4)
         for _ in 0..<256 {
             guard let h = try? file.read(upToCount: 4), h.count == 4 else { break }
             let count = Int(h[1]) << 16 | Int(h[2]) << 8 | Int(h[3])
             total += count
             guard count <= maximumBlock, total <= 64 * 1024 * 1024 else { break }
+            let type = h[0] & 0x7F
+            if ![0, 4, 6].contains(type) {
+                // FLAC padding/application/seek blocks need no allocation. Check their bounds before seeking.
+                guard let position = try? file.offset(), UInt64(count) <= end - min(position, end) else { break }
+                do { try file.seek(toOffset: position + UInt64(count)) } catch { break }
+                if h[0] & 0x80 != 0 { break }
+                continue
+            }
             guard let block = try? file.read(upToCount: count), block.count == count else { break }
-            switch h[0] & 0x7F {
+            switch type {
             case 0:
                 if block.count >= 18 {
                     let bits = block[10..<18].reduce(UInt64(0)) { ($0 << 8) | UInt64($1) }
@@ -55,6 +66,9 @@ enum TagReader {
                     case "TITLE": result.title = text
                     case "ARTIST": result.artist = result.artist.isEmpty ? text : result.artist + " / " + text
                     case "ALBUM": result.album = text
+                    case "ALBUMARTIST", "ALBUM ARTIST": result.albumArtist = text
+                    case "TRACKNUMBER", "TRACK": result.track = number(text)
+                    case "DISCNUMBER", "DISC": result.disc = number(text)
                     case "LYRICS", "UNSYNCEDLYRICS", "LYRIC": result.lyrics = text
                     default: break
                     }
@@ -101,6 +115,9 @@ enum TagReader {
             case "TIT2": result.title = text(frame.dropFirst(), encoding: frame[0])
             case "TPE1": result.artist = text(frame.dropFirst(), encoding: frame[0])
             case "TALB": result.album = text(frame.dropFirst(), encoding: frame[0])
+            case "TPE2": result.albumArtist = text(frame.dropFirst(), encoding: frame[0])
+            case "TRCK": result.track = number(text(frame.dropFirst(), encoding: frame[0]))
+            case "TPOS": result.disc = number(text(frame.dropFirst(), encoding: frame[0]))
             case "USLT":
                 if frame.count > 4, let start = terminator(frame, from: 4, wide: frame[0] == 1 || frame[0] == 2) {
                     result.lyrics = text(frame[start...], encoding: frame[0])
@@ -114,6 +131,11 @@ enum TagReader {
             }
         }
         return result
+    }
+
+    private static func number(_ value: String) -> Int {
+        let first = String(value.split(separator: "/").first ?? "")
+        return max(0, Int(first.trimmingCharacters(in: .whitespacesAndNewlines)) ?? 0)
     }
 
     private static func text(_ bytes: Data.SubSequence, encoding: UInt8) -> String {
@@ -143,7 +165,11 @@ private struct ByteCursor {
         defer { index += count }
         return Data(bytes[index..<(index + count)])
     }
-    mutating func skip(_ count: Int) -> Bool { take(count) != nil }
+    mutating func skip(_ count: Int) -> Bool {
+        guard count >= 0, count <= bytes.count - index else { return false }
+        index += count
+        return true
+    }
     mutating func uint32(little: Bool = false) -> UInt32? {
         guard let data = take(4) else { return nil }
         return (little ? Array(data.reversed()) : Array(data)).reduce(0) { ($0 << 8) | UInt32($1) }

@@ -1,12 +1,12 @@
-# 小红花 Android · 1.1.1（本地修复版）
+# 小红花 Android · 1.1.1（发布版）
 
 原生 Kotlin / Compose / Media3 本地音乐播放器。保留 `../ui/` 作为设计参考；本工程生成真正的安卓 APK。源码采用 MIT 许可证，正式签名密钥仅保存在本地。
 
 ## 安装与使用
 
-本地修复版 **Android 1.1.1 / code 21** 扩大原版 B「封面画廊」的封面，保留单行歌词空间，长歌词横向滚动完整展示；左侧继续显示已播放时间，右侧显示歌曲完整时长。针对约 1000 首曲库，将初始化、标签扫描与数据序列化放到后台，加入按尺寸加载的封面缓存，减少排序、歌单和播放队列的重复处理，并修复重复编号和持久化顺序问题。安装包为 `../dist/小红花-1.1.1.apk`，见 [1.1.1 版本说明](../dist/小红花-1.1.1-发布说明.md) 和 [千首检查与验收范围](../docs/design/1.1.1-thousand-library.md)。本轮只本地提交，下方下载链接仍为已公开的 1.0.5。
+Android 1.1.1 / code 21 已与 iOS 1.1.1 源码一起发布。扩大固定封面，单行长歌词完整滚动预览，右侧时间为歌曲总时长；优化千首曲库导入、缓存、排序和歌单管理。见 [版本说明](../dist/小红花-1.1.1-发布说明.md) 与 [千首检查](../docs/design/1.1.1-thousand-library.md)。
 
-安装包：[下载小红花 1.0.5 APK](https://github.com/xymw54128/Little-Red-Flower-Music-Player/releases/download/v1.0.5/Xiaohonghua-1.0.5.apk) · [发布页面](https://github.com/xymw54128/Little-Red-Flower-Music-Player/releases/tag/v1.0.5)，包含内置中文字体。沿用旧版的应用 ID 与签名，直接覆盖安装，保留现有数据。源码与安装包已发布到 GitHub；Git 克隆不包含 APK，请从 Releases 下载。公开版版本名 `1.0.5`，版本号 `12`，SHA-256：**6016a8c7b0a1ece85e37037b3f3859fea35da44ad9f6f4873ccd0c9b725bf086**。
+安装包：[下载小红花 1.1.1 APK](https://github.com/xymw54128/Little-Red-Flower-Music-Player/releases/download/v1.1.1/Xiaohonghua-1.1.1.apk) · [发布页面](https://github.com/xymw54128/Little-Red-Flower-Music-Player/releases/tag/v1.1.1)。包名与签名延续，允许覆盖安装；安装包位于 Releases，不包含在 Git 克隆中。SHA-256：**40409d59feb55828a84fbce367870c6ac8c616bd6cc4813ab8928484a1a4ee59**。
 
 1. 将 APK 传到小米 15，在手机文件管理器中打开并安装。手机可能要求为文件管理器允许安装此应用。
 2. 打开小红花，在 **设置 → 歌曲文件夹** 选择音乐文件，或授权音乐文件夹。文件夹递归扫描，音乐原文件不复制、不修改。
@@ -160,7 +160,7 @@
 
 ## 1.1.1 验证记录（2026-10-15）
 
-Android 1.1.1 / code 21（本地修复版）：Release/Debug APK 与原生测试 APK 构建成功，112 项 JVM 单元测试通过，Lint 0 错误、15 提醒；78 项原生用例编译成功、未执行。最终 APK 通过版本/包名、历史同签名、字体与许可证/哈希、11 款花朵封面、图标、无网络权限、非调试、无测试组件及 16 KB 对齐检查。 当前无连接设备，真实千首 FLAC 导入、手机帧率与手势尚未验收。仅本地提交，未推送 GitHub。[APK 报告](../dist/小红花-1.1.1-CHECK.json) · [原生测试状态](../dist/ANDROID-1.1.1-UI-CHECK.json) · [千首检查](../dist/ANDROID-1.1.1-PERFORMANCE-CHECK.json)。
+Android 1.1.1 / code 21（本地修复版）：Release/Debug APK 与原生测试 APK 构建成功，112 项 JVM 单元测试通过，Lint 0 错误、15 提醒；78 项原生用例编译成功、未执行。最终 APK 通过版本/包名、历史同签名、字体与许可证/哈希、11 款花朵封面、图标、无网络权限、非调试、无测试组件及 16 KB 对齐检查。 当前无连接设备，真实千首 FLAC 导入、手机帧率与手势尚未验收。已与 iOS 1.1.1 源码发布到 GitHub。[APK 报告](../dist/小红花-1.1.1-CHECK.json) · [原生测试状态](../dist/ANDROID-1.1.1-UI-CHECK.json) · [千首检查](../dist/ANDROID-1.1.1-PERFORMANCE-CHECK.json)。
 
 ## 1.1.0 验证记录（2026-10-15）
 

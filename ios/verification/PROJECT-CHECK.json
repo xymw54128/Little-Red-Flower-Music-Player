@@ -1,25 +1,63 @@
 {
   "result": "pass",
   "scope": "Project format, paths, build settings, assets, font hashes/names/glyphs, XML and test discovery; NOT Xcode compilation or test execution",
-  "version": "1.0.1",
-  "build": 8,
+  "version": "1.1.1",
+  "build": 21,
   "minimumIOS": "17.0",
-  "appSources": 16,
+  "appSources": 17,
   "fonts": [
     {
       "file": "lxgw_wenkai.ttf",
       "postScriptName": "LXGWWenKai-Regular",
-      "sha256": "39ad71264b588165b469e35e6afb162a378dacd1f95348160240ba9038ac3009"
+      "sha256": "39ad71264b588165b469e35e6afb162a378dacd1f95348160240ba9038ac3009",
+      "samplePunctuationFallback": [],
+      "fallbackFont": null
     },
     {
-      "file": "source_han_serif_cn.otf",
-      "postScriptName": "SourceHanSerifCN-Regular",
-      "sha256": "3754ea669c530e2473354f8f6d9f79680a44d7e26ec7d00eeabee4a7e0753c5d"
+      "file": "flower_serif.ttf",
+      "postScriptName": "LittleFlowerSerif-Regular",
+      "sha256": "ec1f58cca57d2700b28372fb9eaad612bdf77b00bf860a9b6fd897aa6c1c3369",
+      "samplePunctuationFallback": [],
+      "fallbackFont": null
     },
     {
-      "file": "zhuque_fangsong.ttf",
-      "postScriptName": "ZhuqueFangsong-Regular",
-      "sha256": "558c62730844fe54ba220146ed62f859d4e2880188d92d985f8921c6e3743bc4"
+      "file": "flower_xiaowei.ttf",
+      "postScriptName": "LittleFlowerLightSerif-Regular",
+      "sha256": "2fd2e9c7d878eb54173113e6bef9f3765e7340d88869f066e38dc88a06a9f50f",
+      "samplePunctuationFallback": [
+        "·"
+      ],
+      "fallbackFont": "LXGWWenKai-Regular"
+    },
+    {
+      "file": "flower_zenmaru.ttf",
+      "postScriptName": "LittleFlowerGentleRound-Regular",
+      "sha256": "e3a4212b5969481193617384732c305b6fbb79d5ccf0f44bd51e42622692a8bc",
+      "samplePunctuationFallback": [],
+      "fallbackFont": null
+    },
+    {
+      "file": "flower_kiwi.ttf",
+      "postScriptName": "LittleFlowerRoundSerif-Regular",
+      "sha256": "e685a896def04d889da7e15dc6f111122233793f1dcc9b9d4411961dd31f04f9",
+      "samplePunctuationFallback": [],
+      "fallbackFont": null
+    },
+    {
+      "file": "flower_kurenaido.ttf",
+      "postScriptName": "LittleFlowerDiaryHand-Regular",
+      "sha256": "2c126e7f74d7ee5dea5f1e30bb06ab40b0e171c3d30cfadacab1dc857a9476bc",
+      "samplePunctuationFallback": [],
+      "fallbackFont": null
+    },
+    {
+      "file": "flower_longcang.ttf",
+      "postScriptName": "LittleFlowerFreeHand-Regular",
+      "sha256": "ce7176b35ad183a972956be167e18c26b70ace7c9bc40ada992c99e95613c4fc",
+      "samplePunctuationFallback": [
+        "·"
+      ],
+      "fallbackFont": "LXGWWenKai-Regular"
     }
   ],
   "assets": [
@@ -48,6 +86,94 @@
       "mode": "RGBA"
     },
     {
+      "name": "FlowerCoverCamellia.imageset",
+      "size": [
+        768,
+        768
+      ],
+      "mode": "RGBA"
+    },
+    {
+      "name": "FlowerCoverCornflower.imageset",
+      "size": [
+        768,
+        768
+      ],
+      "mode": "RGBA"
+    },
+    {
+      "name": "FlowerCoverDaisy.imageset",
+      "size": [
+        768,
+        768
+      ],
+      "mode": "RGBA"
+    },
+    {
+      "name": "FlowerCoverFavorite.imageset",
+      "size": [
+        768,
+        768
+      ],
+      "mode": "RGBA"
+    },
+    {
+      "name": "FlowerCoverHydrangea.imageset",
+      "size": [
+        768,
+        768
+      ],
+      "mode": "RGBA"
+    },
+    {
+      "name": "FlowerCoverIris.imageset",
+      "size": [
+        768,
+        768
+      ],
+      "mode": "RGBA"
+    },
+    {
+      "name": "FlowerCoverLily.imageset",
+      "size": [
+        768,
+        768
+      ],
+      "mode": "RGBA"
+    },
+    {
+      "name": "FlowerCoverLotus.imageset",
+      "size": [
+        768,
+        768
+      ],
+      "mode": "RGBA"
+    },
+    {
+      "name": "FlowerCoverPeach.imageset",
+      "size": [
+        768,
+        768
+      ],
+      "mode": "RGBA"
+    },
+    {
+      "name": "FlowerCoverSunflower.imageset",
+      "size": [
+        768,
+        768
+      ],
+      "mode": "RGBA"
+    },
+    {
+      "name": "FlowerCoverTulip.imageset",
+      "size": [
+        768,
+        768
+      ],
+      "mode": "RGBA"
+    },
+    {
       "name": "FlowerPlaylists.imageset",
       "size": [
         768,
@@ -64,8 +190,31 @@
       "mode": "RGBA"
     }
   ],
-  "coreTestsDiscovered": 20,
-  "uiTestsDiscovered": 3,
+  "coreTestsDiscovered": 39,
+  "uiTestsDiscovered": 7,
   "xcodeBuild": "not_run_no_mac",
-  "iPhoneTest": "not_run_no_device"
+  "iPhoneTest": "not_run_no_device",
+  "sourceSha256": {
+    "Xiaohonghua/Core/AudioTags.swift": "cc1a24d87799784eaeaa3e4ad389fe32a8c011650c8dcc9e8ed9ddb8bdfde125",
+    "Xiaohonghua/Core/Lyrics.swift": "1ecef2a417f565a9774a4564bfa51b792d8a42d05beb92ff5d10ff119a13210b",
+    "Xiaohonghua/Core/Models.swift": "95af802cce5bbbb7c7fa90654447aae76c1545f0b9efce4378236539a4a0dc00",
+    "Xiaohonghua/Core/PlaybackOrder.swift": "390fd97ec502dbdf5c9ff688fd2b8f49a5e30f6834c53de804eed8286365b730",
+    "Xiaohonghua/DebugFixtures.swift": "36c717944634d86a9452b677e6051d6e70559d5ab9e604440e7ab13dbe3c5ad7",
+    "Xiaohonghua/Design.swift": "3d3b865512eb7a2fe4af31c79f7cf8b06cdb7d6007a5dbdb0d47598183a463ae",
+    "Xiaohonghua/FileLibrary.swift": "c11f804f0e6eaf578931026b29a6c1db3b2ecd3d8245839cf37a72efbc7065ec",
+    "Xiaohonghua/LaunchView.swift": "0bcd5b60ed7e9f246cdc6af24a7eae8085b0a40adc3d69d939e0eafa1f27b6f7",
+    "Xiaohonghua/LibraryView.swift": "591d31c93fcf8d672805df75b3767f094381917e4a0da849444870cab52f0a8f",
+    "Xiaohonghua/LyricView.swift": "63874a1cdffb92faa95976b6d84ee81d8e14ddd1eb508b75562b4942a04b84c5",
+    "Xiaohonghua/MusicLibrary.swift": "b1c3cb98382d63870768c1e41bfab051fd54bfd4bcc68402fa66af3eb45efdf9",
+    "Xiaohonghua/Playback.swift": "49ea3bbef5052d4ca000637988eff7ea0d76645b632f077e43befd5f398b7612",
+    "Xiaohonghua/PlayerView.swift": "221a4b9c2b59ccb314f32d4081767271c3069954cc53d2f1ab3c2a6251f03782",
+    "Xiaohonghua/PlaylistsView.swift": "91a0f46bf68000e83c87a5fae3de32076e5eaf1d4a247cd1106d215a27e77212",
+    "Xiaohonghua/SettingsView.swift": "8d30969644aecc5fc856324e64b35180ea1524dc4c4cd12f94496b4ccdc2d34f",
+    "Xiaohonghua/SongList.swift": "a14f49f43460861e2a6a5534e2d316967803d65ece91f914f28912a80edde31b",
+    "Xiaohonghua/XiaohonghuaApp.swift": "c9bdaec4ae005a69b1433c3fa0eb6f4b1d6917ea887651ecfb6650c62803fd78",
+    "Tests/CoreTests/Collection111Tests.swift": "c0e5f991eec2212a0c75b50ff6b6bba07f60001ce4ef37cb3968ba71afd313bf",
+    "Tests/CoreTests/CoreTests.swift": "0180859bb4a33235017b4e9067ce901a3990c20ebe74e9a30aa45542a29923df",
+    "Tests/CoreTests/PlaybackLyrics111Tests.swift": "aeb9cbefaf05950da7dfd7f78969a9983bda1f1959073049321f877e2b067b92",
+    "Tests/UITests/PlayerUITests.swift": "ce132abf74ea3320e5a2d5b0c3aaadb36b6d7a99eadc4a8df35d238ef2469dd3"
+  }
 }

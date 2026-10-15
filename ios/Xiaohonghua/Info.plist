@@ -19,9 +19,14 @@
         <key>UISceneConfigurations</key><dict/>
     </dict>
     <key>UISupportedInterfaceOrientations</key><array><string>UIInterfaceOrientationPortrait</string></array>
-    <key>UIUserInterfaceStyle</key><string>Light</string>
     <key>UIRequiresFullScreen</key><false/>
     <key>UIAppFonts</key><array>
-        <string>lxgw_wenkai.ttf</string><string>source_han_serif_cn.otf</string><string>zhuque_fangsong.ttf</string>
+        <string>lxgw_wenkai.ttf</string>
+        <string>flower_serif.ttf</string>
+        <string>flower_xiaowei.ttf</string>
+        <string>flower_zenmaru.ttf</string>
+        <string>flower_kiwi.ttf</string>
+        <string>flower_kurenaido.ttf</string>
+        <string>flower_longcang.ttf</string>
     </array>
 </dict></plist>

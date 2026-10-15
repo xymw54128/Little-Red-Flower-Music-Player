@@ -1,66 +1,51 @@
-# 小红花 · iPhone 1.0.1
+# 小红花 · iPhone 1.1.1
 
-作者：浪雨林兴云魔王。原生 SwiftUI / UIKit / AVFoundation 工程，最低 iOS 17，iPhone 竖屏布局。版本 1.0.1，构建号 8，Bundle ID `com.xiaohonghua.music.ios`。
+作者：浪雨林兴云魔王。SwiftUI / UIKit / AVFoundation 原生 iPhone 工程，最低 iOS 17，竖屏；版本 1.1.1、构建号 21、Bundle ID `com.xiaohonghua.music.ios`。
 
-原创源码采用 [MIT 许可证](LICENSE)，内置字体保留各自的 [原始 OFL 授权](THIRD_PARTY_NOTICES.md)。
+**本版提供 Xcode 源码工程，没有可安装的 IPA。** 当前开发环境是 Windows，没有 Apple SDK。Swift 语法、工程引用和资源检查已执行；Xcode 编译、XCTest、模拟器、签名与 iPhone 运行均未执行，不能将其视为 App Store 或实机验收通过。
 
-**交付的是完整源代码工程，目前没有可安装的 IPA。** 当前开发电脑为 Windows，用户没有 Mac；Swift 语法和资源检查已运行，但没有运行 Xcode 编译、XCTest、模拟器、签名或 iPhone 测试。不能据此认定已达到正式发布质量。
+[下载 iOS 1.1.1 源码包](https://github.com/xymw54128/Little-Red-Flower-Music-Player/releases/download/v1.1.1/Xiaohonghua-iOS-1.1.1-source.zip) · [双端发布页](https://github.com/xymw54128/Little-Red-Flower-Music-Player/releases/tag/v1.1.1) · [源代码许可](LICENSE) · [字体许可](THIRD_PARTY_NOTICES.md)
 
-## 已实现的代码
+## 本版功能
 
-- 本地文件、多选歌曲和递归文件夹导入；持久化授权书签，失效时重新授权；应用自身 `Documents/Music` 文件共享目录。
-- FLAC / MP3 标签与封面、系统其他音频元数据、内嵌歌词和同名 `.lrc`，也可单独导入歌词。原生播放 FLAC、MP3、WAV、M4A、AAC、AIFF、CAF 等常用格式；解码失败显示原因。
-- 歌曲、专辑、歌手与搜索；列表序号、顶部/底部数量；标题 A–Z、歌手 A–Z、随机和可拖动保存的自定义顺序。
-- 创建、重命名、删除歌单、选择目标歌单添加、移除歌曲；八款不同封面和相册照片封面。
-- 迷你/完整播放页的上一首、播放暂停、下一首；四种播放模式；可拖动/移除的播放队列；细进度条；`歌手 · 专辑` 副标题。
-- 横向分页进入居中歌词；LRC offset、多时间戳、同时间翻译合并；普通无时间戳歌词也可浏览。独立 CADisplayLink 根据相邻时间戳与显示刷新间隔提前完成位移，实际高亮按歌词时间切换。手动查看后四秒回到当前行。
-- 列表滚动时显示当前歌曲定位按钮，停止滚动两秒后渐出；仅定位当前列表中的歌曲。
-- 六种歌词字体、字号和行距、动态滚动开关；五种主题色；相册/专辑背景、不透明度、大小及水平/垂直位置。
-- 后台音频、Now Playing、锁屏远程指令、来电中断与耳机拔出暂停；队列与位置保存，重开保持暂停。
-- 文件夹手动刷新与前台静默监测；五秒检查文件增删改，六十秒重读标签。自动检查不显示顶部进度条。封面缓存按图片内容更新。
-- 黄色花心、五瓣依次长出、旋转飞到音乐库标题旁及文楷文案渐入渐出的冷启动动画；尊重减少动态效果。动画使用独立绘制层，固定画布上的旋转、缩放、位移。
-- JSON 备份/恢复；关于页和作者署名；三款未经修改的中文字体、原始 OFL 授权与来源信息。
+- 原版 B「封面画廊」固定播放页：放大封面，优先留出一行歌词空间，长歌词滚动完整展示；点击封面/预览或左滑进入歌词，右滑返回。保留轻微呼吸、收藏、歌手与专辑、音质、更多操作和队列。进度左侧已播放时间、右侧完整时长。
+- 默认“我喜欢”与列表爱心；歌单名称、描述、花朵/相册封面、批量添加和移出歌曲；点击歌单进入详情，点击歌曲播放；详情信息随列表上划收起。十一款封面沿用 Android 花朵资源。
+- 音乐库、歌单收起式搜索，原文、拼音和首字母索引；专辑按专辑歌手区分并按盘号/曲号排列；分类选中填充主题色。自定义排序由原生 List 拖动，保存后同步同来源的队列，保留当前歌曲和进度。
+- 主页保留系统底部导航，支持横向滑动松手切换；子页不触发该手势。它不是随手指连续拖动的自定义翻页器，具体过渡仍需 iPhone 验收。
+- LRC 使用同一个显示时钟同步颜色、缩放与居中，在下一行时间戳前完成过渡，短间隔压缩；手动浏览停止 1.5 秒后回位。歌词页只保留歌曲标题与播放控制，导入和样式在设置中调整。
+- 系统、文楷、宋体与五款已选多语言字体，共八项；五种主题色、夜间主题、字号和行距。三个页头花朵有可重触发的两秒互动，没有圆形底纹。
+- 本地歌曲/递归文件夹导入，FLAC / MP3 标签与封面、内嵌和同名 LRC。WAV、M4A、AAC、AIFF、CAF 等常见格式由系统解码，失败有提示。
+- 只在用户导入或手动刷新时扫描；刷新强制检查所有标签、封面、歌词与文件变化。取消自动文件夹监测、自定义播放背景、睡眠计时和最近播放入口。
+- 曲库和文件处理置于后台，按 ID 合并去重；后台排序和搜索索引，封面有尺寸采样、24 MiB 缓存、双并发及离屏请求取消。播放进度独立保存，避免定时重写整份千首歌词曲库。
+- 后台音频、锁屏指令、中断与耳机拔出暂停，重开保持暂停；原生媒体封面优先，缺图使用小红花。iOS 决定锁屏卡片及应用图标的实际布局，不能任意替换系统组件。
+- JSON 备份/恢复，旧 1.0.1 数据默认值兼容；关于页保留作者及“春风桃李花开日，秋雨梧桐叶落时。”
 
-## iOS 与 Android 的差异
+## 导入、离线与换机
 
-通过系统“文件”选择器授予访问权限，应用不能扫描 iPhone 全盘。选中文件/文件夹不会再复制完整音乐库；同名歌词只在授权目录内可读，单独选择一首歌后如不能读旁边的 LRC，请再导入歌词或选择整个文件夹。
+通过系统“文件”授权歌曲或文件夹，或向应用 Documents/Music 文件共享目录放入音乐。应用不能任意扫描 iPhone 全盘。iCloud/第三方文件提供商里的文件须先下载到本机才能离线播放；权限失效后需重新授权。单独导入歌曲时，系统可能不允许读取旁边的 LRC，可再导入歌词或授权整个文件夹。
 
-来自 iCloud 或其他文件提供商的音乐必须先下载到本机，才能满足离线播放。系统授权可能被提供商撤销，文件移走或删除后需重新授权。应用内 `Music` 目录最稳定。前台定时监测不等于应用关闭后仍扫描；iOS 在后台限制普通任务，持续音频播放由系统音频能力提供。
+备份包含索引、歌单、排序、手动歌词和设置，不包含原音乐、照片或系统授权书签。换机先导入音乐再恢复备份，按唯一文件名和大小匹配；备份格式为 xiaohonghua-ios / 1，不直接读取 Android 私有路径备份。当前不提供额外 OGG/Opus/DSD 解码器。
 
-锁屏开关控制应用发布播放信息和接收系统指令；卡片显示、移除时机由 iOS 决定。当前无 OGG/Opus/DSD 等额外解码库，不将 Android 的全部格式支持直接照搬为 iOS 声明。
+## 在 Mac 上验证和安装
 
-备份不包含原音乐、相册封面、背景图片和系统授权书签。换机时先导入原音乐，再恢复备份，以唯一的文件名和大小匹配。当前备份格式为 `xiaohonghua-ios` 版本 1，暂不直接读取 Android 私有路径备份。
-
-## 在 Mac 上验证
-
-需要完整 Xcode 16 或更新版本、安装 iOS 17+ 的 iPhone 模拟器。资源已包含，不需要 CocoaPods、XcodeGen 或第三方播放器库。
+需要 Xcode 16 或更新版本及 iOS 17+ 模拟器。资源已在工程中，不需要 CocoaPods 或 XcodeGen：
 
 ```sh
-cd "/解压位置/小红花-iOS-1.0.1"
+cd "/解压位置/小红花-iOS-1.1.1"
 open Xiaohonghua.xcodeproj
 bash tools/verify-mac.sh
 ```
 
-脚本先运行纯核心 Swift Package 测试，再运行模拟器核心/界面测试，最后构建未签名的设备 Release。测试包含真实合成 FLAC（16 bit、24 bit / 96 kHz）和 WAV 的原生解码准备；测试音频只在测试 target 中打包。若机器有多个模拟器，可设 `IOS_DESTINATION='platform=iOS Simulator,name=具体模拟器名'`。首次需要在 Xcode 的 Settings > Locations 选择 Command Line Tools。
+脚本先执行 Swift Package 核心测试，再运行 iPhone 模拟器 XCTest，最后构建未签名设备 Release。可设 IOS_DESTINATION 指定模拟器。测试用 WAV / FLAC 仅打包进测试 target，调试夹具不编译进 Release；界面测试使用干净的专用模拟器。
 
-共提供 **20 项核心测试、3 项界面测试**；“提供”不代表已经执行。测试结果写入 `verification/mac/*.xcresult`。测试用数据与启动跳过入口只编译进 Debug，Release 不包含这些入口。界面测试应使用专用的干净模拟器。
+当前共发现 39 项核心测试和 7 项界面测试，均未在此 Windows 环境执行。含千首去重/顺序/收藏/搜索/备份兼容、FLAC 标签、歌词提前过渡、队列编辑、固定布局与总时长场景。发现数量不是执行通过数量。
 
-## 在 iPhone 上安装
+在 Xcode 选择实际 Apple 开发团队和可用 Bundle ID，连接 iPhone 运行；导出 IPA 需 Archive 与有效签名，源码不包含证书、描述文件或预填团队。
 
-拿到 Mac 构建环境后，在 Xcode 的 Xiaohonghua target > Signing & Capabilities 选择实际 Apple 开发团队，将 Bundle ID 改成该团队可用的唯一值，连接 iPhone 并选中设备运行。准备正式分发时使用 Product > Archive，再按实际 Apple 账号及分发方式签名导出。工程没有伪造证书或预填团队。
+## 检查与验收范围
 
-如果暂时没有 Mac，先保留本源码包。借用/远程使用真实 Mac 构建环境也可以继续这一阶段；Windows 上不能通过改 APK 后缀得到 iOS 安装包。工程随完整项目开源，源码压缩包见 [GitHub Release](https://github.com/xymw54128/Little-Red-Flower-Music-Player/releases/tag/v1.0.1)。目前未申请 Apple 开发账号、购买云构建服务或发布 App Store。
+[语法记录](verification/SWIFT-SYNTAX.json) 只检查 Swift grammar，不检查 Apple SDK 类型。[工程检查](verification/PROJECT-CHECK.json) 检查 OpenStep 工程、目标引用、scheme、版本、隐私 XML、图像、字体名称/哈希/许可及样本文字和明确的标点回退。
 
-## 当前检查与待验收
+没有测试 iPhone 上真实千首 FLAC、100 GB 文件夹、原生帧率、峰值内存、后台播放与锁屏、权限重启、减少动态、SE 至 Pro Max 的排版和手势。不能把后台任务、语法通过或源码打包当成“绝不卡顿”的证明。详见 [本版设计与验收](https://github.com/xymw54128/Little-Red-Flower-Music-Player/blob/main/docs/design/ios-1.1.1.md)。
 
-`verification/SWIFT-SYNTAX.json`：独立 tree-sitter Swift 语法解析，不能检查 Apple SDK 类型或链接。
-
-`verification/PROJECT-CHECK.json`：独立 OpenStep 解析器核对 Xcode 工程格式/引用、scheme、版本、资源、字体哈希/字体名/中文字形、隐私清单 XML、图标透明度和测试发现数。App 图标为不透明 1024 像素，页面花朵为透明图像。
-
-仍需运行 Mac 脚本修复编译/测试反馈，并在 iPhone 上检验文件授权重启、FLAC 解码/后台切歌/锁屏、播放中断、密集歌词、拖动与定位、照片导入、启动动画帧率、SE 至 Pro Max 的安全区域及 100 GB 音乐库的耗时/内存。这些目前均未完成实机验证；不能承诺已经无卡顿。
-
-已开启 [ProMotion 的帧率请求配置](https://developer.apple.com/documentation/quartzcore/optimizing-iphone-and-ipad-apps-to-support-promotion-displays)。实际刷新率仍由系统温度、电量与调度决定，不能承诺恒定 120 fps；比一个显示帧还密集的歌词时间戳也无法逐个可见。
-
-维护工程的资源生成脚本依赖同工作区内的 Android 原始矢量和字体，只用于本工作区重新生成资源。解压包中的 Xcode 工程已经含有最终资源，构建不需要这些生成脚本。Windows 的 `host-python.cjs` 是当前工作区工具入口；其他主机可自行装 `tools/requirements-host.txt`，直接运行 Python 检查脚本。
-
-Apple SDK 参考：[文件导入授权](https://developer.apple.com/documentation/swiftui/view/fileimporter(ispresented:allowedcontenttypes:allowsmultipleselection:oncompletion:))、[本地音频播放器](https://developer.apple.com/documentation/avfaudio/avaudioplayer)、[FLAC 格式](https://developer.apple.com/documentation/coreaudiotypes/kaudioformatflac)、[后台音频](https://developer.apple.com/documentation/avfoundation/configuring-your-app-for-media-playback)、[所用文件元数据 API 的隐私声明](https://developer.apple.com/documentation/bundleresources/app-privacy-configuration/nsprivacyaccessedapitypes/nsprivacyaccessedapitype)。
+资源生成工具依赖同工作区 Android 矢量与字体；源码包已带生成结果，Mac 构建无需运行它。Windows host-python 工具依赖原工作区，其他主机可安装 tools/requirements-host.txt 后直接运行 Python 检查。

@@ -43,19 +43,33 @@ enum Lyrics {
         return low - 1
     }
 
+    /// One audio-clock phase drives position, colour, opacity and scale together.
+    /// Settle before the next stamp, with a shorter window for closely spaced lines.
     static func motion(_ lines: [LyricLine], at position: Double, frameInterval: Double = 1.0 / 60) -> (index: Int, fraction: Double) {
         guard !lines.isEmpty else { return (-1, 0) }
         let index = current(lines, at: position)
-        guard index >= 0 else { return (0, 0) }
+        guard index >= 0 else { return (-1, 0) }
         guard index + 1 < lines.count else { return (index, 0) }
         let gap = lines[index + 1].time - lines[index].time
         let interval = frameInterval.isFinite && frameInterval > 0 ? frameInterval : 1.0 / 60
         let margin = min(max(0.024, interval * 1.5), gap / 2)
         let end = lines[index + 1].time - margin
-        let duration = max(0, min(0.480, gap * 0.55, end - lines[index].time))
+        let duration = max(0, min(0.300, gap * 0.55, end - lines[index].time))
         let start = end - duration
         let t = duration == 0 ? 1 : min(max((position - start) / duration, 0), 1)
-        return (index, t * t * (3 - 2 * t))
+        return (index, easeOut(t))
+    }
+
+    static func easeOut(_ fraction: Double) -> Double {
+        let t = min(max(fraction, 0), 1)
+        return 1 - (1 - t) * (1 - t) * (1 - t)
+    }
+
+    static func emphasis(_ row: Int, motion: (index: Int, fraction: Double)) -> Double {
+        guard motion.index >= 0 else { return 0 }
+        if row == motion.index { return 1 - motion.fraction }
+        if row == motion.index + 1 { return motion.fraction }
+        return 0
     }
 
     static func decode(_ data: Data) -> String? {

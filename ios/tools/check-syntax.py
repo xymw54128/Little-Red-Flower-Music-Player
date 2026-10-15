@@ -28,6 +28,6 @@ report = {'scope': 'Swift grammar parsing only, not type checking or Apple SDK c
           'treeSitter': importlib.metadata.version('tree-sitter'), 'swiftGrammar': importlib.metadata.version('tree-sitter-swift'),
           'files': checked, 'errors': errors}
 (root / 'verification').mkdir(exist_ok=True)
-(root / 'verification/SWIFT-SYNTAX.json').write_text(json.dumps(report, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
+(root / 'verification/SWIFT-SYNTAX.json').write_bytes((json.dumps(report, ensure_ascii=False, indent=2) + '\n').encode('utf-8'))
 print(json.dumps(report, ensure_ascii=False, indent=2))
 raise SystemExit(1 if errors else 0)

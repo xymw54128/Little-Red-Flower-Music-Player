@@ -6,27 +6,23 @@
 
 ## 下载与安装
 
-本地修复版 **Android 1.1.1 / code 21** 扩大原版 B「封面画廊」的封面，保留单行歌词空间，长歌词横向滚动完整展示；左侧继续显示已播放时间，右侧显示歌曲完整时长。针对约 1000 首曲库，将初始化、标签扫描与数据序列化放到后台，加入按尺寸加载的封面缓存，减少排序、歌单和播放队列的重复处理，并修复重复编号和持久化顺序问题。安装包为 `dist/小红花-1.1.1.apk`，见 [1.1.1 版本说明](dist/小红花-1.1.1-发布说明.md) 和 [千首检查与验收范围](docs/design/1.1.1-thousand-library.md)。本轮只本地提交，下方下载链接仍为已公开的 1.0.5。
+**1.1.1 双端版本**：Android 提供可安装 APK；iOS 提供 iPhone / iOS 17+ 的 Xcode 源码工程，尚无 IPA。
 
-**[下载 Android 1.0.5 APK](https://github.com/xymw54128/Little-Red-Flower-Music-Player/releases/download/v1.0.5/Xiaohonghua-1.0.5.apk)** · [1.0.5 发布页面](https://github.com/xymw54128/Little-Red-Flower-Music-Player/releases/tag/v1.0.5) · [发布说明](dist/小红花-1.0.5-发布说明.md) · [安装与换机说明](dist/安装说明.md)
+- **[下载 Android 1.1.1 APK](https://github.com/xymw54128/Little-Red-Flower-Music-Player/releases/download/v1.1.1/Xiaohonghua-1.1.1.apk)** · [安装说明](dist/安装说明.md) · [Android 版本说明](dist/小红花-1.1.1-发布说明.md)
+- **[下载 iOS 1.1.1 源码工程](https://github.com/xymw54128/Little-Red-Flower-Music-Player/releases/download/v1.1.1/Xiaohonghua-iOS-1.1.1-source.zip)** · [iPhone 构建说明](ios/README.md) · [iOS 版本说明](dist/小红花-iOS-1.1.1-发布说明.md)
+- [1.1.1 发布页面与校验文件](https://github.com/xymw54128/Little-Red-Flower-Music-Player/releases/tag/v1.1.1) · [全部历史版本](https://github.com/xymw54128/Little-Red-Flower-Music-Player/releases)
 
-源码与 Android 1.0.5 已公开发布，APK 和校验文件保存在 GitHub Releases；Git 克隆不包含安装包。历史版本见 [全部发布](https://github.com/xymw54128/Little-Red-Flower-Music-Player/releases)。
+两端采用原版 B「封面画廊」方向，固定放大封面并预留单行歌词，长歌词完整滚动预览，进度左侧已播放时间、右侧歌曲总时长。iOS 同步默认收藏、歌单描述与批量管理、主题/夜间模式、八项字体、花朵互动、手动刷新、拼音搜索和千首曲库处理；具体平台差异及未验证范围见各端说明。
 
-- Android 8.0 及以上，针对 Android 16 开发；支持 ARM64、ARMv7、x86、x86_64。
-- 包含离线中文字体。下载后在手机文件管理器中打开 APK，按系统提示允许该文件管理器安装应用。
-- Android 公开版本为 `1.0.5` / code `12`，本地修复版为 `1.1.1` / code `21`；已校验与历史版本签名一致，可直接覆盖安装，建议更新前导出备份。
-- 安装后在 **设置 → 歌曲文件夹** 导入音乐文件或授权音乐文件夹。
-- 应用运行不需要网络权限；首次下载源码构建所需的工具和依赖需要联网。
+Android 最低 8.0，目标 Android 16，版本 1.1.1 / code 21；签名与历史版本一致，可直接覆盖安装。安装后在“设置 → 歌曲文件夹”导入音乐或授权文件夹。应用无需网络权限，首次下载源码和构建依赖需要联网。APK 保存在 GitHub Releases，Git 克隆不包含安装包。
 
-APK SHA-256（[下载校验文件](https://github.com/xymw54128/Little-Red-Flower-Music-Player/releases/download/v1.0.5/Xiaohonghua-1.0.5.apk.sha256)）：
+APK SHA-256（[校验文件](https://github.com/xymw54128/Little-Red-Flower-Music-Player/releases/download/v1.1.1/Xiaohonghua-1.1.1.apk.sha256)）：
 
 ```text
-6016a8c7b0a1ece85e37037b3f3859fea35da44ad9f6f4873ccd0c9b725bf086
+40409d59feb55828a84fbce367870c6ac8c616bd6cc4813ab8928484a1a4ee59
 ```
 
-**[下载 iOS 1.0.1 源码工程](https://github.com/xymw54128/Little-Red-Flower-Music-Player/releases/download/v1.0.1/Xiaohonghua-iOS-1.0.1-source.zip)** · [iOS 构建说明](ios/README.md)
-
-iOS 暂按 iPhone / iOS 17+ 制作，目前提供源码，**没有可安装的 IPA**。已进行 Windows 端语法、工程引用和资源检查；尚未运行 Xcode 编译、XCTest、签名或 iPhone 真机验证。后续需要可用的 macOS + Xcode 环境完成这些步骤。
+iOS 版本 1.1.1 / build 21。Windows 端已检查 Swift 语法、工程引用、资源、字体和源码 ZIP；没有运行 Xcode 编译、XCTest、签名或 iPhone 验证。制作可安装 IPA 仍需 macOS + Xcode 与有效 Apple 签名。不能把源码包当成可安装应用。
 
 ## 主要功能
 
@@ -113,7 +109,9 @@ python -m http.server 49173 --bind 127.0.0.1 --directory ui
 
 ## 验证状态与反馈
 
-Android 1.1.1 / code 21（本地修复版）：Release/Debug APK 与原生测试 APK 构建成功，112 项 JVM 单元测试通过，Lint 0 错误、15 提醒；78 项原生用例编译成功、未执行。最终 APK 通过版本/包名、历史同签名、字体与许可证/哈希、11 款花朵封面、图标、无网络权限、非调试、无测试组件及 16 KB 对齐检查。 当前无连接设备，真实千首 FLAC 导入、手机帧率与手势尚未验收。仅本地提交，未推送 GitHub。[APK 报告](dist/小红花-1.1.1-CHECK.json) · [原生测试状态](dist/ANDROID-1.1.1-UI-CHECK.json) · [千首检查](dist/ANDROID-1.1.1-PERFORMANCE-CHECK.json)。
+iOS 1.1.1：22 个 Swift 文件语法解析无错误；Xcode 工程、资源、7 份字体与许可证/哈希和源码 ZIP 检查通过。发现 39 项核心测试、7 项 UI 用例，未执行；Xcode 编译、模拟器、真机、签名和 IPA 导出均未运行。[iOS 检查报告](dist/小红花-iOS-1.1.1-CHECK.json) · [平台说明](ios/README.md)。
+
+Android 1.1.1 / code 21（本地修复版）：Release/Debug APK 与原生测试 APK 构建成功，112 项 JVM 单元测试通过，Lint 0 错误、15 提醒；78 项原生用例编译成功、未执行。最终 APK 通过版本/包名、历史同签名、字体与许可证/哈希、11 款花朵封面、图标、无网络权限、非调试、无测试组件及 16 KB 对齐检查。 当前无连接设备，真实千首 FLAC 导入、手机帧率与手势尚未验收。已随 iOS 1.1.1 源码推送，APK 与源码包见上方发布页。[APK 报告](dist/小红花-1.1.1-CHECK.json) · [原生测试状态](dist/ANDROID-1.1.1-UI-CHECK.json) · [千首检查](dist/ANDROID-1.1.1-PERFORMANCE-CHECK.json)。
 
 Android 1.1.0 / code 20（本地正式版）：固定封面页与一至两行歌词预留已完成本次构建复验。Release/Debug APK 和原生测试 APK 构建成功，99 项 JVM 测试通过，Lint 0 错误、17 提醒；72 项原生用例编译成功、未执行。最终 APK 的版本/包名、历史同签名、7 份字体和许可证/哈希、11 款歌单封面、图标、无网络权限、非调试、无测试组件及 16 KB 对齐检查通过。当前无连接设备，手机视觉、手势和帧率仍待验收。本轮只本地提交，未推送 GitHub。[APK 报告](dist/小红花-1.1.0-CHECK.json) · [原生测试状态](dist/ANDROID-1.1.0-UI-CHECK.json)。
 
@@ -137,6 +135,6 @@ Android 1.0.5：Release/Debug APK 构建成功，59 项 JVM 单元测试通过�
 
 Android 1.0.1 已有 Release 构建、16 项 JVM 测试、lint、签名及资源检查记录；原生 UI 测试已编译，尚未由代理在设备执行。1.0.0 已由用户验收，1.0.1 新动画与交互仍需手机验证。历史记录见 [Android 检查报告](dist/小红花-1.0.1-CHECK.json) 与 [发布说明](dist/小红花-1.0.1-发布说明.md)。
 
-iOS 提供 20 项核心测试和 3 项界面测试，尚未执行；源码检查不能替代 Xcode 编译或实机测试。资源预览不是手机性能测量，也尚未完成 100 GB 实际音乐库的性能验证。
+iOS 1.1.1 提供 39 项核心测试和 7 项界面测试，尚未执行；源码检查不能替代 Xcode 编译或实机测试。资源预览不是手机性能测量，也尚未完成真实千首 / 100 GB 音乐库的性能验证。
 
 欢迎通过 [GitHub Issues](https://github.com/xymw54128/Little-Red-Flower-Music-Player/issues) 提交问题，请附手机型号、系统版本、应用版本和复现步骤；请勿附带私人音乐、密钥或备份中的个人信息。

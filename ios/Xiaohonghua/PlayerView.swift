@@ -1,5 +1,5 @@
 import SwiftUI
-import UniformTypeIdentifiers
+import UIKit
 
 struct PlayerView: View {
     @EnvironmentObject private var library: MusicLibrary
@@ -10,100 +10,207 @@ struct PlayerView: View {
     @State private var page = 0
     @State private var queueSheet = false
     @State private var addSheet = false
-    @State private var lyricImporter = false
-    private var lyrics: String { guard let song = playback.current else { return "" }; return library.state.manualLyrics[song.id] ?? song.lyrics }
+    @State private var infoSheet = false
+    private var lyrics: String {
+        guard let song = playback.current else { return "" }
+        return library.state.manualLyrics[song.id] ?? song.lyrics
+    }
+    private var lines: [LyricLine] { Lyrics.parse(lyrics) }
 
     var body: some View {
-        GeometryReader { geometry in
-            ZStack {
-                PlayerBackground(artwork: playback.current?.artwork ?? "", settings: library.state.settings).ignoresSafeArea()
-                VStack(spacing: 0) {
-                    HStack {
-                        Button { dismiss() } label: { Image(systemName: "chevron.down").frame(width: 44, height: 44) }.accessibilityLabel("收起播放页")
-                        Spacer()
-                        Text(page == 0 ? "正在播放" : "歌词").font(.system(size: 14, weight: .medium)).foregroundStyle(Brand.muted)
-                        Spacer()
-                        Menu {
-                            Button("加入歌单", systemImage: "text.badge.plus") { addSheet = true }
-                            Button("导入歌词文件", systemImage: "text.quote") { lyricImporter = true }
-                            Button("歌词设置", systemImage: "textformat") { settingsSheet = .lyrics }
-                            Button("更换播放背景", systemImage: "photo") { settingsSheet = .background }
-                        } label: { Image(systemName: "ellipsis").frame(width: 44, height: 44) }.accessibilityLabel("播放设置")
-                    }.padding(.horizontal, 14)
-                    TabView(selection: $page) {
-                        coverPage(height: geometry.size.height).tag(0)
-                        LyricView(text: lyrics, settings: library.state.settings, playback: playback, active: page == 1 && phase == .active && settingsSheet == nil && !queueSheet && !addSheet && !lyricImporter, reduceMotion: reduceMotion)
-                            .padding(.vertical, 8).tag(1)
-                    }.tabViewStyle(.page(indexDisplayMode: .never))
-                    HStack(spacing: 7) {
-                        ForEach(0..<2) { index in Circle().fill(page == index ? Brand.accent(library.state.settings) : Brand.ink.opacity(0.15)).frame(width: 5, height: 5) }
-                    }.padding(.bottom, 18).accessibilityHidden(true)
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text(playback.current?.title ?? "未选择歌曲").font(.system(size: 24, weight: .semibold)).lineLimit(2)
-                        Text(playback.current?.subtitle ?? "").font(.system(size: 14)).foregroundStyle(Brand.muted).lineLimit(1)
-                    }.frame(maxWidth: .infinity, alignment: .leading).padding(.horizontal, 30).padding(.bottom, 16)
-                    PlayerSeekBar(progress: playback.progress, seek: playback.seek).padding(.horizontal, 30)
-                    HStack(spacing: 0) {
-                        Button { playback.cycleMode() } label: { Image(systemName: playback.mode.symbol).font(.system(size: 19)).frame(width: 48, height: 52) }.accessibilityLabel(playback.mode.label)
-                        Spacer(minLength: 6)
-                        Button { playback.previous() } label: { Image(systemName: "backward.end.fill").font(.system(size: 26)).frame(width: 48, height: 64) }.accessibilityLabel("上一首")
-                        Spacer(minLength: 6)
-                        Button { playback.toggle() } label: {
-                            Group { if playback.loading { ProgressView().tint(.white) } else { Image(systemName: playback.playing ? "pause.fill" : "play.fill").font(.system(size: 27)).offset(x: playback.playing ? 0 : 2) } }
-                                .frame(width: 68, height: 68).foregroundStyle(.white).background(Brand.accent(library.state.settings), in: Circle())
-                        }.accessibilityLabel(playback.playing ? "暂停" : "播放")
-                        Spacer(minLength: 6)
-                        Button { playback.next() } label: { Image(systemName: "forward.end.fill").font(.system(size: 26)).frame(width: 48, height: 64) }.accessibilityLabel("下一首")
-                        Spacer(minLength: 6)
-                        Button { queueSheet = true } label: { Image(systemName: "text.line.first.and.arrowtriangle.forward").font(.system(size: 19)).frame(width: 48, height: 52) }.accessibilityLabel("播放队列")
-                    }.padding(.horizontal, 22).padding(.top, 10).padding(.bottom, 22)
+        VStack(spacing: 0) {
+            HStack(spacing: 2) {
+                Button { dismiss() } label: { Image(systemName: "chevron.down").frame(width: 44, height: 44) }
+                    .accessibilityLabel("收起播放页")
+                if page == 0 { HeaderFlower() }
+                Spacer(minLength: 4)
+                Text(page == 0 ? "正在播放" : (playback.current.map { $0.title + " - " + $0.artist } ?? "歌词"))
+                    .font(.system(size: 14, weight: .medium)).foregroundStyle(Brand.muted).lineLimit(1)
+                Spacer(minLength: 4)
+                Button { queueSheet = true } label: { Image(systemName: "text.line.first.and.arrowtriangle.forward").frame(width: 44, height: 44) }
+                    .accessibilityLabel("播放队列")
+            }.padding(.horizontal, 12)
+            TabView(selection: $page) {
+                coverPage.tag(0)
+                LyricView(text: lyrics, settings: library.state.settings, playback: playback,
+                          active: page == 1 && phase == .active && !queueSheet && !addSheet && !infoSheet,
+                          reduceMotion: reduceMotion).padding(.vertical, 8).tag(1)
+            }.tabViewStyle(.page(indexDisplayMode: .never))
+            HStack(spacing: 0) {
+                ForEach(0..<2) { index in
+                    Button { withAnimation(reduceMotion ? nil : .easeOut(duration: 0.3)) { page = index } } label: {
+                        Capsule().fill(page == index ? Brand.accent(library.state.settings) : Brand.ink.opacity(0.15))
+                            .frame(width: page == index ? 17 : 5, height: 5).frame(width: 44, height: 32)
+                    }.accessibilityLabel(index == 0 ? "封面页" : "歌词页")
+                        .accessibilityAddTraits(page == index ? .isSelected : [])
                 }
             }
-        }.foregroundStyle(Brand.ink).tint(Brand.accent(library.state.settings)).buttonStyle(.plain)
+            PlayerSeekBar(progress: playback.progress, seek: playback.seek).padding(.horizontal, 30)
+            controls.padding(.horizontal, 22).padding(.top, 8)
+            HStack {
+                Text(playback.mode.label).font(.system(size: 10)).foregroundStyle(Brand.muted)
+                Spacer()
+                if page == 0 {
+                    Menu {
+                        Button("添加到歌单", systemImage: "text.badge.plus") { addSheet = true }
+                        Button("歌曲信息", systemImage: "info.circle") { infoSheet = true }
+                    } label: { Image(systemName: "ellipsis").frame(width: 44, height: 36).foregroundStyle(Brand.muted) }
+                        .accessibilityLabel("歌曲更多选项")
+                }
+            }.frame(height: 36).padding(.horizontal, 30).padding(.bottom, 4)
+        }.background(Brand.paper.ignoresSafeArea()).foregroundStyle(Brand.ink)
+            .tint(Brand.accent(library.state.settings)).buttonStyle(.plain)
             .sheet(isPresented: $queueSheet) { QueueView() }
             .sheet(isPresented: $addSheet) { AddToPlaylist(songIDs: playback.current.map { [$0.id] } ?? []) }
-            .sheet(item: $settingsSheet) { setting in NavigationStack { Group { if setting == .lyrics { LyricSettingsView() } else { BackgroundSettingsView() } }.toolbar { ToolbarItem(placement: .cancellationAction) { Button("完成") { settingsSheet = nil } } } }.tint(Brand.accent(library.state.settings)) }
-            .fileImporter(isPresented: $lyricImporter, allowedContentTypes: [UTType(filenameExtension: "lrc") ?? .plainText, .plainText]) { result in
-                if case .success(let url) = result, let song = playback.current { Task { await library.importLyrics(url, songID: song.id) } }
-                else if case .failure(let error) = result { library.message = error.localizedDescription }
-            }
-            .alert("小红花", isPresented: Binding(get: { library.message != nil }, set: { if !$0 { library.message = nil } })) { Button("知道了", role: .cancel) { library.message = nil } } message: { Text(library.message ?? "") }
+            .sheet(isPresented: $infoSheet) { if let song = playback.current { SongInfoView(song: song) } }
     }
-    @State private var settingsSheet: PlayerSetting?
-    private enum PlayerSetting: String, Identifiable { case lyrics, background; var id: String { rawValue } }
 
-    private func coverPage(height: CGFloat) -> some View {
-        VStack(spacing: 20) {
-            Spacer(minLength: 12)
-            Artwork(name: playback.current?.artwork ?? "", radius: 24).aspectRatio(1, contentMode: .fit)
-                .frame(maxWidth: min(360, max(160, height * 0.43)))
-                .shadow(color: .black.opacity(0.07), radius: 20, y: 10)
-                .padding(.horizontal, 34)
-            Text("左滑查看歌词").font(.system(size: 12)).foregroundStyle(Brand.muted).padding(.top, 6)
-            Spacer(minLength: 12)
-        }.frame(maxWidth: .infinity, maxHeight: .infinity)
+    private var controls: some View {
+        HStack(spacing: 0) {
+            Button { playback.cycleMode() } label: { Image(systemName: playback.mode.symbol).font(.system(size: 19)).frame(width: 44, height: 52) }.accessibilityLabel(playback.mode.label)
+            Spacer(minLength: 4)
+            Button { playback.previous() } label: { Image(systemName: "backward.end.fill").font(.system(size: 25)).frame(width: 44, height: 64) }.accessibilityLabel("上一首")
+            Spacer(minLength: 4)
+            Button { playback.toggle() } label: {
+                Group {
+                    if playback.loading { ProgressView().tint(.white) }
+                    else { Image(systemName: playback.playing ? "pause.fill" : "play.fill").font(.system(size: 27)).offset(x: playback.playing ? 0 : 2) }
+                }.frame(width: 68, height: 68).foregroundStyle(.white).background(Brand.accent(library.state.settings), in: Circle())
+            }.accessibilityLabel(playback.playing ? "暂停" : "播放")
+            Spacer(minLength: 4)
+            Button { playback.next() } label: { Image(systemName: "forward.end.fill").font(.system(size: 25)).frame(width: 44, height: 64) }.accessibilityLabel("下一首")
+            Spacer(minLength: 4)
+            Button { queueSheet = true } label: { Image(systemName: "text.line.first.and.arrowtriangle.forward").font(.system(size: 19)).frame(width: 44, height: 52) }.accessibilityLabel("播放队列")
+        }.disabled(playback.current == nil)
+    }
+
+    private var coverPage: some View {
+        VStack(spacing: 0) {
+            GeometryReader { space in
+                let side = max(0, min(400, space.size.width - 4, space.size.height - 4))
+                Artwork(name: playback.current?.artwork ?? "", radius: 22, pixels: 1200)
+                    .frame(width: side, height: side)
+                    .scaleEffect(breathingScale)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .contentShape(Rectangle()).onTapGesture { openLyrics() }
+                    .accessibilityElement(children: .ignore).accessibilityHidden(false).accessibilityLabel("歌曲封面，查看歌词").accessibilityAddTraits(.isButton)
+                    .accessibilityAction { openLyrics() }
+                    .accessibilityIdentifier("player.artwork")
+            }.clipped()
+            VStack(alignment: .leading, spacing: 7) {
+                HStack(spacing: 8) {
+                    Text(playback.current?.title ?? "未选择歌曲").font(.system(size: 24, weight: .semibold))
+                        .lineLimit(2).frame(maxWidth: .infinity, alignment: .leading)
+                    if let song = playback.current {
+                        Button { library.toggleFavorite(song.id) } label: {
+                            Image(systemName: library.isFavorite(song.id) ? "heart.fill" : "heart")
+                                .font(.system(size: 22)).foregroundStyle(library.isFavorite(song.id) ? Brand.red : Brand.muted)
+                                .frame(width: 44, height: 44)
+                        }.accessibilityLabel(library.isFavorite(song.id) ? "取消喜欢" : "我喜欢")
+                    }
+                }
+                Text(playback.current?.subtitle ?? "").font(.system(size: 13)).foregroundStyle(Brand.muted).lineLimit(2)
+                if let song = playback.current {
+                    Text(quality(song)).font(.system(size: 11)).foregroundStyle(Brand.muted).lineLimit(1)
+                }
+            }.fixedSize(horizontal: false, vertical: true).padding(.top, 10)
+            CoverLyricPreview(lines: lines, settings: library.state.settings, progress: playback.progress,
+                              active: page == 0 && phase == .active, reduceMotion: reduceMotion)
+                .frame(height: 48).contentShape(Rectangle()).onTapGesture { openLyrics() }
+                .accessibilityAddTraits(.isButton).accessibilityAction { openLyrics() }
+                .accessibilityIdentifier("player.lyric-preview")
+        }.padding(.horizontal, 24).padding(.vertical, 6)
+            .onChange(of: playback.playing) { _, _ in updateBreathing() }
+            .onChange(of: page) { _, _ in updateBreathing() }
+            .onChange(of: phase) { _, _ in updateBreathing() }
+            .onChange(of: reduceMotion) { _, _ in updateBreathing() }
+            .onAppear { updateBreathing() }
+    }
+    @State private var breathingScale: CGFloat = 1
+    private func updateBreathing() {
+        var transaction = Transaction(); transaction.disablesAnimations = true
+        withTransaction(transaction) { breathingScale = 1 }
+        if playback.playing && page == 0 && phase == .active && !reduceMotion {
+            withAnimation(.easeInOut(duration: 4.5).repeatForever(autoreverses: true)) { breathingScale = 1.015 }
+        }
+    }
+    private func openLyrics() { withAnimation(reduceMotion ? nil : .easeOut(duration: 0.3)) { page = 1 } }
+    private func quality(_ song: Song) -> String {
+        var parts = [song.format]
+        if song.bitDepth > 0 { parts.append("\(song.bitDepth) bit") }
+        if song.sampleRate > 0 { parts.append(String(format: "%g kHz", Double(song.sampleRate) / 1000)) }
+        return parts.filter { !$0.isEmpty }.joined(separator: " · ")
     }
 }
 
-struct PlayerBackground: View {
-    var artwork: String
+/// Only this small preview observes progress ticks; the cover and navigation do not.
+private struct CoverLyricPreview: View {
+    var lines: [LyricLine]
     var settings: MusicSettings
-    var body: some View {
-        GeometryReader { geometry in
-            let name = settings.background == "photo" ? settings.backgroundPhoto : settings.background == "artwork" ? artwork : ""
-            ZStack {
-                Brand.paper
-                if let image = ImageCache.shared.image(name, pixels: 1600) {
-                    let ratio = max(geometry.size.width / image.size.width, geometry.size.height / image.size.height) * settings.backgroundScale
-                    let width = image.size.width * ratio, height = image.size.height * ratio
-                    Image(uiImage: image).resizable().frame(width: width, height: height)
-                        .position(x: geometry.size.width / 2 + (width - geometry.size.width) * (0.5 - settings.backgroundX),
-                                  y: geometry.size.height / 2 + (height - geometry.size.height) * (0.5 - settings.backgroundY))
-                        .opacity(settings.backgroundOpacity)
-                }
-            }.clipped()
-        }.accessibilityHidden(true)
+    @ObservedObject var progress: PlaybackProgress
+    var active: Bool
+    var reduceMotion: Bool
+    private var text: String {
+        let index = Lyrics.current(lines, at: progress.position)
+        return lines.indices.contains(index) ? lines[index].text.replacingOccurrences(of: "\n", with: " · ") : "点击封面或左滑查看歌词"
     }
+    var body: some View {
+        GeometryReader { space in
+            if reduceMotion {
+                ScrollView(.horizontal, showsIndicators: false) {
+                    Text(text).font(Font(Brand.font(settings.lyricFont, size: CGFloat(min(settings.lyricSize, 20)))))
+                        .fixedSize(horizontal: true, vertical: false).frame(minWidth: space.size.width)
+                }.foregroundStyle(Brand.accent(settings)).frame(maxHeight: .infinity)
+            } else {
+                LyricMarquee(text: text, font: Brand.font(settings.lyricFont, size: min(settings.lyricSize, 20)),
+                             color: UIColor(Brand.accent(settings)), active: active)
+                    .accessibilityLabel(text)
+            }
+        }
+    }
+}
+
+private struct LyricMarquee: UIViewRepresentable {
+    var text: String
+    var font: UIFont
+    var color: UIColor
+    var active: Bool
+    func makeUIView(context: Context) -> MarqueeLabelView { MarqueeLabelView() }
+    func updateUIView(_ view: MarqueeLabelView, context: Context) { view.configure(text: text, font: font, color: color, active: active) }
+}
+
+/// Core Animation moves one laid-out label; it does not cause per-frame SwiftUI layout.
+private final class MarqueeLabelView: UIView {
+    private let label = UILabel()
+    private var active = false
+    private var animationKey = ""
+    override init(frame: CGRect) { super.init(frame: frame); clipsToBounds = true; label.numberOfLines = 1; addSubview(label) }
+    required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
+    func configure(text: String, font: UIFont, color: UIColor, active: Bool) {
+        label.text = text; label.font = font; label.textColor = color; self.active = active
+        accessibilityLabel = text; isAccessibilityElement = true
+        setNeedsLayout()
+    }
+    override func layoutSubviews() {
+        super.layoutSubviews()
+        let width = ceil(label.sizeThatFits(CGSize(width: CGFloat.greatestFiniteMagnitude, height: bounds.height)).width)
+        let key = "\(label.text ?? "")|\(label.font.fontName)|\(label.font.pointSize)|\(bounds.size)|\(active)"
+        guard animationKey != key else { return }
+        animationKey = key; label.layer.removeAnimation(forKey: "lyric-marquee")
+        label.transform = .identity
+        label.frame = CGRect(x: width <= bounds.width ? (bounds.width - width) / 2 : 0, y: 0, width: width, height: bounds.height)
+        let distance = width - bounds.width
+        guard active, distance > 1, bounds.width > 0, window != nil else { return }
+        let travel = Double(distance / 28), back = Double(distance / 90)
+        let duration = 2.4 + travel + back
+        let animation = CAKeyframeAnimation(keyPath: "transform.translation.x")
+        animation.values = [0, 0, -distance, -distance, 0]
+        animation.keyTimes = [0, NSNumber(value: 1.2 / duration), NSNumber(value: (1.2 + travel) / duration), NSNumber(value: (2.4 + travel) / duration), 1]
+        animation.duration = duration; animation.repeatCount = .infinity
+        animation.calculationMode = .linear
+        label.layer.add(animation, forKey: "lyric-marquee")
+    }
+    override func didMoveToWindow() { super.didMoveToWindow(); animationKey = ""; setNeedsLayout() }
 }
 
 struct PlayerSeekBar: View {
@@ -127,7 +234,7 @@ struct PlayerSeekBar: View {
             }.frame(height: 32)
                 .accessibilityElement().accessibilityLabel("播放进度").accessibilityValue(timeLabel(drag ?? progress.position) + "，共" + timeLabel(progress.duration))
                 .accessibilityAdjustableAction { direction in seek(progress.position + (direction == .increment ? 10 : -10)) }
-            HStack { Text(timeLabel(drag ?? progress.position)); Spacer(); Text(timeLabel(progress.duration)) }.font(.system(size: 11).monospacedDigit()).foregroundStyle(Brand.muted)
+            HStack { Text(timeLabel(drag ?? progress.position)).accessibilityIdentifier("player.elapsed"); Spacer(); Text(timeLabel(progress.duration)).accessibilityIdentifier("player.duration") }.font(.system(size: 11).monospacedDigit()).foregroundStyle(Brand.muted)
         }
     }
 }

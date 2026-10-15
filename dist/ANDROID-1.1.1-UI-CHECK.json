@@ -102,5 +102,5 @@
   "appFontChoices": 8,
   "bundledFontFiles": 7,
   "apkSha256": "40409d59feb55828a84fbce367870c6ac8c616bd6cc4813ab8928484a1a4ee59",
-  "git": "Local commit only; no GitHub push or release."
+  "git": "Built and verified locally; published with iOS source under v1.1.1 after the user requested GitHub upload. Native device tests remain unexecuted."
 }

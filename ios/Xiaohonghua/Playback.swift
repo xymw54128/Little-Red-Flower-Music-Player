@@ -2,6 +2,7 @@ import Foundation
 import AVFoundation
 import MediaPlayer
 import Combine
+import UIKit
 
 /// High-frequency progress is isolated from library, navigation and queue state.
 @MainActor
@@ -16,12 +17,20 @@ final class Playback: NSObject, ObservableObject, AVAudioPlayerDelegate {
     @Published private(set) var playing = false
     @Published private(set) var loading = false
     @Published private(set) var queue: [String] = []
+    @Published private(set) var queueSource: String?
     @Published private(set) var mode: PlayMode = .repeatAll
     let progress = PlaybackProgress()
     private(set) var audio: AVAudioPlayer?
+    private(set) var seekGeneration: UInt64 = 0
     private var access: ScopedFile?
     private weak var library: MusicLibrary?
     private var ticker: AnyCancellable?
+    private var libraryObservation: AnyCancellable?
+    private var orderObservation: AnyCancellable?
+    private var metadataSync: Task<Void, Never>?
+    private var artworkTask: Task<Void, Never>?
+    private var artworkGeneration: UInt64 = 0
+    private var lockScreenArtwork: (name: String, image: UIImage)?
     private var observations: [NSObjectProtocol] = []
     private var commandTargets: [(MPRemoteCommand, Any)] = []
     private var loadGeneration = 0
@@ -34,11 +43,24 @@ final class Playback: NSObject, ObservableObject, AVAudioPlayerDelegate {
         guard self.library == nil else { return }
         self.library = library
         queue = library.state.queueIDs
+        queueSource = library.state.queueSource
         mode = library.state.mode
-        if let id = library.state.currentID, let song = library.state.songs.first(where: { $0.id == id }) {
+        if let id = library.state.currentID, let song = library.song(id) {
             current = song
             progress.position = max(0, library.state.position)
             progress.duration = song.duration
+        }
+        libraryObservation = library.$state.dropFirst().sink { [weak self] _ in
+            self?.metadataSync?.cancel()
+            self?.metadataSync = Task { @MainActor [weak self] in
+                await Task.yield()
+                guard !Task.isCancelled else { return }
+                self?.updateCurrentMetadata()
+                self?.refreshLockScreen()
+            }
+        }
+        orderObservation = library.$orderGeneration.dropFirst().sink { [weak self] _ in
+            self?.synchronizeSourceOrder()
         }
         startClock()
         observations.append(NotificationCenter.default.addObserver(forName: AVAudioSession.interruptionNotification, object: nil, queue: .main) { [weak self] note in
@@ -67,14 +89,22 @@ final class Playback: NSObject, ObservableObject, AVAudioPlayerDelegate {
         }
     }
 
-    func play(_ song: Song, within ids: [String]? = nil, start: Double = 0, remember: Bool = true) {
+    func play(_ song: Song, within ids: [String]? = nil, sourceID: String? = nil, start: Double = 0, remember: Bool = true) {
         guard let library else { return }
-        if let ids { var seen = Set<String>(); queue = ids.filter { seen.insert($0).inserted }; history = [] }
+        if let ids {
+            let available = Set(library.state.songs.filter(\.available).map(\.id))
+            queue = PlaybackOrder.unique(ids, available: available)
+            queueSource = sourceID; history = []
+        }
         if queue.isEmpty { queue = [song.id] }
-        if remember, let previous = current?.id, previous != song.id { history.append(previous) }
+        if remember, let previous = current?.id, previous != song.id {
+            history.append(previous)
+            if history.count > 1000 { history.removeFirst(history.count - 1000) }
+        }
         audio?.stop(); audio = nil; access = nil
         playing = false; loading = true; current = song
         progress.position = max(0, start); progress.duration = song.duration
+        refreshLockScreen()
         loadGeneration += 1
         let generation = loadGeneration
         guard let source = library.state.sources.first(where: { $0.id == song.sourceID }) else {
@@ -127,6 +157,7 @@ final class Playback: NSObject, ObservableObject, AVAudioPlayerDelegate {
         savePosition(); refreshLockScreen()
     }
     func seek(_ position: Double) {
+        seekGeneration &+= 1
         let time = position.isFinite ? min(max(position, 0), progress.duration) : 0
         audio?.currentTime = time
         progress.position = time
@@ -137,7 +168,7 @@ final class Playback: NSObject, ObservableObject, AVAudioPlayerDelegate {
         var id: String?
         if mode == .shuffle, let previous = history.popLast() { id = previous }
         else if let index = queue.firstIndex(of: current.id), index > 0 { id = queue[index - 1] }
-        if let id, let song = library.state.songs.first(where: { $0.id == id }) { play(song, remember: false) }
+        if let id, let song = library.song(id) { play(song, remember: false) }
         else { seek(0) }
     }
     func next(automatic: Bool = false) {
@@ -153,16 +184,51 @@ final class Playback: NSObject, ObservableObject, AVAudioPlayerDelegate {
             if automatic, mode == .ordered, index + 1 >= available.count { pause(); seek(progress.duration); return }
             id = available[(index + 1) % available.count]
         }
-        if let song = library.state.songs.first(where: { $0.id == id }) { play(song) }
+        if let song = library.song(id) { play(song) }
     }
     func cycleMode() {
         let modes = PlayMode.allCases
         mode = modes[((modes.firstIndex(of: mode) ?? 0) + 1) % modes.count]
         savePosition()
     }
-    func setQueue(_ ids: [String]) { queue = ids; savePosition() }
+    func setQueue(_ ids: [String]) {
+        guard let library else { return }
+        queueSource = nil
+        queue = PlaybackOrder.unique(ids, available: Set(library.state.songs.filter(\.available).map(\.id)))
+        savePosition()
+    }
+    func syncQueueSource(_ sourceID: String, ids: [String]) {
+        guard queueSource == sourceID else { return }
+        let updated = PlaybackOrder.synchronized(ids, currentID: current?.id)
+        guard updated != queue else { return }
+        queue = updated
+        // Reordering changes the next track, never the opened AVAudioPlayer.
+        savePosition()
+    }
+    private func synchronizeSourceOrder() {
+        guard let library, let sourceID = queueSource else { return }
+        if sourceID == "library" {
+            syncQueueSource(sourceID, ids: library.orderedSongs.filter(\.available).map(\.id))
+        } else if library.state.playlists.contains(where: { $0.id == sourceID }) {
+            syncQueueSource(sourceID, ids: library.playlistSongs(sourceID).filter(\.available).map(\.id))
+        } else { queueSource = nil; savePosition() }
+    }
+    func insertNext(_ ids: [String]) {
+        guard let library else { return }
+        let additions = PlaybackOrder.unique(ids, available: Set(library.state.songs.filter(\.available).map(\.id)))
+        queueSource = nil
+        queue = PlaybackOrder.insertingNext(additions, into: queue, currentID: current?.id)
+        savePosition()
+    }
+    func appendToQueue(_ ids: [String]) {
+        guard let library else { return }
+        let additions = PlaybackOrder.unique(ids, available: Set(library.state.songs.filter(\.available).map(\.id)))
+        queueSource = nil
+        queue = PlaybackOrder.appending(additions, to: queue)
+        savePosition()
+    }
     func updateCurrentMetadata() {
-        if let id = current?.id, let updated = library?.state.songs.first(where: { $0.id == id }), updated != current {
+        if let id = current?.id, let updated = library?.song(id), updated != current {
             current = updated
             refreshLockScreen()
         }
@@ -171,19 +237,31 @@ final class Playback: NSObject, ObservableObject, AVAudioPlayerDelegate {
         guard let library else { return }
         lastSaved = Date()
         let position = audio?.currentTime ?? progress.position
-        library.recordPlayback(queue: queue, id: current?.id, position: position, mode: mode)
+        library.recordPlayback(queue: queue, id: current?.id, position: position, mode: mode, sourceID: queueSource)
     }
     func refreshLockScreen() {
+        artworkTask?.cancel(); artworkGeneration &+= 1
         let enabled = library?.state.settings.lockScreen == true
         for (command, _) in commandTargets { command.isEnabled = enabled && current != nil }
         guard enabled, let song = current else { MPNowPlayingInfoCenter.default().nowPlayingInfo = nil; return }
+        let generation = artworkGeneration
+        let cached = lockScreenArtwork?.name == song.artwork ? lockScreenArtwork?.image : nil
+        publishLockScreen(song, image: cached ?? UIImage(named: "Flower"))
+        guard cached == nil, !song.artwork.isEmpty else { return }
+        artworkTask = Task { [weak self] in
+            let image = await ImageCache.shared.loadedImage(song.artwork, pixels: 512)
+            guard let self, !Task.isCancelled, generation == self.artworkGeneration,
+                  self.current?.id == song.id, self.library?.state.settings.lockScreen == true, let image else { return }
+            self.lockScreenArtwork = (song.artwork, image)
+            self.publishLockScreen(song, image: image)
+        }
+    }
+    private func publishLockScreen(_ song: Song, image: UIImage?) {
         var info: [String: Any] = [MPMediaItemPropertyTitle: song.title, MPMediaItemPropertyArtist: song.artist,
             MPMediaItemPropertyAlbumTitle: song.album, MPMediaItemPropertyPlaybackDuration: progress.duration,
             MPNowPlayingInfoPropertyElapsedPlaybackTime: audio?.currentTime ?? progress.position,
             MPNowPlayingInfoPropertyPlaybackRate: playing ? 1.0 : 0.0]
-        if let image = ImageCache.shared.image(song.artwork) {
-            info[MPMediaItemPropertyArtwork] = MPMediaItemArtwork(boundsSize: image.size) { _ in image }
-        }
+        if let image { info[MPMediaItemPropertyArtwork] = MPMediaItemArtwork(boundsSize: image.size) { _ in image } }
         MPNowPlayingInfoCenter.default().nowPlayingInfo = info
     }
     private func remoteCommands() {

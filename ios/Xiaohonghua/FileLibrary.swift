@@ -10,6 +10,7 @@ enum AppFiles {
     static let support = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0].appendingPathComponent("Xiaohonghua", isDirectory: true)
     static let images = support.appendingPathComponent("Images", isDirectory: true)
     static let state = support.appendingPathComponent("library.json")
+    static let playback = support.appendingPathComponent("playback.json")
     static func prepare() throws {
         for directory in [music, support, images] {
             try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
@@ -62,13 +63,17 @@ struct ScanResult { var songs: [Song]; var sources: [MusicSource]; var errors: [
 
 actor FileLibrary {
     private var saveRevision: UInt64 = 0
+    private var playbackRevision: UInt64 = 0
     private let formats: Set<String> = ["flac", "mp3", "wav", "m4a", "aac", "aif", "aiff", "caf", "mp4"]
 
     func load() throws -> MusicState {
         try AppFiles.prepare()
-        guard FileManager.default.fileExists(atPath: AppFiles.state.path) else { return MusicState() }
-        var state = try JSONDecoder().decode(MusicState.self, from: Data(contentsOf: AppFiles.state))
-        state.settings.normalize()
+        var state = MusicState()
+        if FileManager.default.fileExists(atPath: AppFiles.state.path) {
+            state = try JSONDecoder().decode(MusicState.self, from: Data(contentsOf: AppFiles.state))
+        }
+        if let data = try? Data(contentsOf: AppFiles.playback), let clock = try? JSONDecoder().decode(PlaybackState.self, from: data) { clock.apply(to: &state) }
+        state.normalize()
         return state
     }
 
@@ -77,6 +82,13 @@ actor FileLibrary {
         let data = try JSONEncoder().encode(state)
         try data.write(to: AppFiles.state, options: .atomic)
         saveRevision = revision
+    }
+
+    func savePlayback(_ playback: PlaybackState, revision: UInt64) throws {
+        guard revision >= playbackRevision else { return }
+        try AppFiles.prepare()
+        try JSONEncoder().encode(playback).write(to: AppFiles.playback, options: .atomic)
+        playbackRevision = revision
     }
 
     func source(_ url: URL, folder: Bool, replacingID: String? = nil) throws -> MusicSource {
@@ -93,10 +105,12 @@ actor FileLibrary {
         })
     }
 
-    func scan(sources: [MusicSource], previous: [Song], force: Bool) async -> ScanResult {
+    func scan(sources: [MusicSource], previous: [Song], force: Bool) async throws -> ScanResult {
         var songs: [Song] = [], updated = sources, errors: [String] = []
         let old = Dictionary(previous.map { ($0.id, $0) }, uniquingKeysWith: { _, last in last })
+        let bySource = Dictionary(grouping: previous, by: \.sourceID)
         for index in updated.indices {
+            try Task.checkCancellation()
             let source = updated[index]
             do {
                 if source.isInternal { try AppFiles.prepare() }
@@ -104,7 +118,10 @@ actor FileLibrary {
                 if access.stale, let renewed = try? access.root.bookmarkData(options: [.minimalBookmark], includingResourceValuesForKeys: nil, relativeTo: nil) { updated[index].bookmark = renewed }
                 let urls = try enumerate(access.root, folder: source.isFolder)
                 var sourceSongs: [Song] = []
-                for url in urls where formats.contains(url.pathExtension.lowercased()) {
+                sourceSongs.reserveCapacity(urls.count)
+                for (fileIndex, url) in urls.enumerated() where formats.contains(url.pathExtension.lowercased()) {
+                    try Task.checkCancellation()
+                    if fileIndex % 16 == 0 { await Task.yield() }
                     let values = try url.resourceValues(forKeys: [.fileSizeKey, .contentModificationDateKey, .isRegularFileKey])
                     guard values.isRegularFile == true else { continue }
                     let relative = source.isFolder ? String(url.path.dropFirst(access.root.path.count + 1)) : ""
@@ -121,7 +138,8 @@ actor FileLibrary {
                     var tags = TagReader.read(url)
                     let asset = AVURLAsset(url: url)
                     if tags.duration == 0, let duration = try? await asset.load(.duration), duration.seconds.isFinite { tags.duration = duration.seconds }
-                    if let metadata = try? await asset.load(.commonMetadata) {
+                    // Complete FLAC tags come directly from the bounded reader; do not ask AVFoundation to parse them a second time.
+                    if (tags.title.isEmpty || tags.artist.isEmpty || tags.album.isEmpty || tags.artwork == nil), let metadata = try? await asset.load(.commonMetadata) {
                         for item in metadata {
                             switch item.commonKey {
                             case .commonKeyTitle: if tags.title.isEmpty { tags.title = (try? await item.load(.stringValue)) ?? "" }
@@ -144,21 +162,23 @@ actor FileLibrary {
                     }
                     sourceSongs.append(Song(id: id, sourceID: source.id, relativePath: relative, name: url.lastPathComponent,
                         title: tags.title.isEmpty ? url.deletingPathExtension().lastPathComponent : tags.title,
-                        artist: tags.artist.isEmpty ? "未知歌手" : tags.artist, album: tags.album.isEmpty ? "未知专辑" : tags.album,
+                        artist: tags.artist.isEmpty ? "未知歌手" : tags.artist, albumArtist: tags.albumArtist, track: tags.track, disc: tags.disc, album: tags.album.isEmpty ? "未知专辑" : tags.album,
                         duration: tags.duration, size: size, modified: modified, format: url.pathExtension.uppercased(),
                         sampleRate: tags.sampleRate, bitDepth: tags.bitDepth, lyrics: tags.lyrics, artwork: artwork, lyricModified: lyricTime))
                 }
                 songs += sourceSongs
                 updated[index].error = nil
-            } catch {
+            } catch is CancellationError { throw CancellationError() }
+            catch {
                 // A provider failure is not a confirmed deletion. Preserve its index.
-                songs += previous.filter { $0.sourceID == source.id }.map { var s = $0; s.available = false; return s }
+                songs += (bySource[source.id] ?? []).map { var s = $0; s.available = false; return s }
                 let message = "\(source.name)：\(error.localizedDescription)"
                 errors.append(message)
                 updated[index].error = message
             }
         }
-        return ScanResult(songs: songs, sources: updated, errors: errors)
+        try Task.checkCancellation()
+        return ScanResult(songs: MusicOrder.reconcile(previous: previous, scanned: songs, sourceIDs: Set(sources.map(\.id))), sources: updated, errors: errors)
     }
 
     private func enumerate(_ root: URL, folder: Bool) throws -> [URL] {

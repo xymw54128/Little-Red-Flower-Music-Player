@@ -3,6 +3,7 @@
     "Xiaohonghua/Core/AudioTags.swift",
     "Xiaohonghua/Core/Lyrics.swift",
     "Xiaohonghua/Core/Models.swift",
+    "Xiaohonghua/Core/PlaybackOrder.swift",
     "Xiaohonghua/DebugFixtures.swift",
     "Xiaohonghua/Design.swift",
     "Xiaohonghua/FileLibrary.swift",
@@ -18,7 +19,9 @@
     "Xiaohonghua/XiaohonghuaApp.swift"
   ],
   "unitTests": [
-    "Tests/CoreTests/CoreTests.swift"
+    "Tests/CoreTests/Collection111Tests.swift",
+    "Tests/CoreTests/CoreTests.swift",
+    "Tests/CoreTests/PlaybackLyrics111Tests.swift"
   ],
   "uiTests": [
     "Tests/UITests/PlayerUITests.swift"
@@ -30,18 +33,26 @@
   ],
   "resources": [
     "Xiaohonghua/Resources/Assets.xcassets",
+    "Xiaohonghua/Resources/flower_kiwi.ttf",
+    "Xiaohonghua/Resources/flower_kiwi.ttf.OFL.txt",
+    "Xiaohonghua/Resources/flower_kurenaido.ttf",
+    "Xiaohonghua/Resources/flower_kurenaido.ttf.OFL.txt",
+    "Xiaohonghua/Resources/flower_longcang.ttf",
+    "Xiaohonghua/Resources/flower_longcang.ttf.OFL.txt",
+    "Xiaohonghua/Resources/flower_serif.ttf",
+    "Xiaohonghua/Resources/flower_serif.ttf.OFL.txt",
+    "Xiaohonghua/Resources/flower_xiaowei.ttf",
+    "Xiaohonghua/Resources/flower_xiaowei.ttf.OFL.txt",
+    "Xiaohonghua/Resources/flower_zenmaru.ttf",
+    "Xiaohonghua/Resources/flower_zenmaru.ttf.OFL.txt",
     "Xiaohonghua/Resources/font-sources.json",
     "Xiaohonghua/Resources/LaunchScreen.storyboard",
     "Xiaohonghua/Resources/lxgw_wenkai.ttf",
     "Xiaohonghua/Resources/lxgw_wenkai.ttf.OFL.txt",
-    "Xiaohonghua/Resources/PrivacyInfo.xcprivacy",
-    "Xiaohonghua/Resources/source_han_serif_cn.otf",
-    "Xiaohonghua/Resources/source_han_serif_cn.otf.OFL.txt",
-    "Xiaohonghua/Resources/zhuque_fangsong.ttf",
-    "Xiaohonghua/Resources/zhuque_fangsong.ttf.OFL.txt"
+    "Xiaohonghua/Resources/PrivacyInfo.xcprivacy"
   ],
   "bundleID": "com.xiaohonghua.music.ios",
-  "version": "1.0.1",
-  "build": 8,
+  "version": "1.1.1",
+  "build": 21,
   "deploymentTarget": "17.0"
 }

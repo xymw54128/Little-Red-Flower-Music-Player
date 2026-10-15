@@ -19,8 +19,8 @@ app_target = next(obj for obj in objects.values() if obj.get('isa') == 'PBXNativ
 app_config = objects[app_target['buildConfigurationList']]
 for key in app_config['buildConfigurations']:
     settings = objects[key]['buildSettings']
-    assert settings['MARKETING_VERSION'] == '1.0.1'
-    assert settings['CURRENT_PROJECT_VERSION'] == '8'
+    assert settings['MARKETING_VERSION'] == '1.1.1'
+    assert settings['CURRENT_PROJECT_VERSION'] == '21'
     assert settings['TARGETED_DEVICE_FAMILY'] == '1'
     assert not settings.get('DEVELOPMENT_TEAM'), 'Do not prefill a signing team'
 for key, obj in objects.items():
@@ -39,6 +39,8 @@ fixture_phase = next(objects[key] for key in unit_target['buildPhases'] if objec
 assert {objects[objects[key]['fileRef']]['path'] for key in fixture_phase['files']} == set(manifest['testFixtures'])
 info = plistlib.loads((root / 'Xiaohonghua/Info.plist').read_bytes())
 assert info['UIBackgroundModes'] == ['audio']
+assert info.get('UIUserInterfaceStyle') != 'Light', 'Night theme must not be forced to light'
+assert len(info['UIAppFonts']) == 7
 assert info['CADisableMinimumFrameDurationOnPhone']
 assert info['LSSupportsOpeningDocumentsInPlace'] and info['UIFileSharingEnabled']
 assert 'NSPhotoLibraryUsageDescription' not in info, 'PhotosPicker needs no broad photo permission'
@@ -56,8 +58,14 @@ for entry in expected:
     font = TTFont(file)
     postscript = font['name'].getDebugName(6)
     assert postscript in design
-    assert all(ord(c) in font.getBestCmap() for c in sample)
-    fonts.append({'file': entry['file'], 'postScriptName': postscript, 'sha256': digest})
+    missing = sorted({c for c in sample if ord(c) not in font.getBestCmap()})
+    assert set(missing).issubset({'·'}), (entry['file'], missing)
+    if missing:
+        fallback = TTFont(resources / 'lxgw_wenkai.ttf')
+        assert all(ord(c) in fallback.getBestCmap() for c in missing)
+        assert 'cascadeList' in design and 'LXGWWenKai-Regular' in design
+        fallback.close()
+    fonts.append({'file': entry['file'], 'postScriptName': postscript, 'sha256': digest, 'samplePunctuationFallback': missing, 'fallbackFont': 'LXGWWenKai-Regular' if missing else None})
     font.close()
 assets = []
 for folder in sorted((resources / 'Assets.xcassets').iterdir()):
@@ -73,7 +81,9 @@ for folder in sorted((resources / 'Assets.xcassets').iterdir()):
                 assert image.size == (1024, 1024)
                 assert image.mode == 'RGB', 'App icon must be opaque'
             else:
-                assert image.mode == 'RGBA' and image.getpixel((0, 0))[3] == 0
+                assert image.mode == 'RGBA'
+                if not folder.name.startswith('FlowerCover'):
+                    assert image.getpixel((0, 0))[3] == 0
             assets.append({'name': folder.name, 'size': image.size, 'mode': image.mode})
 privacy = plistlib.loads((resources / 'PrivacyInfo.xcprivacy').read_bytes())
 assert not privacy['NSPrivacyTracking'] and not privacy['NSPrivacyCollectedDataTypes']
@@ -86,6 +96,11 @@ ui_tests = sum(len(re.findall(r'func test\w+\(', (root / file).read_text(encodin
 report = {'result': 'pass', 'scope': 'Project format, paths, build settings, assets, font hashes/names/glyphs, XML and test discovery; NOT Xcode compilation or test execution',
           'version': manifest['version'], 'build': manifest['build'], 'minimumIOS': manifest['deploymentTarget'],
           'appSources': len(manifest['appSources']), 'fonts': fonts, 'assets': assets,
-          'coreTestsDiscovered': unit_tests, 'uiTestsDiscovered': ui_tests, 'xcodeBuild': 'not_run_no_mac', 'iPhoneTest': 'not_run_no_device'}
-(root / 'verification/PROJECT-CHECK.json').write_text(json.dumps(report, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
+          'coreTestsDiscovered': unit_tests, 'uiTestsDiscovered': ui_tests, 'xcodeBuild': 'not_run_no_mac', 'iPhoneTest': 'not_run_no_device',
+          'sourceSha256': {name: hashlib.sha256((root / name).read_bytes()).hexdigest() for name in manifest['appSources'] + manifest['unitTests'] + manifest['uiTests']}}
+# Replace atomically; host file indexers can briefly hold the previous report open.
+report_path = root / 'verification/PROJECT-CHECK.json'
+report_temp = root / 'verification/PROJECT-CHECK.json.tmp'
+report_temp.write_bytes((json.dumps(report, ensure_ascii=False, indent=2) + '\n').encode('utf-8'))
+report_temp.replace(report_path)
 print(json.dumps(report, ensure_ascii=False, indent=2))

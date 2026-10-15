@@ -34,15 +34,18 @@ async function imageSet(name, body, viewBox = '18 18 72 72') {
   fs.mkdirSync(appIcon, {recursive: true});
   await sharp(Buffer.from(`<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 108 108"><rect width="108" height="108" fill="#F8F8F6"/>${flower}</svg>`)).flatten({background: '#F8F8F6'}).png().toFile(path.join(appIcon, 'AppIcon.png'));
   json(path.join(appIcon, 'Contents.json'), {images: [{filename: 'AppIcon.png', idiom: 'universal', platform: 'ios', size: '1024x1024'}], info: {author: 'xcode', version: 1}});
-  for (const name of ['lxgw_wenkai.ttf', 'source_han_serif_cn.otf', 'zhuque_fangsong.ttf']) {
+  const fonts = JSON.parse(fs.readFileSync(path.join(root, 'android/app/src/main/assets/font-licenses/sources.json'), 'utf8'));
+  for (const {file: name} of fonts) {
     fs.copyFileSync(path.join(root, 'android/app/src/main/res/font', name), path.join(resources, name));
     fs.copyFileSync(path.join(root, 'android/app/src/main/assets/font-licenses', name + '.OFL.txt'), path.join(resources, name + '.OFL.txt'));
   }
   fs.copyFileSync(path.join(root, 'android/app/src/main/assets/font-licenses/sources.json'), path.join(resources, 'font-sources.json'));
+  const coverNames = ['peach','daisy','tulip','lily','iris','sunflower','camellia','hydrangea','lotus','cornflower','favorite'];
+  for (const name of coverNames) await imageSet('FlowerCover' + name[0].toUpperCase() + name.slice(1), paths('ic_cover_' + name), '0 0 108 108');
   const fixtures = path.join(root, 'ios/Tests/CoreTests/Fixtures');
   fs.mkdirSync(fixtures, {recursive: true});
   for (const name of ['tone.flac', 'tone-24bit-96k.flac', 'tone.wav']) {
     fs.copyFileSync(path.join(root, 'android/app/src/androidTest/assets', name), path.join(fixtures, name));
   }
-  console.log(JSON.stringify({assets: 'ios/Xiaohonghua/Resources/Assets.xcassets', fonts: 3, source: 'Unmodified existing Android vectors and OFL fonts'}, null, 2));
+  console.log(JSON.stringify({assets: 'ios/Xiaohonghua/Resources/Assets.xcassets', fonts: fonts.length, playlistCovers: coverNames.length, source: 'Existing Android flower vectors and recorded multilingual OFL fonts'}, null, 2));
 })().catch(error => { console.error(error); process.exitCode = 1; });

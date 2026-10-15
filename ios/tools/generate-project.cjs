@@ -14,7 +14,8 @@ const swift = walk('Xiaohonghua').filter(file => file.endsWith('.swift')).sort()
 const unit = walk('Tests/CoreTests').filter(file => file.endsWith('.swift')).sort();
 const ui = walk('Tests/UITests').filter(file => file.endsWith('.swift')).sort();
 const fixtures = walk('Tests/CoreTests/Fixtures').sort();
-const resources = ['Xiaohonghua/Resources/Assets.xcassets', ...fs.readdirSync(path.join(root, 'Xiaohonghua/Resources')).filter(name => !fs.statSync(path.join(root, 'Xiaohonghua/Resources', name)).isDirectory()).map(name => 'Xiaohonghua/Resources/' + name)];
+const activeFonts = new Set(JSON.parse(fs.readFileSync(path.join(root, 'Xiaohonghua/Resources/font-sources.json'), 'utf8')).flatMap(font => [font.file, font.file + '.OFL.txt']));
+const resources = ['Xiaohonghua/Resources/Assets.xcassets', ...fs.readdirSync(path.join(root, 'Xiaohonghua/Resources')).filter(name => !fs.statSync(path.join(root, 'Xiaohonghua/Resources', name)).isDirectory() && (!/\.(ttf|otf)(\.OFL\.txt)?$/.test(name) || activeFonts.has(name))).map(name => 'Xiaohonghua/Resources/' + name)];
 const type = file => file.endsWith('.swift') ? 'sourcecode.swift' : file.endsWith('.xcassets') ? 'folder.assetcatalog' : file.endsWith('.storyboard') ? 'file.storyboard' : file.endsWith('.plist') ? 'text.plist.xml' : file.endsWith('.xcprivacy') ? 'text.xml' : file.endsWith('.json') ? 'text.json' : 'file';
 for (const file of [...swift, ...unit, ...ui, ...fixtures, ...resources, 'Xiaohonghua/Info.plist']) {
   object('file:' + file, `isa = PBXFileReference; lastKnownFileType = ${type(file)}; path = ${quote(file)}; sourceTree = SOURCE_ROOT;`);
@@ -47,7 +48,7 @@ for (const scope of ['project', 'app', 'unit', 'ui']) {
   for (const config of ['Debug', 'Release']) {
     let values = {};
     if (scope === 'project') values = {SDKROOT: 'iphoneos', IPHONEOS_DEPLOYMENT_TARGET: '17.0', CLANG_ENABLE_MODULES: 'YES', CLANG_ENABLE_OBJC_ARC: 'YES', SWIFT_VERSION: '5.0', SWIFT_STRICT_CONCURRENCY: 'minimal', DEBUG_INFORMATION_FORMAT: config === 'Debug' ? 'dwarf' : 'dwarf-with-dsym', SWIFT_OPTIMIZATION_LEVEL: config === 'Debug' ? '-Onone' : '-O', SWIFT_ACTIVE_COMPILATION_CONDITIONS: config === 'Debug' ? 'DEBUG $(inherited)' : '$(inherited)', ENABLE_TESTABILITY: config === 'Debug' ? 'YES' : 'NO'};
-    else values = {PRODUCT_NAME: '$(TARGET_NAME)', CODE_SIGN_STYLE: 'Automatic', TARGETED_DEVICE_FAMILY: '1', SUPPORTED_PLATFORMS: 'iphoneos iphonesimulator', SUPPORTS_MACCATALYST: 'NO', SWIFT_EMIT_LOC_STRINGS: 'YES', GENERATE_INFOPLIST_FILE: scope === 'app' ? 'NO' : 'YES', MARKETING_VERSION: '1.0.1', CURRENT_PROJECT_VERSION: '8', LD_RUNPATH_SEARCH_PATHS: ['$(inherited)', '@executable_path/Frameworks', '@loader_path/Frameworks'], PRODUCT_BUNDLE_IDENTIFIER: 'com.xiaohonghua.music.ios' + (scope === 'app' ? '' : '.' + scope + 'tests')};
+    else values = {PRODUCT_NAME: '$(TARGET_NAME)', CODE_SIGN_STYLE: 'Automatic', TARGETED_DEVICE_FAMILY: '1', SUPPORTED_PLATFORMS: 'iphoneos iphonesimulator', SUPPORTS_MACCATALYST: 'NO', SWIFT_EMIT_LOC_STRINGS: 'YES', GENERATE_INFOPLIST_FILE: scope === 'app' ? 'NO' : 'YES', MARKETING_VERSION: '1.1.1', CURRENT_PROJECT_VERSION: '21', LD_RUNPATH_SEARCH_PATHS: ['$(inherited)', '@executable_path/Frameworks', '@loader_path/Frameworks'], PRODUCT_BUNDLE_IDENTIFIER: 'com.xiaohonghua.music.ios' + (scope === 'app' ? '' : '.' + scope + 'tests')};
     if (scope === 'app') Object.assign(values, {INFOPLIST_FILE: 'Xiaohonghua/Info.plist', ASSETCATALOG_COMPILER_APPICON_NAME: 'AppIcon', ENABLE_PREVIEWS: 'YES'});
     if (scope === 'unit') Object.assign(values, {TEST_HOST: '$(BUILT_PRODUCTS_DIR)/Xiaohonghua.app/Xiaohonghua', BUNDLE_LOADER: '$(TEST_HOST)'});
     if (scope === 'ui') Object.assign(values, {TEST_TARGET_NAME: 'Xiaohonghua'});
@@ -65,5 +66,5 @@ fs.writeFileSync(path.join(project, 'xcshareddata/xcschemes/Xiaohonghua.xcscheme
 fs.mkdirSync(path.join(project, 'project.xcworkspace'), {recursive: true});
 fs.writeFileSync(path.join(project, 'project.xcworkspace/contents.xcworkspacedata'), '<?xml version="1.0" encoding="UTF-8"?>\n<Workspace version="1.0"><FileRef location="self:"/></Workspace>\n');
 fs.mkdirSync(path.join(root, 'verification'), {recursive: true});
-fs.writeFileSync(path.join(root, 'verification/PROJECT-MANIFEST.json'), JSON.stringify({appSources: swift, unitTests: unit, uiTests: ui, testFixtures: fixtures, resources, bundleID: 'com.xiaohonghua.music.ios', version: '1.0.1', build: 8, deploymentTarget: '17.0'}, null, 2) + '\n');
+fs.writeFileSync(path.join(root, 'verification/PROJECT-MANIFEST.json'), JSON.stringify({appSources: swift, unitTests: unit, uiTests: ui, testFixtures: fixtures, resources, bundleID: 'com.xiaohonghua.music.ios', version: '1.1.1', build: 21, deploymentTarget: '17.0'}, null, 2) + '\n');
 console.log(JSON.stringify({appSources: swift.length, unitTestFiles: unit.length, uiTestFiles: ui.length, resourceReferences: resources.length, project: 'ios/Xiaohonghua.xcodeproj', targets: targets.map(x => x[1])}));
