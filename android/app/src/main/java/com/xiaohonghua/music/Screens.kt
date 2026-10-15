@@ -243,7 +243,7 @@ fun MusicApp(model: MusicModel,showStartup: Boolean = false) {
                 val onNextSong: (Song)->Unit={song -> if(model.playNext(song)) haptic() else message("无法安排下一首，请确认文件可读取且播放器已就绪")}
                 val onAppendSong: (Song)->Unit={song -> if(model.appendQueue(song)) haptic() else message("无法加入队列，请确认文件可读取且播放器已就绪")}
                 if(page == "player") {
-                    PlayerScreen(current,library,playback,model,onBack=::back,onQueue={ sheet="queue" },onAdd={ addSong=current })
+                    PlayerScreen(current,library,playback,model,onBack=::back,onQueue={ sheet="queue" },onAdd={ addSong=current },onInfo={ info=current })
                 } else Column(Modifier.testTag("page-$page").fillMaxSize()) {
                     val title = when(page) {
                         "library" -> if(group != null) (if(libraryTab == 1) group!!.substringAfter('\u0000') else group!!) else "音乐库"
@@ -481,7 +481,7 @@ fun MusicApp(model: MusicModel,showStartup: Boolean = false) {
         }
     }
 }
-@Composable private fun FavoriteButton(song: Song,favorite: Boolean,onFavorite: ()->Unit) {
+@Composable internal fun FavoriteButton(song: Song,favorite: Boolean,onFavorite: ()->Unit) {
     val pulse=remember {Animatable(1f)}
     var initial by remember {mutableStateOf(true)}
     LaunchedEffect(favorite) {

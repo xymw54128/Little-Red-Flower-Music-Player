@@ -1,14 +1,14 @@
 {
-  "date": "2026-10-15T05:10:45.226Z",
-  "apk": "D:\\music player app\\dist\\小红花-1.0.11.apk",
+  "date": "2026-10-15T06:37:25.822Z",
+  "apk": "D:\\music player app\\dist\\小红花-1.1.0.apk",
   "buildType": "release",
   "debuggable": false,
   "testComponentsAbsent": true,
   "networkPermissionAbsent": true,
-  "size": 63953295,
-  "sha256": "679298f0895c5ebe3c9e1939346a100d68416e28a3b4d1b02ac5a358f26de8e5",
+  "size": 63969679,
+  "sha256": "c342520bb36629299479c63577773024d466e948c15638cf1384b78ddb5e969c",
   "metadata": [
-    "package: name='com.xiaohonghua.music' versionCode='18' versionName='1.0.11' platformBuildVersionName='16' platformBuildVersionCode='36' compileSdkVersion='36' compileSdkVersionCodename='16'",
+    "package: name='com.xiaohonghua.music' versionCode='19' versionName='1.1.0' platformBuildVersionName='16' platformBuildVersionCode='36' compileSdkVersion='36' compileSdkVersionCodename='16'",
     "minSdkVersion:'26'",
     "targetSdkVersion:'36'",
     "application-label:'小红花'",
@@ -67,6 +67,10 @@
     },
     {
       "version": "1.0.10",
+      "sameSigningCertificate": true
+    },
+    {
+      "version": "1.0.11",
       "sameSigningCertificate": true
     }
   ],
@@ -330,6 +334,6 @@
     "errors": 0,
     "warnings": 17
   },
-  "acceptance": "1.0.11 adds the five selected full multilingual lyric font combinations and retires the two prior decorative faces. The B gallery refinements remain standalone previews until selected. Native font rendering and frame performance require device acceptance.",
-  "nativeTests": "Instrumented tests compile successfully. Device execution status is recorded separately in ANDROID-1.0.11-UI-CHECK.json; compilation alone does not confirm runtime behavior or native frame performance."
+  "acceptance": "1.1.0 adopts the original B cover gallery as the native Android player: large rounded artwork, subtle breathing, title and favorite, quality metadata, interactive header flower, more actions and negative remaining time. Existing playback, lyrics and the selected multilingual fonts remain available. Native visual rendering, gestures and frame performance require device acceptance.",
+  "nativeTests": "Instrumented compilation and execution status is recorded separately in ANDROID-1.1.0-UI-CHECK.json; compilation alone does not confirm runtime behavior or native frame performance."
 }

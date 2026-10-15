@@ -96,6 +96,7 @@ internal fun InteractiveHeaderFlower(page: String,modifier: Modifier=Modifier) {
         .semantics {contentDescription=when(page) {
             "playlists" -> "重绘歌单小红花"
             "settings" -> "绽放设置小红花"
+            "player" -> "旋转小红花"
             else -> "旋转音乐库小红花"
         }}.clickable(interactionSource=remember {MutableInteractionSource()},indication=null,
             role=Role.Button,onClickLabel="播放小红花动画") {

@@ -24,15 +24,17 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.MotionDurationScale
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.clipToBounds
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.input.pointer.PointerEventPass
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFontFamilyResolver
 import androidx.compose.ui.platform.testTag
@@ -65,10 +67,9 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.isActive
 
 @Composable internal fun PlayerScreen(song: Song?,library: LibraryState,p: PlaybackState,model: MusicModel,
-    onBack:()->Unit,onQueue:()->Unit,onAdd:()->Unit) {
+    onBack:()->Unit,onQueue:()->Unit,onAdd:()->Unit,onInfo:()->Unit={}) {
     val pager=rememberPagerState {2}
     val scope=rememberCoroutineScope()
-    val artworkPress=remember {MutableInteractionSource()}
     val lyricText=library.manualLyrics[song?.id] ?: song?.lyrics.orEmpty()
     val lines=remember(lyricText,song?.duration) {Lrc.parse(lyricText,song?.duration?.takeIf {it > 0})}
     val lyricIndex=remember(lines,model) {model.playback.map {Lrc.current(lines,it.position)}.distinctUntilChanged()}
@@ -86,7 +87,7 @@ import kotlinx.coroutines.isActive
                 ExpressiveIconButton(onClick=onBack) {Icon(Icons.Outlined.KeyboardArrowDown,"收起播放器")}
                 Text(if(pager.currentPage == 1) song?.let {"${it.title} - ${it.artist}"}.orEmpty() else "正在播放",Modifier.weight(1f).padding(horizontal=8.dp),textAlign=TextAlign.Center,fontSize=13.sp,color=secondary,maxLines=1,overflow=TextOverflow.Ellipsis)
                 if(pager.currentPage == 0) {
-                    ExpressiveIconButton(onClick=onAdd,enabled=song != null) {Icon(Icons.Outlined.PlaylistAdd,"添加到歌单")}
+                    InteractiveHeaderFlower("player")
                 }
                 else Spacer(Modifier.size(48.dp))
             }
@@ -95,13 +96,30 @@ import kotlinx.coroutines.isActive
             } else HorizontalPager(pager,Modifier.testTag("player-pages").weight(1f).fillMaxWidth(),beyondViewportPageCount=1,
                 flingBehavior=PagerDefaults.flingBehavior(pager,snapAnimationSpec=pageMotion)) { page ->
                 if(page == 0) BoxWithConstraints(Modifier.fillMaxSize()) {
-                    val coverSize=minOf(maxWidth*.72f,maxHeight*.60f,290.dp)
-                    Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal=28.dp,vertical=16.dp),horizontalAlignment=Alignment.CenterHorizontally) {
-                        Cover(song,Modifier.testTag("player-artwork").size(coverSize).pressScale(artworkPress,.985f).clickable(interactionSource=artworkPress,indication=ripple(),onClickLabel="查看歌词",onClick=::openLyrics))
-                        Text(song.title,Modifier.fillMaxWidth().padding(top=24.dp),fontSize=23.sp,fontWeight=FontWeight.SemiBold,textAlign=TextAlign.Center,maxLines=2,overflow=TextOverflow.Ellipsis)
-                        Text("${song.artist} · ${song.album}",Modifier.testTag("player-artist-album").fillMaxWidth().padding(top=8.dp),fontSize=14.sp,color=muted,textAlign=TextAlign.Center,maxLines=2,overflow=TextOverflow.Ellipsis)
-                        Text(listOfNotNull(song.format.takeIf {it.isNotBlank()},song.bitDepth.takeIf {it > 0}?.let {"$it bit"},song.sampleRate.takeIf {it > 0}?.let {"${it/1000f} kHz"}).joinToString(" · "),Modifier.padding(top=12.dp),fontSize=11.sp,color=muted,textAlign=TextAlign.Center)
-                        Text(lines.getOrNull(current)?.text ?: "点击封面或左滑查看歌词",Modifier.testTag("player-lyric-preview").fillMaxWidth().padding(top=24.dp).clickable(onClickLabel="查看歌词",onClick=::openLyrics),textAlign=TextAlign.Center,fontSize=library.settings.lyricSize.coerceAtMost(24f).sp,fontFamily=lyricFont(library.settings.lyricFont),color=MaterialTheme.colorScheme.primary,maxLines=2,overflow=TextOverflow.Ellipsis)
+                    val fontScale=LocalDensity.current.fontScale.coerceAtLeast(1f)
+                    val coverSize=minOf((maxWidth-60.dp).coerceAtLeast(1.dp),330.dp,(maxHeight-(190f*fontScale).dp).coerceAtLeast(120.dp))
+                    val favorite=library.playlists.firstOrNull {it.isFavorites}?.songIds?.contains(song.id) == true
+                    Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).heightIn(min=maxHeight).padding(horizontal=23.dp,vertical=10.dp),
+                        verticalArrangement=Arrangement.SpaceBetween,horizontalAlignment=Alignment.CenterHorizontally) {
+                        Column(Modifier.fillMaxWidth(),horizontalAlignment=Alignment.CenterHorizontally) {
+                            GalleryArtwork(song,p.playing,!lyricsVisible,Modifier.size(coverSize),::openLyrics)
+                            Row(Modifier.fillMaxWidth().padding(top=27.dp),verticalAlignment=Alignment.CenterVertically) {
+                                Column(Modifier.weight(1f)) {
+                                    Text(song.title,Modifier.testTag("player-title"),fontSize=27.sp,fontWeight=FontWeight.SemiBold,maxLines=2,overflow=TextOverflow.Ellipsis)
+                                    Text("${song.artist} · ${song.album}",Modifier.testTag("player-artist-album").padding(top=8.dp),fontSize=12.sp,color=secondary,maxLines=2,overflow=TextOverflow.Ellipsis)
+                                }
+                                FavoriteButton(song,favorite) {model.repository.toggleFavorite(song.id)}
+                            }
+                            Row(Modifier.fillMaxWidth().padding(top=10.dp),verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.spacedBy(9.dp)) {
+                                if(song.format.isNotBlank()) Text(song.format,Modifier.border(1.dp,secondary.copy(alpha=.20f),RoundedCornerShape(3.dp)).padding(horizontal=4.dp,vertical=1.dp),fontSize=9.sp,color=secondary)
+                                Text(listOfNotNull(song.bitDepth.takeIf {it > 0}?.let {"$it bit"},song.sampleRate.takeIf {it > 0}?.let {"${it/1000f} kHz"}).joinToString(" / "),Modifier.weight(1f),fontSize=10.sp,color=secondary,maxLines=1,overflow=TextOverflow.Ellipsis)
+                                GalleryPlayingIndicator(p.playing,!lyricsVisible)
+                            }
+                        }
+                        Box(Modifier.testTag("player-lyric-preview").fillMaxWidth().heightIn(min=66.dp).clickable(onClickLabel="查看歌词",onClick=::openLyrics),contentAlignment=Alignment.Center) {
+                            Text(lines.getOrNull(current)?.text ?: "点击封面或左滑查看歌词",textAlign=TextAlign.Center,fontSize=library.settings.lyricSize.coerceAtMost(20f).sp,
+                                fontFamily=lyricFont(library.settings.lyricFont),color=MaterialTheme.colorScheme.primary,maxLines=2,overflow=TextOverflow.Ellipsis)
+                        }
                     }
                 } else LyricsPage(lines,lyricText,library.settings,lyricsVisible,p,model)
             }
@@ -116,34 +134,91 @@ import kotlinx.coroutines.isActive
                     }
                 }
             }
-            PlayerControls(song?.duration ?: 0,model,onQueue,surface,secondary)
+            PlayerControls(song?.duration ?: 0,model,onQueue,surface,secondary,song != null && pager.currentPage == 0,onAdd,onInfo)
         }
     }
     }
 }
-@Composable private fun PlayerControls(fallbackDuration: Long,model: MusicModel,onQueue:()->Unit,surface: Color,secondary: Color) {
+// Keep the 22dp outer silhouette still; the source B breathes only within its crop.
+@Composable private fun GalleryArtwork(song: Song,playing: Boolean,visible: Boolean,modifier: Modifier,onLyrics:()->Unit) {
+    val lifecycle=LocalLifecycleOwner.current.lifecycle
+    val scale=remember(song.id) {Animatable(1f)}
+    val press=remember {MutableInteractionSource()}
+    val shape=RoundedCornerShape(22.dp)
+    val image=rememberImage(song.artwork,with(LocalDensity.current) {330.dp.roundToPx().coerceIn(64,1400)})
+    LaunchedEffect(song.id,playing,visible,lifecycle) {
+        if(!playing || !visible) return@LaunchedEffect
+        lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
+            val durationScale=coroutineContext[MotionDurationScale]
+            while(isActive) {
+                // A zero system duration scale must never turn a repeat into a busy loop.
+                if((durationScale?.scaleFactor ?: 1f) == 0f) {
+                    scale.snapTo(1f)
+                    snapshotFlow {durationScale?.scaleFactor ?: 1f}.first {it > 0f}
+                }
+                scale.animateTo(1.025f,tween(4500,easing=FastOutSlowInEasing))
+                scale.animateTo(1f,tween(4500,easing=FastOutSlowInEasing))
+            }
+        }
+    }
+    Box(modifier.testTag("player-artwork").pressScale(press,.985f).shadow(12.dp,shape,ambientColor=Color(0x14477859),spotColor=Color(0x14477859))
+        .clip(shape).background(MaterialTheme.colorScheme.primary.copy(alpha=.08f))
+        .clickable(interactionSource=press,indication=null,onClickLabel="查看歌词",onClick=onLyrics),contentAlignment=Alignment.Center) {
+        if(image != null) Image(image,null,Modifier.fillMaxSize().graphicsLayer {scaleX=scale.value;scaleY=scale.value},contentScale=ContentScale.Crop)
+        else Icon(Icons.Outlined.LocalFlorist,null,Modifier.fillMaxSize(.40f),tint=MaterialTheme.colorScheme.primary.copy(alpha=.8f))
+    }
+}
+@Composable private fun GalleryPlayingIndicator(playing: Boolean,visible: Boolean) {
+    val lifecycle by LocalLifecycleOwner.current.lifecycle.currentStateFlow.collectAsState()
+    val moving=playing && visible && lifecycle.isAtLeast(Lifecycle.State.STARTED)
+    val wave=if(moving) rememberInfiniteTransition(label="gallery-levels").animateFloat(0f,1f,
+        infiniteRepeatable(tween(750,easing=LinearEasing),RepeatMode.Restart),label="gallery-level") else remember {mutableFloatStateOf(0f)}
+    val accent=MaterialTheme.colorScheme.primary
+    Canvas(Modifier.size(12.dp,10.dp)) {
+        repeat(3) {index ->
+            val amplitude=if(moving) .35f+.65f*kotlin.math.abs(kotlin.math.sin((wave.value+index*.23f)*Math.PI)).toFloat() else .35f
+            val x=(index*4f+1f).dp.toPx()
+            val height=size.height*amplitude
+            drawLine(accent,Offset(x,(size.height-height)/2),Offset(x,(size.height+height)/2),2.dp.toPx(),StrokeCap.Round)
+        }
+    }
+}
+@Composable private fun PlayerControls(fallbackDuration: Long,model: MusicModel,onQueue:()->Unit,surface: Color,secondary: Color,
+    showOptions: Boolean,onAdd:()->Unit,onInfo:()->Unit) {
     val p by model.playback.collectAsStateWithLifecycle()
     val haptic=rememberActionHaptic()
     val playPress=remember {MutableInteractionSource()}
     var drag by remember { mutableStateOf<Float?>(null) }
+    var menu by remember {mutableStateOf(false)}
     LaunchedEffect(p.currentId) {drag=null}
+    LaunchedEffect(showOptions) {if(!showOptions) menu=false}
     val duration=(if(p.duration > 0) p.duration else fallbackDuration).coerceAtLeast(1)
-    Column(Modifier.fillMaxWidth().background(Brush.verticalGradient(listOf(surface.copy(alpha=0f),surface.copy(alpha=.90f)))).padding(horizontal=28.dp,vertical=8.dp)) {
+    Column(Modifier.fillMaxWidth().background(surface).padding(horizontal=22.dp,vertical=8.dp)) {
         p.error?.let { Text(it,fontSize=12.sp,color=MaterialTheme.colorScheme.error,maxLines=2,modifier=Modifier.padding(bottom=8.dp)) }
         PlaybackSeekBar(p,duration,drag,onChange={drag=it},onFinished={drag?.let {model.seek(it.toLong());haptic()};drag=null})
-        Row(Modifier.fillMaxWidth()) { Text(timeLabel((drag?.toLong() ?: p.position)),Modifier.weight(1f),fontSize=11.sp,color=secondary); Text(timeLabel(duration),fontSize=11.sp,color=secondary) }
+        val shownPosition=(drag?.toLong() ?: p.position).coerceIn(0,duration)
+        Row(Modifier.fillMaxWidth()) { Text(timeLabel(shownPosition),Modifier.weight(1f),fontSize=10.sp,color=secondary); Text("−"+timeLabel(duration-shownPosition),Modifier.testTag("player-remaining"),fontSize=10.sp,color=secondary) }
         Row(Modifier.fillMaxWidth().padding(top=12.dp,bottom=4.dp),horizontalArrangement=Arrangement.SpaceBetween,verticalAlignment=Alignment.CenterVertically) {
             ExpressiveIconButton(onClick={model.mode()},enabled=p.currentId != null,tactile=true) {Icon(when(p.mode) {2 -> Icons.Outlined.RepeatOne; 3 -> Icons.Outlined.Shuffle; else -> Icons.Outlined.Repeat},listOf("顺序播放","列表循环","单曲循环","随机播放")[p.mode],tint=if(p.mode == 0) secondary else MaterialTheme.colorScheme.primary)}
-            ExpressiveIconButton(onClick={model.previous()},enabled=p.currentId != null,modifier=Modifier.size(52.dp),tactile=true) {Icon(Icons.Outlined.SkipPrevious,"上一首",Modifier.size(32.dp))}
-            FilledIconButton(onClick={model.toggle();haptic()},enabled=p.currentId != null && p.connected,modifier=Modifier.size(64.dp).pressScale(playPress,.94f),shape=CircleShape,interactionSource=playPress) {
+            ExpressiveIconButton(onClick={model.previous()},enabled=p.currentId != null,modifier=Modifier.size(48.dp),tactile=true) {Icon(Icons.Outlined.SkipPrevious,"上一首",Modifier.size(26.dp))}
+            FilledIconButton(onClick={model.toggle();haptic()},enabled=p.currentId != null && p.connected,modifier=Modifier.size(66.dp).pressScale(playPress,.94f),shape=CircleShape,interactionSource=playPress) {
                 Crossfade(targetState=p.playing,animationSpec=tween(120),label="play-pause") {playing ->
-                    Icon(if(playing) Icons.Outlined.Pause else Icons.Outlined.PlayArrow,if(playing) "暂停" else "播放",Modifier.size(36.dp))
+                    Icon(if(playing) Icons.Outlined.Pause else Icons.Outlined.PlayArrow,if(playing) "暂停" else "播放",Modifier.size(30.dp))
                 }
             }
-            ExpressiveIconButton(onClick={model.next()},enabled=p.currentId != null,modifier=Modifier.size(52.dp),tactile=true) {Icon(Icons.Outlined.SkipNext,"下一首",Modifier.size(32.dp))}
+            ExpressiveIconButton(onClick={model.next()},enabled=p.currentId != null,modifier=Modifier.size(48.dp),tactile=true) {Icon(Icons.Outlined.SkipNext,"下一首",Modifier.size(26.dp))}
             ExpressiveIconButton(onClick=onQueue) {Icon(Icons.Outlined.QueueMusic,"播放队列")}
         }
-        Text(listOf("顺序播放","列表循环","单曲循环","随机播放")[p.mode],Modifier.fillMaxWidth().padding(top=4.dp),fontSize=10.sp,color=secondary,textAlign=TextAlign.Center)
+        Box(Modifier.fillMaxWidth().heightIn(min=48.dp),contentAlignment=Alignment.Center) {
+            Text(listOf("顺序播放","列表循环","单曲循环","随机播放")[p.mode],fontSize=10.sp,color=secondary,textAlign=TextAlign.Center)
+            if(showOptions) Box(Modifier.align(Alignment.CenterEnd)) {
+                ExpressiveIconButton(onClick={menu=true},modifier=Modifier.testTag("player-more")) {Icon(Icons.Outlined.MoreHoriz,"歌曲更多选项",Modifier.size(20.dp),tint=menuTint)}
+                DropdownMenu(menu,{menu=false}) {
+                    DropdownMenuItem(text={Text("添加到歌单")},onClick={menu=false;onAdd()})
+                    DropdownMenuItem(text={Text("歌曲信息")},onClick={menu=false;onInfo()})
+                }
+            }
+        }
     }
 }
 @Composable private fun PlaybackSeekBar(p: PlaybackState,duration: Long,drag: Float?,onChange:(Float)->Unit,onFinished:()->Unit) {

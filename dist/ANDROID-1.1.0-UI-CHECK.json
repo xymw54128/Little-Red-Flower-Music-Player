@@ -1,0 +1,103 @@
+{
+  "date": "2026-10-15T06:38:10.495Z",
+  "platform": "Android",
+  "version": "1.1.0",
+  "versionCode": 19,
+  "instrumentedTestsCompiled": true,
+  "instrumentedTestsExecuted": false,
+  "status": "compiled_not_executed",
+  "reason": "adb devices -l returned an empty device list.",
+  "deviceSnapshot": "List of devices attached: none",
+  "compiledSuites": [
+    {
+      "name": "AppThemeUiTest",
+      "tests": 2
+    },
+    {
+      "name": "CollectionPersistenceTest",
+      "tests": 5
+    },
+    {
+      "name": "LyricFontRenderingTest",
+      "tests": 2
+    },
+    {
+      "name": "MainNavigationUiTest",
+      "tests": 10
+    },
+    {
+      "name": "NativeSmokeTest",
+      "tests": 1
+    },
+    {
+      "name": "Playback107Test",
+      "tests": 5
+    },
+    {
+      "name": "PlaybackOrderTest",
+      "tests": 2
+    },
+    {
+      "name": "PlayerNavigationUiTest",
+      "tests": 9
+    },
+    {
+      "name": "PlaylistCoverUiTest",
+      "tests": 3
+    },
+    {
+      "name": "PlaylistDetailUiTest",
+      "tests": 3
+    },
+    {
+      "name": "PlaylistManagementUiTest",
+      "tests": 6
+    },
+    {
+      "name": "ReorderUiTest",
+      "tests": 6
+    },
+    {
+      "name": "SettingsInteractionUiTest",
+      "tests": 8
+    },
+    {
+      "name": "SongArtworkUiTest",
+      "tests": 2
+    },
+    {
+      "name": "SongListUiTest",
+      "tests": 3
+    },
+    {
+      "name": "SongSearchNativeTest",
+      "tests": 3
+    }
+  ],
+  "instrumentedTestCount": 70,
+  "instrumentedApkSha256": "4ff9d98d66500abefe2d62e475b59463c1673b0ae53393a933ded08e480cc5d5",
+  "unitTestsPassed": 99,
+  "lint": {
+    "errors": 0,
+    "warnings": 17
+  },
+  "nativeFramePerformanceMeasured": false,
+  "phoneAcceptancePending": true,
+  "actualPlayerLayoutUnchanged": false,
+  "playerLayout": "Original B cover gallery implemented natively. No decorative material borders.",
+  "newNativeCases": [
+    "Cover more menu dispatches add/info and closes",
+    "Lyrics hides more menu and restores it on cover",
+    "Favorite state reads existing playlist membership across pages"
+  ],
+  "reviewedBoundaries": [
+    "320dp control-width budget; device layout unmeasured",
+    "Artwork lifecycle and system-animation zero-to-enabled resume",
+    "22dp fixed crop; image-only 9-second breathing",
+    "Existing LRC transition code unchanged"
+  ],
+  "appFontChoices": 8,
+  "bundledFontFiles": 7,
+  "apkSha256": "c342520bb36629299479c63577773024d466e948c15638cf1384b78ddb5e969c",
+  "git": "Local commit only; no GitHub push or release."
+}

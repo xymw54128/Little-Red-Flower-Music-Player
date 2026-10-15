@@ -37,10 +37,11 @@ class PlayerNavigationUiTest {
         }
     }
     @After fun release() {instrumentation.runOnMainSync {store.clear()}}
-    private fun player(settings: Settings=Settings(),onBack:()->Unit={},onQueue:()->Unit={}) {
+    private fun player(settings: Settings=Settings(),onBack:()->Unit={},onQueue:()->Unit={},onAdd:()->Unit={},onInfo:()->Unit={},
+        library: LibraryState=LibraryState(songs=listOf(song),settings=settings)) {
         compose.setContent {MaterialTheme {
-            PlayerScreen(song,LibraryState(songs=listOf(song),settings=settings),PlaybackState(currentId=song.id),model,
-                onBack=onBack,onQueue=onQueue,onAdd={})
+            PlayerScreen(song,library,PlaybackState(currentId=song.id),model,
+                onBack=onBack,onQueue=onQueue,onAdd=onAdd,onInfo=onInfo)
         }}
     }
     @Test fun tappingArtworkOpensLyricsAndRightSwipeReturnsToCover() {
@@ -97,6 +98,39 @@ class PlayerNavigationUiTest {
         compose.onNodeWithText("${song.title} - ${song.artist}").assertIsDisplayed()
         compose.onNodeWithTag("player-page-cover").performClick().assertIsSelected()
         compose.onNodeWithText("正在播放").assertIsDisplayed()
+    }
+    @Test fun coverMoreMenuRoutesAddAndInfoAndClosesAfterSelection() {
+        var additions=0
+        var details=0
+        player(onAdd={additions++},onInfo={details++})
+        compose.onNodeWithContentDescription("歌曲更多选项").performClick()
+        compose.onNodeWithText("添加到歌单").assertIsDisplayed().performClick()
+        compose.onNodeWithText("添加到歌单").assertDoesNotExist()
+        compose.runOnIdle {assertEquals(1,additions);assertEquals(0,details)}
+        compose.onNodeWithTag("player-more").performClick()
+        compose.onNodeWithText("歌曲信息").assertIsDisplayed().performClick()
+        compose.onNodeWithText("歌曲信息").assertDoesNotExist()
+        compose.runOnIdle {assertEquals(1,additions);assertEquals(1,details)}
+    }
+    @Test fun moreMenuOnlyAppearsOnCoverAndReturnsAfterLyrics() {
+        player()
+        compose.onNodeWithTag("favorite-${song.id}").assertIsNotSelected()
+        compose.onNodeWithTag("player-more").assertIsDisplayed()
+        compose.onNodeWithTag("player-page-lyrics").performClick()
+        compose.onNodeWithTag("player-more").assertDoesNotExist()
+        compose.onNodeWithContentDescription("歌曲更多选项").assertDoesNotExist()
+        compose.onNodeWithTag("player-page-cover").performClick()
+        compose.onNodeWithTag("player-more").assertIsDisplayed().performClick()
+        compose.onNodeWithText("添加到歌单").assertIsDisplayed()
+        compose.onNodeWithText("歌曲信息").assertIsDisplayed()
+    }
+    @Test fun galleryFavoriteReflectsMembershipInFavoritesPlaylist() {
+        val favorites=Playlist(FAVORITES_PLAYLIST_ID,"我喜欢",songIds=listOf(song.id))
+        player(library=LibraryState(songs=listOf(song),playlists=listOf(favorites)))
+        compose.onNodeWithTag("favorite-${song.id}").assertIsDisplayed().assertIsSelected()
+        compose.onNodeWithTag("player-artwork").performClick()
+        compose.onNodeWithTag("player-page-cover").performClick()
+        compose.onNodeWithTag("favorite-${song.id}").assertIsDisplayed().assertIsSelected()
     }
     @Test fun longPressReorderRespectsBoundaryThenMovesByOneMeasuredRow() {
         val tracks=(0..2).map {song.copy(id="reorder-$it",title="排序歌曲 $it")}
