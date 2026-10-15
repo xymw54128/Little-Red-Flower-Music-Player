@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#f8f8f6">
+  <title>小红花 · 原 B 封面边框预览</title>
+  <link rel="icon" href="../assets/flower.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../player-options/player.css">
+  <link rel="stylesheet" href="frames.css">
+  <script src="../player-options/player.js" defer></script>
+  <script src="frames.js" defer></script>
+</head>
+<body class="frame-page" data-scheme="B" data-default-scheme="B" data-frame="silver">
+  <aside class="workbench"><a class="brand" href="../index.html"><img src="../assets/flower.svg" alt="">小红花<span>原 B · 封面边框</span></a><h1>只修饰封面边缘。</h1><p class="intro">保留最初 B 的封面、文字与控件布局。<br>这次只比较边框的材质与微光。</p><nav aria-label="封面边框方案"><button class="scheme frame-choice" data-scheme="B" data-frame="original" aria-pressed="false"><span>B</span><div><strong>原版 B</strong><small>未加边框，用于直接对照</small></div></button><button class="scheme frame-choice selected" data-scheme="B" data-frame="silver" aria-pressed="true"><span>1</span><div><strong>钛银细边</strong><small>金属倒角、双层细线与窄高光</small></div></button><button class="scheme frame-choice" data-scheme="B" data-frame="glass" aria-pressed="false"><span>2</span><div><strong>晶透棱边</strong><small>透明折边、内外细线与掠过的反光</small></div></button><button class="scheme frame-choice" data-scheme="B" data-frame="luminous" aria-pressed="false"><span>3</span><div><strong>主题流光</strong><small>沿边缘缓行的光段，颜色跟随主题</small></div></button></nav><div class="bench-bottom"><label for="theme">预览主题</label><select id="theme"><option value="red">小红花红</option><option value="green">叶芽绿</option><option value="blue">矢车菊蓝</option><option value="amber">花蕊金</option></select><a href="compare.html">整页并排比较 <span>↗</span></a><a href="details.html">放大看边框细节 <span>↗</span></a><p>独立预览，尚未替换 App。<br>点播放查看边框光效，暂停会冻结。<br>示例不播放音频，支持减少动态。</p></div></aside>
+  <main class="stage">
+    <div class="phone" id="phone" data-playing="false">
+      <div class="status-bar" aria-hidden="true"><span>9:41</span><span class="status-right"><svg viewBox="0 0 18 14"><path d="M2 12V9m4 3V6m4 6V3m4 9V1"/></svg><svg viewBox="0 0 20 14"><path d="M2 5q8-7 16 0M5 8q5-5 10 0M8 11q2-2 4 0"/></svg><span class="battery"></span></span></div>
+      <header class="player-header">
+        <button class="icon-button close-player" aria-label="收起播放器"><svg><use href="#down"/></svg></button>
+        <span id="header-label">正在播放</span>
+        <button class="icon-button flower-button" aria-label="小红花互动"><img src="../assets/flower.svg" alt=""></button>
+      </header>
+      <div class="view-area" id="view-area">
+        <section class="cover-view" aria-label="歌曲播放页">
+          <div class="hero" id="hero">
+            <button class="art-button" aria-label="查看歌词"><span class="frame-aura" aria-hidden="true"></span><span class="frame-shell" aria-hidden="true"><i class="frame-reflection"></i></span><span class="frame-inner" aria-hidden="true"></span><svg class="frame-trace" viewBox="0 0 360 360" aria-hidden="true"><rect class="trace-base" x="2" y="2" width="356" height="356" rx="29"/><rect class="trace-light" x="2" y="2" width="356" height="356" rx="29" pathLength="100"/><rect class="trace-tip" x="2" y="2" width="356" height="356" rx="29" pathLength="100"/></svg><span class="art-frame"><img class="album-art" src="../assets/spring-letter.svg" alt="春日来信示例封面"><span class="record-center"><img src="../assets/flower.svg" alt=""></span></span></button>
+            <div class="bloom-line bloom-line-one" aria-hidden="true"></div><div class="bloom-line bloom-line-two" aria-hidden="true"></div>
+            <div class="tone-arm" aria-hidden="true"><i></i></div>
+          </div>
+          <div class="track-heading">
+            <div><h2 class="song-title">春日来信</h2><p class="song-subtitle">浪雨林 · 花开的时候</p></div>
+            <button class="icon-button favorite" aria-label="加入我喜欢" aria-pressed="false"><svg><use href="#heart"/></svg></button>
+          </div>
+          <div class="quality"><span>FLAC</span><span>16 bit / 44.1 kHz</span><span class="playing-indicator" aria-hidden="true"><i></i><i></i><i></i></span></div>
+          <button class="lyric-peek" aria-label="打开完整歌词"><span class="previous-line">风经过花窗</span><span class="preview-line">把春天唱给你听</span><span class="following-line">让每一朵花都记得你</span><small>歌词 <svg><use href="#chevron"/></svg></small></button>
+        </section>
+        <section class="lyrics-view" aria-label="完整歌词" aria-hidden="true"><div class="lyrics-scroll" tabindex="0"><div class="lyric-spacer"></div><div id="lyric-lines"></div><div class="lyric-spacer"></div></div></section>
+      </div>
+      <div class="page-switch" role="tablist" aria-label="播放器页面"><button class="active" data-page="cover" role="tab" aria-selected="true" aria-label="歌曲封面"><span></span></button><button data-page="lyrics" role="tab" aria-selected="false" aria-label="歌词"><span></span></button></div>
+      <footer class="transport">
+        <div class="seek-wrap"><input id="seek" type="range" min="0" max="228" step="0.1" value="77" aria-label="播放进度"><div class="time-row"><span id="elapsed">1:17</span><span id="remaining">−2:31</span></div></div>
+        <div class="controls">
+          <button class="icon-button mode" aria-label="顺序播放"><svg><use href="#repeat"/></svg></button>
+          <button class="icon-button previous" aria-label="上一首"><svg><use href="#previous"/></svg></button>
+          <button class="play-button" aria-label="播放" aria-pressed="false"><svg class="play-icon"><use href="#play"/></svg><svg class="pause-icon"><use href="#pause"/></svg></button>
+          <button class="icon-button next" aria-label="下一首"><svg><use href="#next"/></svg></button>
+          <button class="icon-button queue" aria-label="播放队列"><svg><use href="#queue"/></svg></button>
+        </div>
+        <div class="transport-foot"><span id="mode-label">顺序播放</span><button class="more" aria-label="歌曲更多选项"><svg><use href="#more"/></svg></button></div>
+      </footer>
+      <div class="gesture-line" aria-hidden="true"></div>
+      <div class="sheet-backdrop" hidden></div>
+      <section class="sheet" role="dialog" aria-modal="true" aria-label="播放器选项" hidden><div class="sheet-handle"></div><header><h3 id="sheet-title"></h3><button class="icon-button dismiss" aria-label="关闭面板"><svg><use href="#close"/></svg></button></header><div id="sheet-content"></div></section>
+      <div class="feedback" role="status" aria-live="polite"></div>
+    </div>
+    <p class="preview-hint" id="preview-hint">点击播放看唱片缓转；点击封面或左滑进入歌词。</p>
+  </main>
+  <svg class="symbol-library" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><defs>
+    <clipPath id="bloom-clip" clipPathUnits="objectBoundingBox"><path d="M 0.50000 0.01000 C 0.51267 0.01000 0.52579 0.01255 0.53800 0.01713 C 0.55021 0.02170 0.56231 0.02897 0.57326 0.03744 C 0.58422 0.04591 0.59451 0.05680 0.60372 0.06796 C 0.61294 0.07911 0.62111 0.09205 0.62855 0.10436 C 0.63599 0.11667 0.64227 0.12990 0.64836 0.14183 C 0.65445 0.15376 0.65956 0.16567 0.66510 0.17596 C 0.67065 0.18626 0.67565 0.19570 0.68164 0.20359 C 0.68762 0.21149 0.69367 0.21797 0.70102 0.22332 C 0.70838 0.22866 0.71641 0.23240 0.72577 0.23566 C 0.73513 0.23891 0.74565 0.24075 0.75716 0.24284 C 0.76866 0.24494 0.78156 0.24611 0.79480 0.24822 C 0.80803 0.25033 0.82254 0.25221 0.83655 0.25548 C 0.85056 0.25875 0.86539 0.26253 0.87884 0.26784 C 0.89230 0.27316 0.90584 0.27959 0.91728 0.28738 C 0.92872 0.29518 0.93937 0.30444 0.94750 0.31464 C 0.95562 0.32484 0.96210 0.33653 0.96602 0.34858 C 0.96993 0.36063 0.97156 0.37390 0.97098 0.38693 C 0.97041 0.39995 0.96723 0.41370 0.96256 0.42674 C 0.95789 0.43977 0.95071 0.45293 0.94295 0.46514 C 0.93519 0.47735 0.92541 0.48912 0.91600 0.50000 C 0.90659 0.51088 0.89595 0.52094 0.88649 0.53042 C 0.87702 0.53990 0.86727 0.54844 0.85920 0.55689 C 0.85112 0.56535 0.84368 0.57302 0.83803 0.58115 C 0.83237 0.58929 0.82807 0.59704 0.82526 0.60568 C 0.82245 0.61433 0.82138 0.62313 0.82117 0.63303 C 0.82097 0.64294 0.82247 0.65352 0.82404 0.66510 C 0.82560 0.67669 0.82847 0.68933 0.83055 0.70256 C 0.83264 0.71580 0.83533 0.73019 0.83655 0.74452 C 0.83777 0.75885 0.83876 0.77412 0.83786 0.78856 C 0.83696 0.80300 0.83504 0.81786 0.83116 0.83116 C 0.82727 0.84445 0.82176 0.85744 0.81457 0.86832 C 0.80738 0.87919 0.79826 0.88897 0.78801 0.89642 C 0.77777 0.90386 0.76565 0.90951 0.75308 0.91299 C 0.74051 0.91647 0.72646 0.91770 0.71262 0.91728 C 0.69877 0.91687 0.68404 0.91410 0.67003 0.91050 C 0.65602 0.90689 0.64181 0.90123 0.62855 0.89564 C 0.61530 0.89005 0.60245 0.88304 0.59050 0.87697 C 0.57856 0.87090 0.56743 0.86426 0.55689 0.85920 C 0.54635 0.85413 0.53676 0.84943 0.52727 0.84656 C 0.51779 0.84370 0.50909 0.84200 0.50000 0.84200 C 0.49091 0.84200 0.48221 0.84370 0.47273 0.84656 C 0.46324 0.84943 0.45365 0.85413 0.44311 0.85920 C 0.43257 0.86426 0.42144 0.87090 0.40950 0.87697 C 0.39755 0.88304 0.38470 0.89005 0.37145 0.89564 C 0.35819 0.90123 0.34398 0.90689 0.32997 0.91050 C 0.31596 0.91410 0.30123 0.91687 0.28738 0.91728 C 0.27354 0.91770 0.25949 0.91647 0.24692 0.91299 C 0.23435 0.90951 0.22223 0.90386 0.21199 0.89642 C 0.20174 0.88897 0.19262 0.87919 0.18543 0.86832 C 0.17824 0.85744 0.17273 0.84445 0.16884 0.83116 C 0.16496 0.81786 0.16304 0.80300 0.16214 0.78856 C 0.16124 0.77412 0.16223 0.75885 0.16345 0.74452 C 0.16467 0.73019 0.16736 0.71580 0.16945 0.70256 C 0.17153 0.68933 0.17440 0.67669 0.17596 0.66510 C 0.17753 0.65352 0.17903 0.64294 0.17883 0.63303 C 0.17862 0.62313 0.17755 0.61433 0.17474 0.60568 C 0.17193 0.59704 0.16763 0.58929 0.16197 0.58115 C 0.15632 0.57302 0.14888 0.56535 0.14080 0.55689 C 0.13273 0.54844 0.12298 0.53990 0.11351 0.53042 C 0.10405 0.52094 0.09341 0.51088 0.08400 0.50000 C 0.07459 0.48912 0.06481 0.47735 0.05705 0.46514 C 0.04929 0.45293 0.04211 0.43977 0.03744 0.42674 C 0.03277 0.41370 0.02959 0.39995 0.02902 0.38693 C 0.02844 0.37390 0.03007 0.36063 0.03398 0.34858 C 0.03790 0.33653 0.04438 0.32484 0.05250 0.31464 C 0.06063 0.30444 0.07128 0.29518 0.08272 0.28738 C 0.09416 0.27959 0.10770 0.27316 0.12116 0.26784 C 0.13461 0.26253 0.14944 0.25875 0.16345 0.25548 C 0.17746 0.25221 0.19197 0.25033 0.20520 0.24822 C 0.21844 0.24611 0.23134 0.24494 0.24284 0.24284 C 0.25435 0.24075 0.26487 0.23891 0.27423 0.23566 C 0.28359 0.23240 0.29162 0.22866 0.29898 0.22332 C 0.30633 0.21797 0.31238 0.21149 0.31836 0.20359 C 0.32435 0.19570 0.32935 0.18626 0.33490 0.17596 C 0.34044 0.16567 0.34555 0.15376 0.35164 0.14183 C 0.35773 0.12990 0.36401 0.11667 0.37145 0.10436 C 0.37889 0.09205 0.38706 0.07911 0.39628 0.06796 C 0.40549 0.05680 0.41578 0.04591 0.42674 0.03744 C 0.43769 0.02897 0.44979 0.02170 0.46200 0.01713 C 0.47421 0.01255 0.48733 0.01000 0.50000 0.01000 Z"/></clipPath>
+    <symbol id="down" viewBox="0 0 24 24"><path d="m5 9 7 7 7-7"/></symbol>
+    <symbol id="chevron" viewBox="0 0 24 24"><path d="m9 5 7 7-7 7"/></symbol>
+    <symbol id="heart" viewBox="0 0 24 24"><path d="M20.8 4.8a5.3 5.3 0 0 0-7.5 0L12 6.1l-1.3-1.3a5.3 5.3 0 0 0-7.5 7.5L12 21l8.8-8.7a5.3 5.3 0 0 0 0-7.5Z"/></symbol>
+    <symbol id="play" viewBox="0 0 24 24"><path d="m9 5 11 7-11 7Z"/></symbol>
+    <symbol id="pause" viewBox="0 0 24 24"><path d="M8 5v14M16 5v14"/></symbol>
+    <symbol id="next" viewBox="0 0 24 24"><path d="m5 5 10 7L5 19ZM19 5v14"/></symbol>
+    <symbol id="previous" viewBox="0 0 24 24"><path d="m19 5-10 7 10 7ZM5 5v14"/></symbol>
+    <symbol id="repeat" viewBox="0 0 24 24"><path d="M4 9V6h15m-4-4 4 4-4 4M20 15v3H5m4-4-4 4 4 4"/></symbol>
+    <symbol id="queue" viewBox="0 0 24 24"><path d="M3 5h16M3 10h12M3 15h8m7-3v7m0-7 4-1v6"/><path d="M18 19c0 3-5 3-5 0s5-3 5 0m4-2c0 3-4 3-4 0s4-3 4 0"/></symbol>
+    <symbol id="more" viewBox="0 0 24 24"><circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/></symbol>
+    <symbol id="close" viewBox="0 0 24 24"><path d="m6 6 12 12M6 18 18 6"/></symbol>
+  </defs></svg>
+</body>
+</html>

@@ -1,0 +1,1577 @@
+{
+  "date": "2026-10-15",
+  "scope": "Original B with absolute-positioned cover frames only",
+  "geometryTolerancePx": 0.5,
+  "errors": [],
+  "geometry": [
+    {
+      "width": 320,
+      "height": 690,
+      "frame": "original",
+      "largestDeltaPx": 0,
+      "original": {
+        ".art-frame": {
+          "x": 30,
+          "y": 112,
+          "width": 260,
+          "height": 260
+        },
+        ".song-title": {
+          "x": 23,
+          "y": 400,
+          "width": 109.203125,
+          "height": 35.09375
+        },
+        ".song-subtitle": {
+          "x": 23,
+          "y": 443.09375,
+          "width": 109.203125,
+          "height": 18
+        },
+        ".lyric-peek": {
+          "x": 23,
+          "y": 487.09375,
+          "width": 274,
+          "height": 66
+        },
+        ".controls": {
+          "x": 22,
+          "y": 566,
+          "width": 276,
+          "height": 73
+        },
+        "#seek": {
+          "x": 22,
+          "y": 511,
+          "width": 276,
+          "height": 30
+        },
+        ".favorite": {
+          "x": 253,
+          "y": 408.546875,
+          "width": 44,
+          "height": 44
+        }
+      },
+      "current": {
+        ".art-frame": {
+          "x": 30,
+          "y": 112,
+          "width": 260,
+          "height": 260
+        },
+        ".song-title": {
+          "x": 23,
+          "y": 400,
+          "width": 109.203125,
+          "height": 35.09375
+        },
+        ".song-subtitle": {
+          "x": 23,
+          "y": 443.09375,
+          "width": 109.203125,
+          "height": 18
+        },
+        ".lyric-peek": {
+          "x": 23,
+          "y": 487.09375,
+          "width": 274,
+          "height": 66
+        },
+        ".controls": {
+          "x": 22,
+          "y": 566,
+          "width": 276,
+          "height": 73
+        },
+        "#seek": {
+          "x": 22,
+          "y": 511,
+          "width": 276,
+          "height": 30
+        },
+        ".favorite": {
+          "x": 253,
+          "y": 408.546875,
+          "width": 44,
+          "height": 44
+        }
+      }
+    },
+    {
+      "width": 320,
+      "height": 690,
+      "frame": "silver",
+      "largestDeltaPx": 0,
+      "original": {
+        ".art-frame": {
+          "x": 30,
+          "y": 112,
+          "width": 260,
+          "height": 260
+        },
+        ".song-title": {
+          "x": 23,
+          "y": 400,
+          "width": 109.203125,
+          "height": 35.09375
+        },
+        ".song-subtitle": {
+          "x": 23,
+          "y": 443.09375,
+          "width": 109.203125,
+          "height": 18
+        },
+        ".lyric-peek": {
+          "x": 23,
+          "y": 487.09375,
+          "width": 274,
+          "height": 66
+        },
+        ".controls": {
+          "x": 22,
+          "y": 566,
+          "width": 276,
+          "height": 73
+        },
+        "#seek": {
+          "x": 22,
+          "y": 511,
+          "width": 276,
+          "height": 30
+        },
+        ".favorite": {
+          "x": 253,
+          "y": 408.546875,
+          "width": 44,
+          "height": 44
+        }
+      },
+      "current": {
+        ".art-frame": {
+          "x": 30,
+          "y": 112,
+          "width": 260,
+          "height": 260
+        },
+        ".song-title": {
+          "x": 23,
+          "y": 400,
+          "width": 109.203125,
+          "height": 35.09375
+        },
+        ".song-subtitle": {
+          "x": 23,
+          "y": 443.09375,
+          "width": 109.203125,
+          "height": 18
+        },
+        ".lyric-peek": {
+          "x": 23,
+          "y": 487.09375,
+          "width": 274,
+          "height": 66
+        },
+        ".controls": {
+          "x": 22,
+          "y": 566,
+          "width": 276,
+          "height": 73
+        },
+        "#seek": {
+          "x": 22,
+          "y": 511,
+          "width": 276,
+          "height": 30
+        },
+        ".favorite": {
+          "x": 253,
+          "y": 408.546875,
+          "width": 44,
+          "height": 44
+        }
+      }
+    },
+    {
+      "width": 320,
+      "height": 690,
+      "frame": "glass",
+      "largestDeltaPx": 0,
+      "original": {
+        ".art-frame": {
+          "x": 30,
+          "y": 112,
+          "width": 260,
+          "height": 260
+        },
+        ".song-title": {
+          "x": 23,
+          "y": 400,
+          "width": 109.203125,
+          "height": 35.09375
+        },
+        ".song-subtitle": {
+          "x": 23,
+          "y": 443.09375,
+          "width": 109.203125,
+          "height": 18
+        },
+        ".lyric-peek": {
+          "x": 23,
+          "y": 487.09375,
+          "width": 274,
+          "height": 66
+        },
+        ".controls": {
+          "x": 22,
+          "y": 566,
+          "width": 276,
+          "height": 73
+        },
+        "#seek": {
+          "x": 22,
+          "y": 511,
+          "width": 276,
+          "height": 30
+        },
+        ".favorite": {
+          "x": 253,
+          "y": 408.546875,
+          "width": 44,
+          "height": 44
+        }
+      },
+      "current": {
+        ".art-frame": {
+          "x": 30,
+          "y": 112,
+          "width": 260,
+          "height": 260
+        },
+        ".song-title": {
+          "x": 23,
+          "y": 400,
+          "width": 109.203125,
+          "height": 35.09375
+        },
+        ".song-subtitle": {
+          "x": 23,
+          "y": 443.09375,
+          "width": 109.203125,
+          "height": 18
+        },
+        ".lyric-peek": {
+          "x": 23,
+          "y": 487.09375,
+          "width": 274,
+          "height": 66
+        },
+        ".controls": {
+          "x": 22,
+          "y": 566,
+          "width": 276,
+          "height": 73
+        },
+        "#seek": {
+          "x": 22,
+          "y": 511,
+          "width": 276,
+          "height": 30
+        },
+        ".favorite": {
+          "x": 253,
+          "y": 408.546875,
+          "width": 44,
+          "height": 44
+        }
+      }
+    },
+    {
+      "width": 320,
+      "height": 690,
+      "frame": "luminous",
+      "largestDeltaPx": 0,
+      "original": {
+        ".art-frame": {
+          "x": 30,
+          "y": 112,
+          "width": 260,
+          "height": 260
+        },
+        ".song-title": {
+          "x": 23,
+          "y": 400,
+          "width": 109.203125,
+          "height": 35.09375
+        },
+        ".song-subtitle": {
+          "x": 23,
+          "y": 443.09375,
+          "width": 109.203125,
+          "height": 18
+        },
+        ".lyric-peek": {
+          "x": 23,
+          "y": 487.09375,
+          "width": 274,
+          "height": 66
+        },
+        ".controls": {
+          "x": 22,
+          "y": 566,
+          "width": 276,
+          "height": 73
+        },
+        "#seek": {
+          "x": 22,
+          "y": 511,
+          "width": 276,
+          "height": 30
+        },
+        ".favorite": {
+          "x": 253,
+          "y": 408.546875,
+          "width": 44,
+          "height": 44
+        }
+      },
+      "current": {
+        ".art-frame": {
+          "x": 30,
+          "y": 112,
+          "width": 260,
+          "height": 260
+        },
+        ".song-title": {
+          "x": 23,
+          "y": 400,
+          "width": 109.203125,
+          "height": 35.09375
+        },
+        ".song-subtitle": {
+          "x": 23,
+          "y": 443.09375,
+          "width": 109.203125,
+          "height": 18
+        },
+        ".lyric-peek": {
+          "x": 23,
+          "y": 487.09375,
+          "width": 274,
+          "height": 66
+        },
+        ".controls": {
+          "x": 22,
+          "y": 566,
+          "width": 276,
+          "height": 73
+        },
+        "#seek": {
+          "x": 22,
+          "y": 511,
+          "width": 276,
+          "height": 30
+        },
+        ".favorite": {
+          "x": 253,
+          "y": 408.546875,
+          "width": 44,
+          "height": 44
+        }
+      }
+    },
+    {
+      "width": 360,
+      "height": 800,
+      "frame": "original",
+      "largestDeltaPx": 0,
+      "original": {
+        ".art-frame": {
+          "x": 32.5,
+          "y": 111,
+          "width": 295,
+          "height": 295
+        },
+        ".song-title": {
+          "x": 23,
+          "y": 433,
+          "width": 109.203125,
+          "height": 35.09375
+        },
+        ".song-subtitle": {
+          "x": 23,
+          "y": 476.09375,
+          "width": 109.203125,
+          "height": 18
+        },
+        ".lyric-peek": {
+          "x": 23,
+          "y": 520.09375,
+          "width": 314,
+          "height": 66
+        },
+        ".controls": {
+          "x": 22,
+          "y": 656,
+          "width": 316,
+          "height": 82
+        },
+        "#seek": {
+          "x": 22,
+          "y": 594,
+          "width": 316,
+          "height": 30
+        },
+        ".favorite": {
+          "x": 293,
+          "y": 441.546875,
+          "width": 44,
+          "height": 44
+        }
+      },
+      "current": {
+        ".art-frame": {
+          "x": 32.5,
+          "y": 111,
+          "width": 295,
+          "height": 295
+        },
+        ".song-title": {
+          "x": 23,
+          "y": 433,
+          "width": 109.203125,
+          "height": 35.09375
+        },
+        ".song-subtitle": {
+          "x": 23,
+          "y": 476.09375,
+          "width": 109.203125,
+          "height": 18
+        },
+        ".lyric-peek": {
+          "x": 23,
+          "y": 520.09375,
+          "width": 314,
+          "height": 66
+        },
+        ".controls": {
+          "x": 22,
+          "y": 656,
+          "width": 316,
+          "height": 82
+        },
+        "#seek": {
+          "x": 22,
+          "y": 594,
+          "width": 316,
+          "height": 30
+        },
+        ".favorite": {
+          "x": 293,
+          "y": 441.546875,
+          "width": 44,
+          "height": 44
+        }
+      }
+    },
+    {
+      "width": 360,
+      "height": 800,
+      "frame": "silver",
+      "largestDeltaPx": 0,
+      "original": {
+        ".art-frame": {
+          "x": 32.5,
+          "y": 111,
+          "width": 295,
+          "height": 295
+        },
+        ".song-title": {
+          "x": 23,
+          "y": 433,
+          "width": 109.203125,
+          "height": 35.09375
+        },
+        ".song-subtitle": {
+          "x": 23,
+          "y": 476.09375,
+          "width": 109.203125,
+          "height": 18
+        },
+        ".lyric-peek": {
+          "x": 23,
+          "y": 520.09375,
+          "width": 314,
+          "height": 66
+        },
+        ".controls": {
+          "x": 22,
+          "y": 656,
+          "width": 316,
+          "height": 82
+        },
+        "#seek": {
+          "x": 22,
+          "y": 594,
+          "width": 316,
+          "height": 30
+        },
+        ".favorite": {
+          "x": 293,
+          "y": 441.546875,
+          "width": 44,
+          "height": 44
+        }
+      },
+      "current": {
+        ".art-frame": {
+          "x": 32.5,
+          "y": 111,
+          "width": 295,
+          "height": 295
+        },
+        ".song-title": {
+          "x": 23,
+          "y": 433,
+          "width": 109.203125,
+          "height": 35.09375
+        },
+        ".song-subtitle": {
+          "x": 23,
+          "y": 476.09375,
+          "width": 109.203125,
+          "height": 18
+        },
+        ".lyric-peek": {
+          "x": 23,
+          "y": 520.09375,
+          "width": 314,
+          "height": 66
+        },
+        ".controls": {
+          "x": 22,
+          "y": 656,
+          "width": 316,
+          "height": 82
+        },
+        "#seek": {
+          "x": 22,
+          "y": 594,
+          "width": 316,
+          "height": 30
+        },
+        ".favorite": {
+          "x": 293,
+          "y": 441.546875,
+          "width": 44,
+          "height": 44
+        }
+      }
+    },
+    {
+      "width": 360,
+      "height": 800,
+      "frame": "glass",
+      "largestDeltaPx": 0,
+      "original": {
+        ".art-frame": {
+          "x": 32.5,
+          "y": 111,
+          "width": 295,
+          "height": 295
+        },
+        ".song-title": {
+          "x": 23,
+          "y": 433,
+          "width": 109.203125,
+          "height": 35.09375
+        },
+        ".song-subtitle": {
+          "x": 23,
+          "y": 476.09375,
+          "width": 109.203125,
+          "height": 18
+        },
+        ".lyric-peek": {
+          "x": 23,
+          "y": 520.09375,
+          "width": 314,
+          "height": 66
+        },
+        ".controls": {
+          "x": 22,
+          "y": 656,
+          "width": 316,
+          "height": 82
+        },
+        "#seek": {
+          "x": 22,
+          "y": 594,
+          "width": 316,
+          "height": 30
+        },
+        ".favorite": {
+          "x": 293,
+          "y": 441.546875,
+          "width": 44,
+          "height": 44
+        }
+      },
+      "current": {
+        ".art-frame": {
+          "x": 32.5,
+          "y": 111,
+          "width": 295,
+          "height": 295
+        },
+        ".song-title": {
+          "x": 23,
+          "y": 433,
+          "width": 109.203125,
+          "height": 35.09375
+        },
+        ".song-subtitle": {
+          "x": 23,
+          "y": 476.09375,
+          "width": 109.203125,
+          "height": 18
+        },
+        ".lyric-peek": {
+          "x": 23,
+          "y": 520.09375,
+          "width": 314,
+          "height": 66
+        },
+        ".controls": {
+          "x": 22,
+          "y": 656,
+          "width": 316,
+          "height": 82
+        },
+        "#seek": {
+          "x": 22,
+          "y": 594,
+          "width": 316,
+          "height": 30
+        },
+        ".favorite": {
+          "x": 293,
+          "y": 441.546875,
+          "width": 44,
+          "height": 44
+        }
+      }
+    },
+    {
+      "width": 360,
+      "height": 800,
+      "frame": "luminous",
+      "largestDeltaPx": 0,
+      "original": {
+        ".art-frame": {
+          "x": 32.5,
+          "y": 111,
+          "width": 295,
+          "height": 295
+        },
+        ".song-title": {
+          "x": 23,
+          "y": 433,
+          "width": 109.203125,
+          "height": 35.09375
+        },
+        ".song-subtitle": {
+          "x": 23,
+          "y": 476.09375,
+          "width": 109.203125,
+          "height": 18
+        },
+        ".lyric-peek": {
+          "x": 23,
+          "y": 520.09375,
+          "width": 314,
+          "height": 66
+        },
+        ".controls": {
+          "x": 22,
+          "y": 656,
+          "width": 316,
+          "height": 82
+        },
+        "#seek": {
+          "x": 22,
+          "y": 594,
+          "width": 316,
+          "height": 30
+        },
+        ".favorite": {
+          "x": 293,
+          "y": 441.546875,
+          "width": 44,
+          "height": 44
+        }
+      },
+      "current": {
+        ".art-frame": {
+          "x": 32.5,
+          "y": 111,
+          "width": 295,
+          "height": 295
+        },
+        ".song-title": {
+          "x": 23,
+          "y": 433,
+          "width": 109.203125,
+          "height": 35.09375
+        },
+        ".song-subtitle": {
+          "x": 23,
+          "y": 476.09375,
+          "width": 109.203125,
+          "height": 18
+        },
+        ".lyric-peek": {
+          "x": 23,
+          "y": 520.09375,
+          "width": 314,
+          "height": 66
+        },
+        ".controls": {
+          "x": 22,
+          "y": 656,
+          "width": 316,
+          "height": 82
+        },
+        "#seek": {
+          "x": 22,
+          "y": 594,
+          "width": 316,
+          "height": 30
+        },
+        ".favorite": {
+          "x": 293,
+          "y": 441.546875,
+          "width": 44,
+          "height": 44
+        }
+      }
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "frame": "original",
+      "largestDeltaPx": 0,
+      "original": {
+        ".art-frame": {
+          "x": 30,
+          "y": 112,
+          "width": 330,
+          "height": 330
+        },
+        ".song-title": {
+          "x": 23,
+          "y": 470,
+          "width": 109.203125,
+          "height": 35.09375
+        },
+        ".song-subtitle": {
+          "x": 23,
+          "y": 513.09375,
+          "width": 109.203125,
+          "height": 18
+        },
+        ".lyric-peek": {
+          "x": 23,
+          "y": 557.09375,
+          "width": 344,
+          "height": 66
+        },
+        ".controls": {
+          "x": 26,
+          "y": 700,
+          "width": 338,
+          "height": 82
+        },
+        "#seek": {
+          "x": 26,
+          "y": 638,
+          "width": 338,
+          "height": 30
+        },
+        ".favorite": {
+          "x": 323,
+          "y": 478.546875,
+          "width": 44,
+          "height": 44
+        }
+      },
+      "current": {
+        ".art-frame": {
+          "x": 30,
+          "y": 112,
+          "width": 330,
+          "height": 330
+        },
+        ".song-title": {
+          "x": 23,
+          "y": 470,
+          "width": 109.203125,
+          "height": 35.09375
+        },
+        ".song-subtitle": {
+          "x": 23,
+          "y": 513.09375,
+          "width": 109.203125,
+          "height": 18
+        },
+        ".lyric-peek": {
+          "x": 23,
+          "y": 557.09375,
+          "width": 344,
+          "height": 66
+        },
+        ".controls": {
+          "x": 26,
+          "y": 700,
+          "width": 338,
+          "height": 82
+        },
+        "#seek": {
+          "x": 26,
+          "y": 638,
+          "width": 338,
+          "height": 30
+        },
+        ".favorite": {
+          "x": 323,
+          "y": 478.546875,
+          "width": 44,
+          "height": 44
+        }
+      }
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "frame": "silver",
+      "largestDeltaPx": 0,
+      "original": {
+        ".art-frame": {
+          "x": 30,
+          "y": 112,
+          "width": 330,
+          "height": 330
+        },
+        ".song-title": {
+          "x": 23,
+          "y": 470,
+          "width": 109.203125,
+          "height": 35.09375
+        },
+        ".song-subtitle": {
+          "x": 23,
+          "y": 513.09375,
+          "width": 109.203125,
+          "height": 18
+        },
+        ".lyric-peek": {
+          "x": 23,
+          "y": 557.09375,
+          "width": 344,
+          "height": 66
+        },
+        ".controls": {
+          "x": 26,
+          "y": 700,
+          "width": 338,
+          "height": 82
+        },
+        "#seek": {
+          "x": 26,
+          "y": 638,
+          "width": 338,
+          "height": 30
+        },
+        ".favorite": {
+          "x": 323,
+          "y": 478.546875,
+          "width": 44,
+          "height": 44
+        }
+      },
+      "current": {
+        ".art-frame": {
+          "x": 30,
+          "y": 112,
+          "width": 330,
+          "height": 330
+        },
+        ".song-title": {
+          "x": 23,
+          "y": 470,
+          "width": 109.203125,
+          "height": 35.09375
+        },
+        ".song-subtitle": {
+          "x": 23,
+          "y": 513.09375,
+          "width": 109.203125,
+          "height": 18
+        },
+        ".lyric-peek": {
+          "x": 23,
+          "y": 557.09375,
+          "width": 344,
+          "height": 66
+        },
+        ".controls": {
+          "x": 26,
+          "y": 700,
+          "width": 338,
+          "height": 82
+        },
+        "#seek": {
+          "x": 26,
+          "y": 638,
+          "width": 338,
+          "height": 30
+        },
+        ".favorite": {
+          "x": 323,
+          "y": 478.546875,
+          "width": 44,
+          "height": 44
+        }
+      }
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "frame": "glass",
+      "largestDeltaPx": 0,
+      "original": {
+        ".art-frame": {
+          "x": 30,
+          "y": 112,
+          "width": 330,
+          "height": 330
+        },
+        ".song-title": {
+          "x": 23,
+          "y": 470,
+          "width": 109.203125,
+          "height": 35.09375
+        },
+        ".song-subtitle": {
+          "x": 23,
+          "y": 513.09375,
+          "width": 109.203125,
+          "height": 18
+        },
+        ".lyric-peek": {
+          "x": 23,
+          "y": 557.09375,
+          "width": 344,
+          "height": 66
+        },
+        ".controls": {
+          "x": 26,
+          "y": 700,
+          "width": 338,
+          "height": 82
+        },
+        "#seek": {
+          "x": 26,
+          "y": 638,
+          "width": 338,
+          "height": 30
+        },
+        ".favorite": {
+          "x": 323,
+          "y": 478.546875,
+          "width": 44,
+          "height": 44
+        }
+      },
+      "current": {
+        ".art-frame": {
+          "x": 30,
+          "y": 112,
+          "width": 330,
+          "height": 330
+        },
+        ".song-title": {
+          "x": 23,
+          "y": 470,
+          "width": 109.203125,
+          "height": 35.09375
+        },
+        ".song-subtitle": {
+          "x": 23,
+          "y": 513.09375,
+          "width": 109.203125,
+          "height": 18
+        },
+        ".lyric-peek": {
+          "x": 23,
+          "y": 557.09375,
+          "width": 344,
+          "height": 66
+        },
+        ".controls": {
+          "x": 26,
+          "y": 700,
+          "width": 338,
+          "height": 82
+        },
+        "#seek": {
+          "x": 26,
+          "y": 638,
+          "width": 338,
+          "height": 30
+        },
+        ".favorite": {
+          "x": 323,
+          "y": 478.546875,
+          "width": 44,
+          "height": 44
+        }
+      }
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "frame": "luminous",
+      "largestDeltaPx": 0,
+      "original": {
+        ".art-frame": {
+          "x": 30,
+          "y": 112,
+          "width": 330,
+          "height": 330
+        },
+        ".song-title": {
+          "x": 23,
+          "y": 470,
+          "width": 109.203125,
+          "height": 35.09375
+        },
+        ".song-subtitle": {
+          "x": 23,
+          "y": 513.09375,
+          "width": 109.203125,
+          "height": 18
+        },
+        ".lyric-peek": {
+          "x": 23,
+          "y": 557.09375,
+          "width": 344,
+          "height": 66
+        },
+        ".controls": {
+          "x": 26,
+          "y": 700,
+          "width": 338,
+          "height": 82
+        },
+        "#seek": {
+          "x": 26,
+          "y": 638,
+          "width": 338,
+          "height": 30
+        },
+        ".favorite": {
+          "x": 323,
+          "y": 478.546875,
+          "width": 44,
+          "height": 44
+        }
+      },
+      "current": {
+        ".art-frame": {
+          "x": 30,
+          "y": 112,
+          "width": 330,
+          "height": 330
+        },
+        ".song-title": {
+          "x": 23,
+          "y": 470,
+          "width": 109.203125,
+          "height": 35.09375
+        },
+        ".song-subtitle": {
+          "x": 23,
+          "y": 513.09375,
+          "width": 109.203125,
+          "height": 18
+        },
+        ".lyric-peek": {
+          "x": 23,
+          "y": 557.09375,
+          "width": 344,
+          "height": 66
+        },
+        ".controls": {
+          "x": 26,
+          "y": 700,
+          "width": 338,
+          "height": 82
+        },
+        "#seek": {
+          "x": 26,
+          "y": 638,
+          "width": 338,
+          "height": 30
+        },
+        ".favorite": {
+          "x": 323,
+          "y": 478.546875,
+          "width": 44,
+          "height": 44
+        }
+      }
+    },
+    {
+      "width": 430,
+      "height": 932,
+      "frame": "original",
+      "largestDeltaPx": 0,
+      "original": {
+        ".art-frame": {
+          "x": 50,
+          "y": 112,
+          "width": 330,
+          "height": 330
+        },
+        ".song-title": {
+          "x": 23,
+          "y": 470,
+          "width": 109.203125,
+          "height": 35.09375
+        },
+        ".song-subtitle": {
+          "x": 23,
+          "y": 513.09375,
+          "width": 109.203125,
+          "height": 18
+        },
+        ".lyric-peek": {
+          "x": 23,
+          "y": 622,
+          "width": 384,
+          "height": 66
+        },
+        ".controls": {
+          "x": 26,
+          "y": 788,
+          "width": 378,
+          "height": 82
+        },
+        "#seek": {
+          "x": 26,
+          "y": 726,
+          "width": 378,
+          "height": 30
+        },
+        ".favorite": {
+          "x": 363,
+          "y": 478.546875,
+          "width": 44,
+          "height": 44
+        }
+      },
+      "current": {
+        ".art-frame": {
+          "x": 50,
+          "y": 112,
+          "width": 330,
+          "height": 330
+        },
+        ".song-title": {
+          "x": 23,
+          "y": 470,
+          "width": 109.203125,
+          "height": 35.09375
+        },
+        ".song-subtitle": {
+          "x": 23,
+          "y": 513.09375,
+          "width": 109.203125,
+          "height": 18
+        },
+        ".lyric-peek": {
+          "x": 23,
+          "y": 622,
+          "width": 384,
+          "height": 66
+        },
+        ".controls": {
+          "x": 26,
+          "y": 788,
+          "width": 378,
+          "height": 82
+        },
+        "#seek": {
+          "x": 26,
+          "y": 726,
+          "width": 378,
+          "height": 30
+        },
+        ".favorite": {
+          "x": 363,
+          "y": 478.546875,
+          "width": 44,
+          "height": 44
+        }
+      }
+    },
+    {
+      "width": 430,
+      "height": 932,
+      "frame": "silver",
+      "largestDeltaPx": 0,
+      "original": {
+        ".art-frame": {
+          "x": 50,
+          "y": 112,
+          "width": 330,
+          "height": 330
+        },
+        ".song-title": {
+          "x": 23,
+          "y": 470,
+          "width": 109.203125,
+          "height": 35.09375
+        },
+        ".song-subtitle": {
+          "x": 23,
+          "y": 513.09375,
+          "width": 109.203125,
+          "height": 18
+        },
+        ".lyric-peek": {
+          "x": 23,
+          "y": 622,
+          "width": 384,
+          "height": 66
+        },
+        ".controls": {
+          "x": 26,
+          "y": 788,
+          "width": 378,
+          "height": 82
+        },
+        "#seek": {
+          "x": 26,
+          "y": 726,
+          "width": 378,
+          "height": 30
+        },
+        ".favorite": {
+          "x": 363,
+          "y": 478.546875,
+          "width": 44,
+          "height": 44
+        }
+      },
+      "current": {
+        ".art-frame": {
+          "x": 50,
+          "y": 112,
+          "width": 330,
+          "height": 330
+        },
+        ".song-title": {
+          "x": 23,
+          "y": 470,
+          "width": 109.203125,
+          "height": 35.09375
+        },
+        ".song-subtitle": {
+          "x": 23,
+          "y": 513.09375,
+          "width": 109.203125,
+          "height": 18
+        },
+        ".lyric-peek": {
+          "x": 23,
+          "y": 622,
+          "width": 384,
+          "height": 66
+        },
+        ".controls": {
+          "x": 26,
+          "y": 788,
+          "width": 378,
+          "height": 82
+        },
+        "#seek": {
+          "x": 26,
+          "y": 726,
+          "width": 378,
+          "height": 30
+        },
+        ".favorite": {
+          "x": 363,
+          "y": 478.546875,
+          "width": 44,
+          "height": 44
+        }
+      }
+    },
+    {
+      "width": 430,
+      "height": 932,
+      "frame": "glass",
+      "largestDeltaPx": 0,
+      "original": {
+        ".art-frame": {
+          "x": 50,
+          "y": 112,
+          "width": 330,
+          "height": 330
+        },
+        ".song-title": {
+          "x": 23,
+          "y": 470,
+          "width": 109.203125,
+          "height": 35.09375
+        },
+        ".song-subtitle": {
+          "x": 23,
+          "y": 513.09375,
+          "width": 109.203125,
+          "height": 18
+        },
+        ".lyric-peek": {
+          "x": 23,
+          "y": 622,
+          "width": 384,
+          "height": 66
+        },
+        ".controls": {
+          "x": 26,
+          "y": 788,
+          "width": 378,
+          "height": 82
+        },
+        "#seek": {
+          "x": 26,
+          "y": 726,
+          "width": 378,
+          "height": 30
+        },
+        ".favorite": {
+          "x": 363,
+          "y": 478.546875,
+          "width": 44,
+          "height": 44
+        }
+      },
+      "current": {
+        ".art-frame": {
+          "x": 50,
+          "y": 112,
+          "width": 330,
+          "height": 330
+        },
+        ".song-title": {
+          "x": 23,
+          "y": 470,
+          "width": 109.203125,
+          "height": 35.09375
+        },
+        ".song-subtitle": {
+          "x": 23,
+          "y": 513.09375,
+          "width": 109.203125,
+          "height": 18
+        },
+        ".lyric-peek": {
+          "x": 23,
+          "y": 622,
+          "width": 384,
+          "height": 66
+        },
+        ".controls": {
+          "x": 26,
+          "y": 788,
+          "width": 378,
+          "height": 82
+        },
+        "#seek": {
+          "x": 26,
+          "y": 726,
+          "width": 378,
+          "height": 30
+        },
+        ".favorite": {
+          "x": 363,
+          "y": 478.546875,
+          "width": 44,
+          "height": 44
+        }
+      }
+    },
+    {
+      "width": 430,
+      "height": 932,
+      "frame": "luminous",
+      "largestDeltaPx": 0,
+      "original": {
+        ".art-frame": {
+          "x": 50,
+          "y": 112,
+          "width": 330,
+          "height": 330
+        },
+        ".song-title": {
+          "x": 23,
+          "y": 470,
+          "width": 109.203125,
+          "height": 35.09375
+        },
+        ".song-subtitle": {
+          "x": 23,
+          "y": 513.09375,
+          "width": 109.203125,
+          "height": 18
+        },
+        ".lyric-peek": {
+          "x": 23,
+          "y": 622,
+          "width": 384,
+          "height": 66
+        },
+        ".controls": {
+          "x": 26,
+          "y": 788,
+          "width": 378,
+          "height": 82
+        },
+        "#seek": {
+          "x": 26,
+          "y": 726,
+          "width": 378,
+          "height": 30
+        },
+        ".favorite": {
+          "x": 363,
+          "y": 478.546875,
+          "width": 44,
+          "height": 44
+        }
+      },
+      "current": {
+        ".art-frame": {
+          "x": 50,
+          "y": 112,
+          "width": 330,
+          "height": 330
+        },
+        ".song-title": {
+          "x": 23,
+          "y": 470,
+          "width": 109.203125,
+          "height": 35.09375
+        },
+        ".song-subtitle": {
+          "x": 23,
+          "y": 513.09375,
+          "width": 109.203125,
+          "height": 18
+        },
+        ".lyric-peek": {
+          "x": 23,
+          "y": 622,
+          "width": 384,
+          "height": 66
+        },
+        ".controls": {
+          "x": 26,
+          "y": 788,
+          "width": 378,
+          "height": 82
+        },
+        "#seek": {
+          "x": 26,
+          "y": 726,
+          "width": 378,
+          "height": 30
+        },
+        ".favorite": {
+          "x": 363,
+          "y": 478.546875,
+          "width": 44,
+          "height": 44
+        }
+      }
+    }
+  ],
+  "variants": [
+    {
+      "frame": "silver",
+      "playPause": true,
+      "favorite": true,
+      "previousNext": true,
+      "seek": true,
+      "queue": true,
+      "lyrics": true,
+      "lyricsStopsFrameMotion": true,
+      "simulatedHiddenPageStopsFrameMotion": true
+    },
+    {
+      "frame": "glass",
+      "playPause": true,
+      "favorite": true,
+      "previousNext": true,
+      "seek": true,
+      "queue": true,
+      "lyrics": true,
+      "lyricsStopsFrameMotion": true,
+      "simulatedHiddenPageStopsFrameMotion": true
+    },
+    {
+      "frame": "luminous",
+      "playPause": true,
+      "favorite": true,
+      "previousNext": true,
+      "seek": true,
+      "queue": true,
+      "lyrics": true,
+      "lyricsStopsFrameMotion": true,
+      "simulatedHiddenPageStopsFrameMotion": true
+    }
+  ],
+  "androidFramePerformanceMeasured": false,
+  "continuousTraceTiming": [
+    {
+      "selector": ".trace-light",
+      "start": 0,
+      "end": -100,
+      "duration": 6500,
+      "iterations": "Infinity",
+      "easing": "linear",
+      "delay": -1400
+    },
+    {
+      "selector": ".trace-tip",
+      "start": -12,
+      "end": -112,
+      "duration": 6500,
+      "iterations": "Infinity",
+      "easing": "linear",
+      "delay": -1400
+    }
+  ],
+  "themeAndReducedMotion": true,
+  "passed": true,
+  "standaloneNarrowToolbar": {
+    "width": 320,
+    "height": 800,
+    "verification": "Chromium offline file preview",
+    "overflow": false,
+    "columns": 2
+  }
+}

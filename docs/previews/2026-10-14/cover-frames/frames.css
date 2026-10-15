@@ -1,0 +1,42 @@
+/* All layout, artwork size, type and controls come directly from the first B. */
+.frame-page .art-button{isolation:isolate}
+.frame-shell,.frame-aura,.frame-inner,.frame-trace{position:absolute;pointer-events:none;display:block}
+.frame-shell{inset:-5px;border-radius:27px;padding:4px;z-index:2;background:linear-gradient(145deg,#fff 0%,#d9dadd 14%,#f8f8f8 28%,#aeb2b7 48%,#f4f5f6 65%,#9ca1a6 83%,#e7e9ec 100%);-webkit-mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);-webkit-mask-composite:xor;mask-composite:exclude;overflow:hidden}
+.frame-inner{inset:-1px;border-radius:23px;border:1px solid #ffffffd9;z-index:3;box-shadow:0 0 0 1px #343e4a30}
+.frame-aura{inset:-5px;border-radius:27px;z-index:0;box-shadow:0 2px 4px #26364517,0 13px 23px -7px #34495720}
+.frame-reflection{display:block;position:absolute;inset:-45%;background:linear-gradient(117deg,transparent 37%,#ffffff00 43%,#fff 49%,#ffffff20 54%,transparent 60%);transform:translateX(-65%);animation:metal-reflection 8s ease-in-out infinite;animation-delay:-2.2s;animation-play-state:paused}
+.frame-trace{display:none;inset:-5px;width:calc(100% + 10px);height:calc(100% + 10px);z-index:4;overflow:visible;fill:none;stroke-linecap:round;stroke-linejoin:round}
+.frame-page[data-frame=original] .frame-shell,.frame-page[data-frame=original] .frame-inner,.frame-page[data-frame=original] .frame-aura,.frame-page[data-frame=original] .frame-trace{display:none}
+/* Narrow metallic bevel; the image itself never scales down to make room. */
+.frame-page[data-frame=silver] .frame-shell{box-shadow:none}
+/* The acrylic edge is slightly wider, with separate outer and inner reflections. */
+.frame-page[data-frame=glass] .frame-shell{inset:-7px;padding:6px;border-radius:29px;background:linear-gradient(135deg,#fffffffa 0%,#e2ebf0e6 18%,#ffffffed 28%,#b9cbd266 48%,#ffffff 61%,#c1d0d682 77%,#fffffff0 100%)}
+.frame-page[data-frame=glass] .frame-aura{inset:-7px;border-radius:29px;box-shadow:0 0 0 1px #d9e3e9b3,0 1px 0 2px #ffffffbd,0 10px 22px -8px #243f5526}
+.frame-page[data-frame=glass] .frame-inner{border-color:#ffffffed;box-shadow:0 0 0 1px #b7c8d85e}
+.frame-page[data-frame=glass] .frame-reflection{animation-name:glass-reflection;animation-duration:9s;background:linear-gradient(120deg,transparent 33%,#ffffff26 44%,#fff 49%,#ffffff13 57%,transparent 64%)}
+/* One short travelling segment follows the rounded edge; no rainbow or flashing. */
+.frame-page[data-frame=luminous] .frame-shell{padding:2px;background:linear-gradient(150deg,color-mix(in srgb,var(--accent) 70%,#fff),color-mix(in srgb,var(--accent) 25%,#fff) 28%,var(--accent) 60%,color-mix(in srgb,var(--accent) 35%,#fff));opacity:.8}
+.frame-page[data-frame=luminous] .frame-inner{border-color:#ffffffbd;box-shadow:0 0 0 1px color-mix(in srgb,var(--accent) 24%,transparent)}
+.frame-page[data-frame=luminous] .frame-aura{inset:-5px;box-shadow:0 0 9px 1px color-mix(in srgb,var(--accent) 13%,transparent),0 8px 25px -8px color-mix(in srgb,var(--accent) 27%,transparent);animation:aura-breathe 5.5s ease-in-out infinite;animation-play-state:paused}
+.frame-page[data-frame=luminous] .frame-reflection{display:none}
+.frame-page[data-frame=luminous] .frame-trace{display:block}
+.trace-base{stroke:color-mix(in srgb,var(--accent) 18%,transparent);stroke-width:1}
+.trace-light{stroke:var(--accent);stroke-width:2;stroke-dasharray:15 85;stroke-dashoffset:0;animation:edge-orbit 6.5s linear infinite;animation-delay:-1.4s;animation-play-state:paused}
+.trace-tip{stroke:#ffffffed;stroke-width:1.4;stroke-dasharray:3 97;stroke-dashoffset:-12;animation:edge-tip 6.5s linear infinite;animation-delay:-1.4s;animation-play-state:paused}
+.phone[data-playing=true] .frame-reflection,.phone[data-playing=true] .frame-aura,.phone[data-playing=true] .trace-light,.phone[data-playing=true] .trace-tip{animation-play-state:running}
+.frame-page .phone.frame-inactive .frame-reflection,.frame-page .phone.frame-inactive .frame-aura,.frame-page .phone.frame-inactive .trace-light,.frame-page .phone.frame-inactive .trace-tip,.frame-page .phone.frame-inactive .album-art{animation-play-state:paused}
+@keyframes metal-reflection{0%,16%{transform:translateX(-65%);opacity:.25}48%{opacity:.9}78%,100%{transform:translateX(65%);opacity:.25}}
+@keyframes glass-reflection{0%,22%{transform:translateX(-65%);opacity:.25}53%{opacity:.85}88%,100%{transform:translateX(65%);opacity:.25}}
+@keyframes edge-orbit{from{stroke-dashoffset:0}to{stroke-dashoffset:-100}}
+@keyframes edge-tip{from{stroke-dashoffset:-12}to{stroke-dashoffset:-112}}
+@keyframes aura-breathe{0%,100%{opacity:.6}50%{opacity:1}}
+@media(prefers-reduced-motion:reduce){.frame-shell *, .frame-aura,.frame-trace *{animation:none!important}}
+/* Detail board reuses the exact player iframe; only its viewport is cropped. */
+.frame-board .compare-grid{grid-template-columns:repeat(3,minmax(0,390px));gap:30px;justify-content:center}
+.frame-board .board-header{max-width:1230px;margin-left:auto;margin-right:auto}
+.detail-grid{display:grid;grid-template-columns:repeat(3,minmax(0,370px));gap:35px;justify-content:center;margin-top:35px}
+.detail-item h2{font-size:19px;font-weight:500;margin:0 0 12px}.detail-item p{font-size:12px;line-height:1.8;color:#687263;margin:0 0 18px}.detail-viewport{height:366px;overflow:hidden;position:relative;border-radius:20px;background:var(--paper)}.detail-viewport iframe{position:absolute;width:390px;height:844px;max-width:none;border:0;left:50%;top:-93px;transform:translateX(-50%);pointer-events:none}
+@media(max-width:1100px){.frame-board .compare-grid{grid-template-columns:repeat(3,minmax(0,390px));gap:18px}.detail-grid{gap:18px}}
+@media(max-width:1000px){.frame-board .compare-grid{grid-template-columns:minmax(0,390px)}.detail-grid{grid-template-columns:minmax(0,370px);gap:30px}}
+
+@media(max-width:700px){.frame-page .workbench nav{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}.frame-page .frame-choice{justify-content:flex-start}}
