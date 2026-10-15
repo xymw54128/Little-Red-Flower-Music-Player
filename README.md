@@ -6,7 +6,7 @@
 
 ## 下载与安装
 
-本地开发版 **Android 1.0.11 / code 18** 加入已选的 A/B/C/D/F 五款歌词字体，保留系统、文楷和宋体，共八款。播放页以最初 B「封面画廊」为基础，提供[三款封面边框预览](docs/previews/2026-10-14/cover-frames/index.html)，保持原布局，待选后再应用。原工作区安装包为 `dist/小红花-1.0.11.apk`，见 [本地版本说明](dist/小红花-1.0.11-发布说明.md)。本轮仅本地提交，下方下载链接继续指向已公开的 1.0.5。
+本地开发版 **Android 1.0.11 / code 18** 加入已选的 A/B/C/D/F 五款歌词字体，保留系统、文楷和宋体，共八款。播放页以最初 B「封面画廊」为基础，提供新的[封面材质交互预览](docs/previews/2026-10-14/material-frames/index.html)：水晶透镜、铂金切面与珠光镀膜；[设计参考与取舍](docs/previews/2026-10-14/material-frames/research.html)附一手来源，保持原布局，待选后再应用。原工作区安装包为 `dist/小红花-1.0.11.apk`，见 [本地版本说明](dist/小红花-1.0.11-发布说明.md)。本轮仅本地提交，下方下载链接继续指向已公开的 1.0.5。
 
 **[下载 Android 1.0.5 APK](https://github.com/xymw54128/Little-Red-Flower-Music-Player/releases/download/v1.0.5/Xiaohonghua-1.0.5.apk)** · [1.0.5 发布页面](https://github.com/xymw54128/Little-Red-Flower-Music-Player/releases/tag/v1.0.5) · [发布说明](dist/小红花-1.0.5-发布说明.md) · [安装与换机说明](dist/安装说明.md)
 
@@ -111,6 +111,8 @@ python -m http.server 49173 --bind 127.0.0.1 --directory ui
 ```
 
 ## 验证状态与反馈
+
+2026-10-15 封面材质预览（仅网页）：水晶透镜、铂金切面、珠光镀膜和原版 B 的 16 组尺寸/方案布局比较偏差为 0 px。三材质的 WebGL 边缘、透明封面中心、触点光照、暂停/隐藏/歌词页停帧、减少动态和上下文丢失后的静态回退检查通过；页面无 JavaScript 错误。[交互预览](docs/previews/2026-10-14/material-frames/index.html) · [动图](docs/previews/2026-10-14/material-frames/screenshots/materials-motion.gif) · [参考与验收边界](docs/design/2026-10-15-researched-material-frames.md)。尚未应用到 Android，未测手机帧率。
 
 Android 1.0.11（仅本地）：加入已选 A/B/C/D/F 五款完整多语言歌词字体，设置合计八项。Release/Debug APK 与原生测试 APK 构建成功，99 项 JVM 单元测试通过，Lint 0 错误、17 提醒；67 项原生用例编译成功。7 份字库的完整常用覆盖、许可、资源哈希与历史同签名检查通过。B 封面画廊的三种增强方案通过交互与十二种尺寸/方案组合检查，实际播放页待选后再改。当前无连接手机，原生测试未执行，手机字形、手势和帧率仍待验收。
 

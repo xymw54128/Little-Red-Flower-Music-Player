@@ -1,0 +1,20 @@
+/* The original B determines every content rectangle. Only outer decoration is new. */
+.material-page .art-button{isolation:isolate}
+.material-page.material-inactive .album-art{animation-play-state:paused!important}
+.material-shadow,.material-fallback,.material-canvas{position:absolute;display:block;pointer-events:none}
+.material-shadow{inset:-10px;border-radius:32px;z-index:0;box-shadow:0 1px 2px #18272c1a,0 8px 12px -5px #162a3638,0 18px 29px -14px #1a314e38}
+.material-canvas{inset:-14px;width:calc(100% + 28px);height:calc(100% + 28px);z-index:3}
+.material-fallback{inset:-11px;padding:10px;border-radius:33px;z-index:2;background:linear-gradient(135deg,#d9e4ee,#fafcff 24%,#8b9ba4 45%,#eef4f8 63%,#b3bac5 82%,#f9fbff);-webkit-mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);-webkit-mask-composite:xor;mask-composite:exclude}
+.material-page[data-material=platinum] .material-fallback{background:linear-gradient(140deg,#e9e6e1,#6b6c6c 22%,#e4e6e5 41%,#fafafa 48%,#474d50 63%,#dededb 83%,#777b7b)}
+.material-page[data-material=pearl] .material-fallback{background:linear-gradient(130deg,#fff8f1,#e3e6f4 24%,#f5e2ef 46%,#e1efe8 67%,#f4eddb 82%,#fff)}
+.material-page[data-renderer=webgl] .material-fallback{display:none}
+.material-page[data-material=original] .material-shadow,.material-page[data-material=original] .material-fallback,.material-page[data-material=original] .material-canvas{display:none}
+.light-demo{min-height:44px;padding:10px 16px;margin:16px 0 0;text-align:left;border:1px solid color-mix(in srgb,var(--accent) 22%,#dce0da);border-radius:11px;color:var(--accent);font-size:12px;background:color-mix(in srgb,var(--accent) 4%,var(--paper))}.light-demo:active{transform:scale(.985)}
+.material-page .workbench{padding-top:30px;padding-bottom:23px}.material-page h1{margin-top:27px}.material-page .intro{margin-bottom:17px}.material-page .scheme{min-height:67px;padding-top:11px;padding-bottom:11px}.material-page .bench-bottom{padding-top:22px}.material-page .bench-bottom p{margin-top:15px}
+.material-board .compare-grid{grid-template-columns:repeat(3,minmax(0,390px));gap:30px;justify-content:center}.material-board .board-header{max-width:1230px;margin-left:auto;margin-right:auto}
+.material-grid{display:grid;grid-template-columns:repeat(3,minmax(0,370px));gap:35px;justify-content:center;margin-top:32px}.material-item h2{font-size:19px;font-weight:500;margin:0 0 10px}.material-item p{font-size:12px;line-height:1.8;color:#687263;margin:0 0 18px}.material-window{height:370px;position:relative;overflow:hidden;border-radius:18px;background:var(--paper)}.material-window iframe{position:absolute;top:-92px;left:50%;transform:translateX(-50%);width:390px;height:844px;border:0;max-width:none}
+.research{display:block;background:var(--paper)}.research main{max-width:860px;margin:auto;padding:50px 30px}.research h1{margin:28px 0 18px}.research h2{font-size:20px;font-weight:500;margin-top:37px}.research p,.research li{font-size:14px;line-height:1.9;color:#5c685b}.research a{color:var(--accent);text-decoration:underline;text-underline-offset:4px}.research .back{font-size:13px}.research .note{padding:15px 18px;border-left:2px solid var(--accent);background:var(--accent-soft)}
+@media(max-width:1100px){.material-board .compare-grid{gap:18px}.material-grid{gap:18px}}
+@media(max-width:1000px){.material-board .compare-grid{grid-template-columns:minmax(0,390px)}.material-grid{grid-template-columns:minmax(0,370px);gap:30px}}
+@media(max-width:700px){.material-page .workbench{padding:17px 18px}.material-page .workbench nav{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}.material-page .scheme{justify-content:flex-start;min-height:44px}.material-page .light-demo{display:block;margin:10px 0 0;width:100%;min-height:38px}.material-page .bench-bottom{padding-top:0}.material-page .scheme small{display:none}.material-page .intro{display:none}}
+@media(prefers-reduced-motion:reduce){.material-page .album-art,.material-page .playing-indicator i{animation-play-state:paused!important}}
