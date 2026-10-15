@@ -1,0 +1,207 @@
+{
+  "date": "2026-10-15",
+  "scope": "Reimagined player browser prototypes",
+  "errors": [],
+  "layouts": [
+    {
+      "layout": "stage",
+      "playPause": true,
+      "favorite": true,
+      "rapidTrackChanges": true,
+      "sideCoverSwitch": false,
+      "queue": true,
+      "playMode": true,
+      "keyboardSeek": true,
+      "pointerSeek": true,
+      "lyricsByClickAndSwipe": true,
+      "touchCancelReturnsToCurrent": true
+    },
+    {
+      "layout": "lyric",
+      "playPause": true,
+      "favorite": true,
+      "rapidTrackChanges": true,
+      "sideCoverSwitch": false,
+      "queue": true,
+      "playMode": true,
+      "keyboardSeek": true,
+      "pointerSeek": true,
+      "lyricsByClickAndSwipe": true,
+      "touchCancelReturnsToCurrent": true
+    },
+    {
+      "layout": "shelf",
+      "playPause": true,
+      "favorite": true,
+      "rapidTrackChanges": true,
+      "sideCoverSwitch": true,
+      "queue": true,
+      "playMode": true,
+      "keyboardSeek": true,
+      "pointerSeek": true,
+      "lyricsByClickAndSwipe": true,
+      "touchCancelReturnsToCurrent": true
+    }
+  ],
+  "sizes": [
+    {
+      "width": 320,
+      "height": 690,
+      "layout": "stage",
+      "overflow": false,
+      "artInside": true,
+      "headingInside": true,
+      "controlsInside": true,
+      "seekInside": true
+    },
+    {
+      "width": 320,
+      "height": 690,
+      "layout": "lyric",
+      "overflow": false,
+      "artInside": true,
+      "headingInside": true,
+      "controlsInside": true,
+      "seekInside": true
+    },
+    {
+      "width": 320,
+      "height": 690,
+      "layout": "shelf",
+      "overflow": false,
+      "artInside": true,
+      "headingInside": true,
+      "controlsInside": true,
+      "seekInside": true
+    },
+    {
+      "width": 360,
+      "height": 800,
+      "layout": "stage",
+      "overflow": false,
+      "artInside": true,
+      "headingInside": true,
+      "controlsInside": true,
+      "seekInside": true
+    },
+    {
+      "width": 360,
+      "height": 800,
+      "layout": "lyric",
+      "overflow": false,
+      "artInside": true,
+      "headingInside": true,
+      "controlsInside": true,
+      "seekInside": true
+    },
+    {
+      "width": 360,
+      "height": 800,
+      "layout": "shelf",
+      "overflow": false,
+      "artInside": true,
+      "headingInside": true,
+      "controlsInside": true,
+      "seekInside": true
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "layout": "stage",
+      "overflow": false,
+      "artInside": true,
+      "headingInside": true,
+      "controlsInside": true,
+      "seekInside": true
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "layout": "lyric",
+      "overflow": false,
+      "artInside": true,
+      "headingInside": true,
+      "controlsInside": true,
+      "seekInside": true
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "layout": "shelf",
+      "overflow": false,
+      "artInside": true,
+      "headingInside": true,
+      "controlsInside": true,
+      "seekInside": true
+    },
+    {
+      "width": 430,
+      "height": 932,
+      "layout": "stage",
+      "overflow": false,
+      "artInside": true,
+      "headingInside": true,
+      "controlsInside": true,
+      "seekInside": true
+    },
+    {
+      "width": 430,
+      "height": 932,
+      "layout": "lyric",
+      "overflow": false,
+      "artInside": true,
+      "headingInside": true,
+      "controlsInside": true,
+      "seekInside": true
+    },
+    {
+      "width": 430,
+      "height": 932,
+      "layout": "shelf",
+      "overflow": false,
+      "artInside": true,
+      "headingInside": true,
+      "controlsInside": true,
+      "seekInside": true
+    }
+  ],
+  "longMetadata": [
+    {
+      "layout": "stage",
+      "overflow": false,
+      "titleInside": true,
+      "subtitleInside": true,
+      "favoriteInside": true,
+      "controlsInside": true,
+      "titleOverFavorite": false,
+      "subtitleOverFavorite": false,
+      "metadataOverControls": false
+    },
+    {
+      "layout": "lyric",
+      "overflow": false,
+      "titleInside": true,
+      "subtitleInside": true,
+      "favoriteInside": true,
+      "controlsInside": true,
+      "titleOverFavorite": false,
+      "subtitleOverFavorite": false,
+      "metadataOverControls": false
+    },
+    {
+      "layout": "shelf",
+      "overflow": false,
+      "titleInside": true,
+      "subtitleInside": true,
+      "favoriteInside": true,
+      "controlsInside": true,
+      "titleOverFavorite": false,
+      "subtitleOverFavorite": false,
+      "metadataOverControls": false
+    }
+  ],
+  "androidFramePerformanceMeasured": false,
+  "layoutPickerAndTheme": true,
+  "reducedMotion": true,
+  "passed": true
+}

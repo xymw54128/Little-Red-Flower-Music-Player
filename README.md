@@ -6,7 +6,7 @@
 
 ## 下载与安装
 
-本地开发版 **Android 1.0.11 / code 18** 加入已选的 A/B/C/D/F 五款歌词字体，保留系统、文楷和宋体，共八款。B「封面画廊」提供[三种增强预览](docs/previews/2026-10-14/gallery-refinements/index.html)，播放页布局待选后再应用。原工作区安装包为 `dist/小红花-1.0.11.apk`，见 [本地版本说明](dist/小红花-1.0.11-发布说明.md)。本轮仅本地提交，下方下载链接继续指向已公开的 1.0.5。
+本地开发版 **Android 1.0.11 / code 18** 加入已选的 A/B/C/D/F 五款歌词字体，保留系统、文楷和宋体，共八款。播放页提供[三个全新构图预览](docs/previews/2026-10-14/player-reimagined/index.html)，待选后再应用。原工作区安装包为 `dist/小红花-1.0.11.apk`，见 [本地版本说明](dist/小红花-1.0.11-发布说明.md)。本轮仅本地提交，下方下载链接继续指向已公开的 1.0.5。
 
 **[下载 Android 1.0.5 APK](https://github.com/xymw54128/Little-Red-Flower-Music-Player/releases/download/v1.0.5/Xiaohonghua-1.0.5.apk)** · [1.0.5 发布页面](https://github.com/xymw54128/Little-Red-Flower-Music-Player/releases/tag/v1.0.5) · [发布说明](dist/小红花-1.0.5-发布说明.md) · [安装与换机说明](dist/安装说明.md)
 
