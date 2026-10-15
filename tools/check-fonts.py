@@ -8,9 +8,11 @@ from PIL import Image, ImageDraw, ImageFont
 root = Path(__file__).resolve().parent.parent
 folder = root / "android/app/src/main/res/font"
 samples = ["小红花 春风桃李花开日", "Little Flower ABC xyz 0123456789",
-           "あいうえお アイウエオ ひらがな ゕゖ", "꽃피는노래 가나다라마바사 123"]
+           "あいうえお アイウエオ 音楽 歌詞 ゕゖ", "꽃피는노래 가나다라마바사 123"]
 faces = [("文楷", "lxgw_wenkai.ttf"), ("宋体", "flower_serif.ttf"),
-         ("花间萌趣", "flower_cute.ttf"), ("圆润手绘", "flower_handdrawn.ttf")]
+         ("小薇宋意", "flower_xiaowei.ttf"), ("禅丸圆体", "flower_zenmaru.ttf"),
+         ("奇异果圆体", "flower_kiwi.ttf"), ("红道手写", "flower_kurenaido.ttf"),
+         ("龙藏手书", "flower_longcang.ttf")]
 sources = {source["file"]: source for source in json.loads((root / "android/app/src/main/assets/font-licenses/sources.json").read_text("utf-8"))}
 required = {
     "LatinLettersAndDigits": set(range(65, 91)) | set(range(97, 123)) | set(range(48, 58)),
@@ -25,6 +27,7 @@ for lead in range(0xB0, 0xF8):
             gb2312_han.add(ord(bytes([lead, trail]).decode("gb2312")))
         except UnicodeDecodeError:
             pass
+assert len(gb2312_han) == 6763
 required["Gb2312ChineseIdeographs"] = gb2312_han
 results = []
 signatures = {sample: [] for sample in samples}
@@ -65,7 +68,13 @@ for index, (label, file) in enumerate(faces):
         signatures[sample].append(hashlib.sha256(image.tobytes()).hexdigest())
     font.close()
 for sample, hashes in signatures.items():
-    assert len(set(hashes)) == len(faces), ("Font style did not change this script", sample)
+    if sample.startswith("꽃"):
+        # B/C intentionally share Jua; D/F share Nanum Pen Script. Each chosen
+        # style still changes Korean from the existing WenKai/system appearance.
+        assert len(set(hashes)) >= 5, ("Missing distinct Korean companion styles", sample)
+        assert all(value != hashes[0] for value in hashes[2:]), ("New Korean style reused WenKai", sample)
+    else:
+        assert len(set(hashes)) == len(faces), ("Font style did not change this script", sample)
 dest = root / "dist"
 dest.mkdir(exist_ok=True)
 canvas.save(dest / "font-preview.png")

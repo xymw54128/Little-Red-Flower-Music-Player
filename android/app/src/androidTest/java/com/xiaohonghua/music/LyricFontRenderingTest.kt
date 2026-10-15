@@ -18,13 +18,14 @@ import org.junit.runner.RunWith
 class LyricFontRenderingTest {
     private val context get() = ApplicationProvider.getApplicationContext<android.content.Context>()
     private val resources = listOf(R.font.lxgw_wenkai, R.font.flower_serif,
-        R.font.flower_cute, R.font.flower_handdrawn)
+        R.font.flower_xiaowei, R.font.flower_zenmaru, R.font.flower_kiwi,
+        R.font.flower_kurenaido, R.font.flower_longcang)
 
     @Test fun everyBundledFaceRendersChineseLatinJapaneseKoreanAndDigits() {
         for (resource in resources) {
             val face = requireNotNull(ResourcesCompat.getFont(context, resource))
             val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply { typeface = face; textSize = 48f }
-            for (character in "小红花春夏秋冬FlowerABC0123456789あいうえおアイウエオゕゖ꽃피는노래") {
+            for (character in "小红花春夏秋冬FlowerABC0123456789あいうえおアイウエオゕゖ音楽歌詞꽃피는노래") {
                 assertTrue("Resource $resource missing $character", paint.hasGlyph(character.toString()))
             }
             assertTrue(paint.measureText("音乐 Flower あいう 꽃피는노래 123") > 100f)
@@ -34,7 +35,7 @@ class LyricFontRenderingTest {
     @Test fun changingFontChangesNativeRenderingInEachLanguageAndDigits() {
         val faces = listOf(Typeface.create("sans-serif", Typeface.NORMAL)) +
             resources.map { requireNotNull(ResourcesCompat.getFont(context, it)) }
-        for (sample in listOf("春风桃李", "Flower Love", "ひらがなアイウ", "꽃피는노래", "0123456789")) {
+        for (sample in listOf("春风桃李", "Flower Love", "ひらがな 音楽 歌詞", "꽃피는노래", "0123456789")) {
             val images = faces.map { face ->
                 val bitmap = Bitmap.createBitmap(1000, 120, Bitmap.Config.ARGB_8888)
                 val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
@@ -46,7 +47,14 @@ class LyricFontRenderingTest {
                 bitmap.recycle()
                 pixels.contentHashCode()
             }
-            assertEquals("Every selectable face should differ for $sample", faces.size, images.distinct().size)
+            // B/C share Jua and D/F share Nanum Pen Script for coherent Korean
+            // pairing; those intentional companions need not be different faces.
+            if (sample == "꽃피는노래") {
+                assertTrue("Korean must offer distinct serif, rounded and handwritten choices", images.distinct().size >= 5)
+                assertTrue("Every bundled style must change Korean from system", images.drop(1).none { it == images.first() })
+            } else {
+                assertEquals("Every selectable face should differ for $sample", faces.size, images.distinct().size)
+            }
         }
     }
 }

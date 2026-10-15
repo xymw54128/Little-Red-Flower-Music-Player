@@ -105,7 +105,11 @@ private fun UriLabel(uri: String)=android.net.Uri.decode(uri.substringAfter("/tr
             val selected=draft.lyricFont == key
             val tint by animateColorAsState(if(selected) MaterialTheme.colorScheme.primary.copy(alpha=.08f) else Color.Transparent,tween(160),label="font-selection")
             Row(Modifier.testTag("lyric-font-$key").fillMaxWidth().clip(RoundedCornerShape(14.dp)).background(tint).selectable(selected,role=Role.RadioButton,onClick={apply(draft.copy(lyricFont=key))}).padding(vertical=2.dp),verticalAlignment=Alignment.CenterVertically) {
-                RadioButton(selected,onClick=null);Text(label,fontFamily=lyricFont(key))
+                RadioButton(selected,onClick=null)
+                Column(Modifier.padding(vertical=8.dp)) {
+                    Text(label,fontFamily=lyricFont(key))
+                    Text(lyricFontDescriptions.getValue(key),fontSize=12.sp,color=muted,modifier=Modifier.padding(top=3.dp))
+                }
             }
         } }
         SettingSlider("字号","${draft.lyricSize.toInt()} sp",draft.lyricSize,18f..34f,onFinished=::finish) {draft=draft.copy(lyricSize=it)}

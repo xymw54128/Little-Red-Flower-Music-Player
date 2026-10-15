@@ -1,0 +1,177 @@
+{
+  "date": "2026-10-14",
+  "scope": "B gallery refinement browser prototypes",
+  "errors": [],
+  "variants": [
+    {
+      "variant": "depth",
+      "playPause": true,
+      "favorite": true,
+      "rapidTrackChanges": true,
+      "queueIndex": true,
+      "nextTrackEntry": true,
+      "seekTooltip": true,
+      "lyrics": true,
+      "touchCancelReturnsToCurrent": true
+    },
+    {
+      "variant": "rhythm",
+      "playPause": true,
+      "favorite": true,
+      "rapidTrackChanges": true,
+      "queueIndex": true,
+      "nextTrackEntry": true,
+      "seekTooltip": true,
+      "lyrics": true,
+      "touchCancelReturnsToCurrent": true
+    },
+    {
+      "variant": "letter",
+      "playPause": true,
+      "favorite": true,
+      "rapidTrackChanges": true,
+      "queueIndex": true,
+      "nextTrackEntry": true,
+      "seekTooltip": true,
+      "lyrics": true,
+      "touchCancelReturnsToCurrent": true
+    }
+  ],
+  "sizes": [
+    {
+      "width": 320,
+      "height": 690,
+      "variant": "depth",
+      "overflow": false,
+      "artInside": true,
+      "controlsInside": true,
+      "headingVisible": true,
+      "qualityVisible": true,
+      "peekVisible": true
+    },
+    {
+      "width": 320,
+      "height": 690,
+      "variant": "rhythm",
+      "overflow": false,
+      "artInside": true,
+      "controlsInside": true,
+      "headingVisible": true,
+      "qualityVisible": true,
+      "peekVisible": true
+    },
+    {
+      "width": 320,
+      "height": 690,
+      "variant": "letter",
+      "overflow": false,
+      "artInside": true,
+      "controlsInside": true,
+      "headingVisible": true,
+      "qualityVisible": true,
+      "peekVisible": true
+    },
+    {
+      "width": 360,
+      "height": 800,
+      "variant": "depth",
+      "overflow": false,
+      "artInside": true,
+      "controlsInside": true,
+      "headingVisible": true,
+      "qualityVisible": true,
+      "peekVisible": true
+    },
+    {
+      "width": 360,
+      "height": 800,
+      "variant": "rhythm",
+      "overflow": false,
+      "artInside": true,
+      "controlsInside": true,
+      "headingVisible": true,
+      "qualityVisible": true,
+      "peekVisible": true
+    },
+    {
+      "width": 360,
+      "height": 800,
+      "variant": "letter",
+      "overflow": false,
+      "artInside": true,
+      "controlsInside": true,
+      "headingVisible": true,
+      "qualityVisible": true,
+      "peekVisible": true
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "variant": "depth",
+      "overflow": false,
+      "artInside": true,
+      "controlsInside": true,
+      "headingVisible": true,
+      "qualityVisible": true,
+      "peekVisible": true
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "variant": "rhythm",
+      "overflow": false,
+      "artInside": true,
+      "controlsInside": true,
+      "headingVisible": true,
+      "qualityVisible": true,
+      "peekVisible": true
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "variant": "letter",
+      "overflow": false,
+      "artInside": true,
+      "controlsInside": true,
+      "headingVisible": true,
+      "qualityVisible": true,
+      "peekVisible": true
+    },
+    {
+      "width": 430,
+      "height": 932,
+      "variant": "depth",
+      "overflow": false,
+      "artInside": true,
+      "controlsInside": true,
+      "headingVisible": true,
+      "qualityVisible": true,
+      "peekVisible": true
+    },
+    {
+      "width": 430,
+      "height": 932,
+      "variant": "rhythm",
+      "overflow": false,
+      "artInside": true,
+      "controlsInside": true,
+      "headingVisible": true,
+      "qualityVisible": true,
+      "peekVisible": true
+    },
+    {
+      "width": 430,
+      "height": 932,
+      "variant": "letter",
+      "overflow": false,
+      "artInside": true,
+      "controlsInside": true,
+      "headingVisible": true,
+      "qualityVisible": true,
+      "peekVisible": true
+    }
+  ],
+  "androidFramePerformanceMeasured": false,
+  "themeAndReducedMotion": true,
+  "passed": true
+}

@@ -29,6 +29,10 @@ try {
   if(!fs.existsSync(file)||sha(fs.readFileSync(file))!==input.sha256) {
    const existing=path.join(resources,input.file);
    if(fs.existsSync(existing)&&sha(fs.readFileSync(existing))===input.sha256)fs.copyFileSync(existing,file);
+   else if(input.url.startsWith('https://fonts.gstatic.com/')) {
+    const result=cp.spawnSync('curl.exe',['--fail','--location','--connect-timeout','20','--max-time','240','--output',file,input.url],{stdio:'inherit',timeout:250000});
+    if(result.status!==0)throw new Error('Official Google Fonts download failed: '+input.file);
+   }
    else if(input.blob)fs.writeFileSync(file,api('repos/'+input.url.split('/')[3]+'/'+input.url.split('/')[4]+'/git/blobs/'+input.blob,true));
    else if(input.url.startsWith('https://github.com/')) {
     const [owner,repo,,,tag,name]=input.url.slice('https://github.com/'.length).split('/');

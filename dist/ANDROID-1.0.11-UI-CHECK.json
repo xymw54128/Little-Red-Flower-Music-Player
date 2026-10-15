@@ -1,0 +1,108 @@
+{
+  "date": "2026-10-15",
+  "platform": "Android",
+  "version": "1.0.11",
+  "versionCode": 18,
+  "instrumentedTestsCompiled": true,
+  "instrumentedTestsExecuted": false,
+  "status": "compiled_not_executed",
+  "reason": "adb devices -l returned an empty device list.",
+  "deviceSnapshot": "List of devices attached: none",
+  "compiledSuites": [
+    {
+      "name": "AppThemeUiTest",
+      "tests": 2
+    },
+    {
+      "name": "CollectionPersistenceTest",
+      "tests": 5
+    },
+    {
+      "name": "LyricFontRenderingTest",
+      "tests": 2
+    },
+    {
+      "name": "MainNavigationUiTest",
+      "tests": 10
+    },
+    {
+      "name": "NativeSmokeTest",
+      "tests": 1
+    },
+    {
+      "name": "Playback107Test",
+      "tests": 5
+    },
+    {
+      "name": "PlaybackOrderTest",
+      "tests": 2
+    },
+    {
+      "name": "PlayerNavigationUiTest",
+      "tests": 6
+    },
+    {
+      "name": "PlaylistCoverUiTest",
+      "tests": 3
+    },
+    {
+      "name": "PlaylistDetailUiTest",
+      "tests": 3
+    },
+    {
+      "name": "PlaylistManagementUiTest",
+      "tests": 6
+    },
+    {
+      "name": "ReorderUiTest",
+      "tests": 6
+    },
+    {
+      "name": "SettingsInteractionUiTest",
+      "tests": 8
+    },
+    {
+      "name": "SongArtworkUiTest",
+      "tests": 2
+    },
+    {
+      "name": "SongListUiTest",
+      "tests": 3
+    },
+    {
+      "name": "SongSearchNativeTest",
+      "tests": 3
+    }
+  ],
+  "instrumentedTestCount": 67,
+  "unitTestsPassed": 99,
+  "lint": {
+    "errors": 0,
+    "warnings": 17
+  },
+  "nativeFramePerformanceMeasured": false,
+  "phoneAcceptancePending": true,
+  "selectedFontCandidates": [
+    "A ZCOOL XiaoWei",
+    "B Zen Maru Gothic",
+    "C Kiwi Maru",
+    "D Zen Kurenaido",
+    "F Long Cang"
+  ],
+  "appFontChoices": 8,
+  "bundledFontFiles": 7,
+  "retiredFonts": [
+    "flower_cute.ttf",
+    "flower_handdrawn.ttf"
+  ],
+  "legacyFontSelectionMigration": {
+    "cute": "kiwi",
+    "handdrawn": "kurenaido",
+    "mono": "kiwi"
+  },
+  "actualPlayerLayoutUnchanged": true,
+  "preview": "B gallery refinements only: depth, rhythm, letter. User selection pending before Android implementation.",
+  "previewReport": "../docs/previews/2026-10-14/GALLERY-PREVIEW-CHECK.json",
+  "apkSha256": "679298f0895c5ebe3c9e1939346a100d68416e28a3b4d1b02ac5a358f26de8e5",
+  "git": "Local commit only; no GitHub push or release."
+}

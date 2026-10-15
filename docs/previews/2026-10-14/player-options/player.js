@@ -45,7 +45,10 @@ $('#view-area').addEventListener('pointerup',e=>{if(!pointerStart)return;const d
 // A completed swipe must not also trigger the album's click-to-open action.
 $('#view-area').addEventListener('click',e=>{if(swallowTap){swallowTap=false;e.preventDefault();e.stopPropagation();}},true);
 scroll.addEventListener('pointerdown',()=>browsingUntil=Infinity);window.addEventListener('pointerup',()=>{if(browsingUntil===Infinity)browsingUntil=performance.now()+1500;});scroll.addEventListener('wheel',()=>browsingUntil=performance.now()+1500,{passive:true});
+// Native touch scrolling cancels the pointer stream instead of sending pointerup.
+window.addEventListener('pointercancel',()=>{dragging=false;pointerStart=null;swallowTap=false;if(browsingUntil===Infinity)browsingUntil=performance.now()+1500;});
+scroll.addEventListener('scroll',()=>{if(browsingUntil&&browsingUntil!==Infinity)browsingUntil=performance.now()+1500;},{passive:true});
 $('#theme').onchange=e=>{const colors={red:'#ce3c4c',green:'#588675',blue:'#537bb5',amber:'#9f761c'};document.documentElement.style.setProperty('--accent',colors[e.target.value]);};
 function frame(now){if(lastFrame&&playing&&!dragging&&!document.hidden){position=Math.min(228,position+(now-lastFrame)/1000);updateProgress();if(position===228){if(mode===2)position=0;else setTrack(trackIndex+1);}}if(browsingUntil&&browsingUntil!==Infinity&&now>browsingUntil&&phone.classList.contains('lyrics-open')){browsingUntil=0;centerLyrics();}lastFrame=now;requestAnimationFrame(frame);}
 document.addEventListener('visibilitychange',()=>lastFrame=0);
-setScheme(params.get('scheme')||'A');updateProgress();setPage('cover');requestAnimationFrame(frame);
+setScheme(params.get('scheme')||document.body.dataset.defaultScheme||'A');updateProgress();setPage('cover');requestAnimationFrame(frame);

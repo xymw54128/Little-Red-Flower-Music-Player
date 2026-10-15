@@ -1,14 +1,14 @@
 {
-  "date": "2026-10-14T12:40:42.100Z",
-  "apk": "D:\\music player app\\dist\\小红花-1.0.10.apk",
+  "date": "2026-10-15T05:10:45.226Z",
+  "apk": "D:\\music player app\\dist\\小红花-1.0.11.apk",
   "buildType": "release",
   "debuggable": false,
   "testComponentsAbsent": true,
   "networkPermissionAbsent": true,
-  "size": 45706599,
-  "sha256": "aee68f0f4716d77311a1cc0784eb1b6b6195b5f84567918dd1c72abf4772a954",
+  "size": 63953295,
+  "sha256": "679298f0895c5ebe3c9e1939346a100d68416e28a3b4d1b02ac5a358f26de8e5",
   "metadata": [
-    "package: name='com.xiaohonghua.music' versionCode='17' versionName='1.0.10' platformBuildVersionName='16' platformBuildVersionCode='36' compileSdkVersion='36' compileSdkVersionCodename='16'",
+    "package: name='com.xiaohonghua.music' versionCode='18' versionName='1.0.11' platformBuildVersionName='16' platformBuildVersionCode='36' compileSdkVersion='36' compileSdkVersionCodename='16'",
     "minSdkVersion:'26'",
     "targetSdkVersion:'36'",
     "application-label:'小红花'",
@@ -63,6 +63,10 @@
     },
     {
       "version": "1.0.9",
+      "sameSigningCertificate": true
+    },
+    {
+      "version": "1.0.10",
       "sameSigningCertificate": true
     }
   ],
@@ -172,19 +176,43 @@
       "licenseBundled": true
     },
     {
-      "file": "flower_cute.ttf",
-      "path": "res/HK.ttf",
-      "version": "1.0 multilingual OFL derivative",
-      "bytes": 4476860,
-      "sha256": "23b6b7d8ad168bfa9d6da1f5e0685e083a7dfb4b18ca9dbbb8c9f44cccc66f31",
+      "file": "flower_xiaowei.ttf",
+      "path": "res/oK.ttf",
+      "version": "1.1 multilingual OFL derivative",
+      "bytes": 16802460,
+      "sha256": "2fd2e9c7d878eb54173113e6bef9f3765e7340d88869f066e38dc88a06a9f50f",
       "licenseBundled": true
     },
     {
-      "file": "flower_handdrawn.ttf",
-      "path": "res/pb.ttf",
-      "version": "1.0 multilingual OFL derivative",
-      "bytes": 16502376,
-      "sha256": "18f603aa53a3ad12cc09e7b92efd9ab59042c841409394d29949ce65ca08413f",
+      "file": "flower_zenmaru.ttf",
+      "path": "res/iI.ttf",
+      "version": "1.1 multilingual OFL derivative",
+      "bytes": 11908152,
+      "sha256": "e3a4212b5969481193617384732c305b6fbb79d5ccf0f44bd51e42622692a8bc",
+      "licenseBundled": true
+    },
+    {
+      "file": "flower_kiwi.ttf",
+      "path": "res/vs.ttf",
+      "version": "1.1 multilingual OFL derivative",
+      "bytes": 13224196,
+      "sha256": "e685a896def04d889da7e15dc6f111122233793f1dcc9b9d4411961dd31f04f9",
+      "licenseBundled": true
+    },
+    {
+      "file": "flower_kurenaido.ttf",
+      "path": "res/Z4.ttf",
+      "version": "1.1 multilingual OFL derivative",
+      "bytes": 8016344,
+      "sha256": "2c126e7f74d7ee5dea5f1e30bb06ab40b0e171c3d30cfadacab1dc857a9476bc",
+      "licenseBundled": true
+    },
+    {
+      "file": "flower_longcang.ttf",
+      "path": "res/ux.ttf",
+      "version": "1.1 multilingual OFL derivative",
+      "bytes": 10727480,
+      "sha256": "ce7176b35ad183a972956be167e18c26b70ace7c9bc40ada992c99e95613c4fc",
       "licenseBundled": true
     }
   ],
@@ -239,7 +267,7 @@
     },
     {
       "name": "com.xiaohonghua.music.LyricFontNamesTest",
-      "tests": 2,
+      "tests": 3,
       "failures": 0,
       "errors": 0
     },
@@ -302,6 +330,6 @@
     "errors": 0,
     "warnings": 17
   },
-  "acceptance": "1.0.10 removes manual lyric timing calibration, ignores retired saved offsets and preserves standard LRC offset metadata. New font candidates and four player layouts are independent previews, not installed App changes. Native behavior requires device acceptance.",
-  "nativeTests": "Instrumented tests compile successfully. Device execution status is recorded separately in ANDROID-1.0.10-UI-CHECK.json; compilation alone does not confirm runtime behavior or native frame performance."
+  "acceptance": "1.0.11 adds the five selected full multilingual lyric font combinations and retires the two prior decorative faces. The B gallery refinements remain standalone previews until selected. Native font rendering and frame performance require device acceptance.",
+  "nativeTests": "Instrumented tests compile successfully. Device execution status is recorded separately in ANDROID-1.0.11-UI-CHECK.json; compilation alone does not confirm runtime behavior or native frame performance."
 }
