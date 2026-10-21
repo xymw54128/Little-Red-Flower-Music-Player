@@ -19,6 +19,7 @@ import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -27,11 +28,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.MotionDurationScale
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.clipToBounds
+import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.CompositingStrategy
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.layout.ContentScale
@@ -40,6 +45,8 @@ import androidx.compose.ui.platform.LocalFontFamilyResolver
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.SemanticsPropertyKey
+import androidx.compose.ui.semantics.SemanticsPropertyReceiver
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.customActions
 import androidx.compose.ui.semantics.selected
@@ -66,6 +73,9 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.isActive
 
+internal val LyricMotionRunningKey=SemanticsPropertyKey<Boolean>("LyricMotionRunning")
+internal var SemanticsPropertyReceiver.lyricMotionRunning by LyricMotionRunningKey
+
 @Composable internal fun PlayerScreen(song: Song?,library: LibraryState,p: PlaybackState,model: MusicModel,
     onBack:()->Unit,onQueue:()->Unit,onAdd:()->Unit,onInfo:()->Unit={}) {
     val pager=rememberPagerState {2}
@@ -76,6 +86,7 @@ import kotlinx.coroutines.isActive
     val current by lyricIndex.collectAsStateWithLifecycle(initialValue=-1)
     val pageMotion=tween<Float>(360,easing=FastOutSlowInEasing)
     val lyricsVisible by remember {derivedStateOf {pager.currentPage == 1 || pager.currentPageOffsetFraction > 0f}}
+    val lyricHeaderSettled by remember {derivedStateOf {pager.settledPage == 1}}
     val lifecycleState by LocalLifecycleOwner.current.lifecycle.currentStateFlow.collectAsState()
     val surface=pageColor
     val foreground=ink
@@ -86,11 +97,27 @@ import kotlinx.coroutines.isActive
         Column(Modifier.fillMaxSize()) {
             Row(Modifier.fillMaxWidth().padding(horizontal=8.dp,vertical=4.dp),verticalAlignment=Alignment.CenterVertically) {
                 ExpressiveIconButton(onClick=onBack) {Icon(Icons.Outlined.KeyboardArrowDown,"收起播放器")}
-                Text(if(pager.currentPage == 1) song?.let {"${it.title} - ${it.artist}"}.orEmpty() else "正在播放",Modifier.weight(1f).padding(horizontal=8.dp),textAlign=TextAlign.Center,fontSize=13.sp,color=secondary,maxLines=1,overflow=TextOverflow.Ellipsis)
-                if(pager.currentPage == 0) {
-                    InteractiveHeaderFlower("player")
+                // Keep both header layouts mounted. Switching the text at currentPage's midpoint
+                // used to remeasure this row and move its flowers during an in-flight fade.
+                Box(Modifier.weight(1f).padding(horizontal=4.dp),contentAlignment=Alignment.Center) {
+                    Text("正在播放",Modifier.testTag("player-cover-header-title").graphicsLayer {
+                        alpha=1f-(pager.currentPage+pager.currentPageOffsetFraction).coerceIn(0f,1f)
+                        compositingStrategy=CompositingStrategy.ModulateAlpha
+                    },textAlign=TextAlign.Center,fontSize=13.sp,color=secondary,maxLines=1)
+                    Row(Modifier.testTag("lyrics-title-flowers").fillMaxWidth().graphicsLayer {
+                        alpha=(pager.currentPage+pager.currentPageOffsetFraction).coerceIn(0f,1f)
+                        compositingStrategy=CompositingStrategy.ModulateAlpha
+                    },verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.spacedBy(1.dp,Alignment.CenterHorizontally)) {
+                        BotanicalTitleSprig(false,Modifier.testTag("lyrics-title-sprig-left").size(36.dp,36.dp))
+                        Text(song?.let {"${it.title} - ${it.artist}"}.orEmpty(),Modifier.testTag("player-header-title").weight(1f,fill=false).basicMarquee(
+                            // A reversal during a swipe leaves the existing marquee running;
+                            // it starts/stops only after the pager has actually settled.
+                            iterations=if(lyricHeaderSettled && lifecycleState.isAtLeast(Lifecycle.State.STARTED)) Int.MAX_VALUE else 0,
+                            initialDelayMillis=1200,repeatDelayMillis=1200,velocity=24.dp),textAlign=TextAlign.Center,fontSize=13.sp,color=secondary,maxLines=1,softWrap=false,overflow=TextOverflow.Clip)
+                        BotanicalTitleSprig(true,Modifier.testTag("lyrics-title-sprig-right").size(36.dp,36.dp))
+                    }
                 }
-                else Spacer(Modifier.size(48.dp))
+                InteractiveHeaderFlower("player")
             }
             if(song == null) Column(Modifier.weight(1f).fillMaxWidth(),horizontalAlignment=Alignment.CenterHorizontally,verticalArrangement=Arrangement.Center) {
                 Icon(Icons.Outlined.LocalFlorist,null,Modifier.size(72.dp),tint=MaterialTheme.colorScheme.primary); Text("从音乐库选择一首歌曲",Modifier.padding(24.dp),color=muted)
@@ -102,9 +129,11 @@ import kotlinx.coroutines.isActive
                     val previewSize=library.settings.lyricSize.coerceAtMost(20f)
                     Column(Modifier.testTag("player-cover-content").fillMaxSize().padding(horizontal=23.dp,vertical=6.dp),horizontalAlignment=Alignment.CenterHorizontally) {
                         // Reserve the actual lyric height first; artwork receives only the remainder.
-                        Column(Modifier.weight(1f).fillMaxWidth().clipToBounds(),horizontalAlignment=Alignment.CenterHorizontally) {
-                            BoxWithConstraints(Modifier.weight(1f).fillMaxWidth(),contentAlignment=Alignment.Center) {
-                                val coverSize=minOf((maxWidth-4.dp).coerceAtLeast(0.dp),maxHeight,400.dp)
+                        Column(Modifier.weight(1f).fillMaxWidth(),horizontalAlignment=Alignment.CenterHorizontally) {
+                            BoxWithConstraints(Modifier.testTag("player-artwork-area").weight(1f).fillMaxWidth(),contentAlignment=Alignment.Center) {
+                                // The C frame extends 6.25% past each cover edge. Reserve its
+                                // vertical footprint without taking space from lyrics or controls.
+                                val coverSize=minOf((maxWidth-4.dp).coerceAtLeast(0.dp),maxHeight/1.125f,400.dp)
                                 if(coverSize > 0.dp) GalleryArtwork(song,p.playing,!lyricsVisible,Modifier.size(coverSize),::openLyrics)
                             }
                             Row(Modifier.fillMaxWidth().padding(top=if(compact) 10.dp else 18.dp),verticalAlignment=Alignment.CenterVertically) {
@@ -117,7 +146,10 @@ import kotlinx.coroutines.isActive
                             Row(Modifier.testTag("player-quality").fillMaxWidth().padding(top=10.dp),verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.spacedBy(9.dp)) {
                                 if(song.format.isNotBlank()) Text(song.format,Modifier.border(1.dp,secondary.copy(alpha=.20f),RoundedCornerShape(3.dp)).padding(horizontal=4.dp,vertical=1.dp),fontSize=9.sp,color=secondary)
                                 Text(listOfNotNull(song.bitDepth.takeIf {it > 0}?.let {"$it bit"},song.sampleRate.takeIf {it > 0}?.let {"${it/1000f} kHz"}).joinToString(" / "),Modifier.weight(1f),fontSize=10.sp,color=secondary,maxLines=1,overflow=TextOverflow.Ellipsis)
-                                GalleryPlayingIndicator(p.playing,!lyricsVisible)
+                                // Match the 48dp favorite column above; the enlarged flower shares its center.
+                                Box(Modifier.width(48.dp).height(36.dp),contentAlignment=Alignment.Center) {
+                                    PlaybackFlower(p.playing,!lyricsVisible)
+                                }
                             }
                         }
                         Box(Modifier.testTag("player-lyric-preview").fillMaxWidth().heightIn(min=48.dp).clickable(onClickLabel="查看歌词",onClick=::openLyrics).padding(vertical=6.dp),contentAlignment=Alignment.Center) {
@@ -145,48 +177,18 @@ import kotlinx.coroutines.isActive
     }
     }
 }
-// Keep the 22dp outer silhouette still; the source B breathes only within its crop.
 @Composable private fun GalleryArtwork(song: Song,playing: Boolean,visible: Boolean,modifier: Modifier,onLyrics:()->Unit) {
-    val lifecycle=LocalLifecycleOwner.current.lifecycle
-    val scale=remember(song.id) {Animatable(1f)}
     val press=remember {MutableInteractionSource()}
     val shape=RoundedCornerShape(22.dp)
     val image=rememberImage(song.artwork,with(LocalDensity.current) {400.dp.roundToPx().coerceIn(64,1600)},song.artworkRevision)
-    LaunchedEffect(song.id,playing,visible,lifecycle) {
-        if(!playing || !visible) return@LaunchedEffect
-        lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
-            val durationScale=coroutineContext[MotionDurationScale]
-            while(isActive) {
-                // A zero system duration scale must never turn a repeat into a busy loop.
-                if((durationScale?.scaleFactor ?: 1f) == 0f) {
-                    scale.snapTo(1f)
-                    snapshotFlow {durationScale?.scaleFactor ?: 1f}.first {it > 0f}
-                }
-                scale.animateTo(1.025f,tween(4500,easing=FastOutSlowInEasing))
-                scale.animateTo(1f,tween(4500,easing=FastOutSlowInEasing))
-            }
-        }
-    }
-    Box(modifier.testTag("player-artwork").pressScale(press,.985f).shadow(12.dp,shape,ambientColor=Color(0x14477859),spotColor=Color(0x14477859))
-        .clip(shape).background(MaterialTheme.colorScheme.primary.copy(alpha=.08f))
+    Box(modifier.testTag("player-artwork").pressScale(press,.985f)
         .clickable(interactionSource=press,indication=null,onClickLabel="查看歌词",onClick=onLyrics),contentAlignment=Alignment.Center) {
-        if(image != null) Image(image,null,Modifier.fillMaxSize().graphicsLayer {scaleX=scale.value;scaleY=scale.value},contentScale=ContentScale.Crop)
-        else Icon(Icons.Outlined.LocalFlorist,null,Modifier.fillMaxSize(.40f),tint=MaterialTheme.colorScheme.primary.copy(alpha=.8f))
-    }
-}
-@Composable private fun GalleryPlayingIndicator(playing: Boolean,visible: Boolean) {
-    val lifecycle by LocalLifecycleOwner.current.lifecycle.currentStateFlow.collectAsState()
-    val moving=playing && visible && lifecycle.isAtLeast(Lifecycle.State.STARTED)
-    val wave=if(moving) rememberInfiniteTransition(label="gallery-levels").animateFloat(0f,1f,
-        infiniteRepeatable(tween(750,easing=LinearEasing),RepeatMode.Restart),label="gallery-level") else remember {mutableFloatStateOf(0f)}
-    val accent=MaterialTheme.colorScheme.primary
-    Canvas(Modifier.size(12.dp,10.dp)) {
-        repeat(3) {index ->
-            val amplitude=if(moving) .35f+.65f*kotlin.math.abs(kotlin.math.sin((wave.value+index*.23f)*Math.PI)).toFloat() else .35f
-            val x=(index*4f+1f).dp.toPx()
-            val height=size.height*amplitude
-            drawLine(accent,Offset(x,(size.height-height)/2),Offset(x,(size.height+height)/2),2.dp.toPx(),StrokeCap.Round)
+        Box(Modifier.fillMaxSize().shadow(12.dp,shape,ambientColor=Color(0x14477859),spotColor=Color(0x14477859))
+            .clip(shape).background(MaterialTheme.colorScheme.primary.copy(alpha=.08f)),contentAlignment=Alignment.Center) {
+            if(image != null) Image(image,null,Modifier.fillMaxSize(),contentScale=ContentScale.Crop)
+            else Icon(Icons.Outlined.LocalFlorist,null,Modifier.fillMaxSize(.40f),tint=MaterialTheme.colorScheme.primary.copy(alpha=.8f))
         }
+        BotanicalCoverFrame(playing,visible,Modifier.matchParentSize())
     }
 }
 @Composable private fun PlayerControls(fallbackDuration: Long,model: MusicModel,onQueue:()->Unit,surface: Color,secondary: Color,
@@ -209,7 +211,7 @@ import kotlinx.coroutines.isActive
             ExpressiveIconButton(onClick={model.previous()},enabled=p.currentId != null,modifier=Modifier.size(48.dp),tactile=true) {Icon(Icons.Outlined.SkipPrevious,"上一首",Modifier.size(26.dp))}
             FilledIconButton(onClick={model.toggle();haptic()},enabled=p.currentId != null && p.connected,modifier=Modifier.size(66.dp).pressScale(playPress,.94f),shape=CircleShape,interactionSource=playPress) {
                 Crossfade(targetState=p.playing,animationSpec=tween(120),label="play-pause") {playing ->
-                    Icon(if(playing) Icons.Outlined.Pause else Icons.Outlined.PlayArrow,if(playing) "暂停" else "播放",Modifier.size(30.dp))
+                    Icon(if(playing) Icons.Outlined.Pause else Icons.Filled.PlayArrow,if(playing) "暂停" else "播放",Modifier.size(30.dp))
                 }
             }
             ExpressiveIconButton(onClick={model.next()},enabled=p.currentId != null,modifier=Modifier.size(48.dp),tactile=true) {Icon(Icons.Outlined.SkipNext,"下一首",Modifier.size(26.dp))}
@@ -219,9 +221,9 @@ import kotlinx.coroutines.isActive
             Text(listOf("顺序播放","列表循环","单曲循环","随机播放")[p.mode],fontSize=10.sp,color=secondary,textAlign=TextAlign.Center)
             if(showOptions) Box(Modifier.align(Alignment.CenterEnd)) {
                 ExpressiveIconButton(onClick={menu=true},modifier=Modifier.testTag("player-more")) {Icon(Icons.Outlined.MoreHoriz,"歌曲更多选项",Modifier.size(20.dp),tint=menuTint)}
-                DropdownMenu(menu,{menu=false}) {
-                    DropdownMenuItem(text={Text("添加到歌单")},onClick={menu=false;onAdd()})
-                    DropdownMenuItem(text={Text("歌曲信息")},onClick={menu=false;onInfo()})
+                AppDropdownMenu(menu,{menu=false}) {
+                    AppDropdownMenuItem(text={Text("添加到歌单")},leadingIcon={Icon(Icons.Outlined.PlaylistAdd,null,Modifier.size(20.dp))},onClick={menu=false;onAdd()})
+                    AppDropdownMenuItem(text={Text("歌曲信息")},leadingIcon={Icon(Icons.Outlined.Info,null,Modifier.size(20.dp))},onClick={menu=false;onInfo()})
                 }
             }
         }
@@ -261,7 +263,19 @@ import kotlinx.coroutines.isActive
     val latestPlayback by rememberUpdatedState(p)
     val latestDynamic by rememberUpdatedState(settings.dynamicLyrics)
     val inactiveColor=muted
-    BoxWithConstraints(Modifier.testTag("player-lyrics-page").fillMaxSize().background(pageColor)) {
+    val surface=pageColor
+    BoxWithConstraints(Modifier.testTag("player-lyrics-page").fillMaxSize().background(surface).drawWithCache {
+        // Feather the fixed viewport, not individual rows. Cached gradients are equivalent
+        // to an alpha fade over this flat page color and avoid a full-screen blur layer.
+        val edge=minOf(56.dp.toPx(),size.height*.16f)
+        val top=Brush.verticalGradient(listOf(surface,surface.copy(alpha=0f)),0f,edge.coerceAtLeast(1f))
+        val bottom=Brush.verticalGradient(listOf(surface.copy(alpha=0f),surface),(size.height-edge).coerceAtLeast(0f),size.height.coerceAtLeast(1f))
+        onDrawWithContent {
+            drawContent()
+            drawRect(top,size=Size(size.width,edge))
+            drawRect(bottom,topLeft=Offset(0f,size.height-edge),size=Size(size.width,edge))
+        }
+    }) {
         if(lines.isEmpty()) Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(32.dp),horizontalAlignment=Alignment.CenterHorizontally,verticalArrangement=Arrangement.Center) {
             Text(text.ifBlank {"还没有歌词\n在设置 → 歌词样式中导入当前歌曲歌词"},style=style,color=muted.copy(alpha=.6f))
         } else {
@@ -287,6 +301,7 @@ import kotlinx.coroutines.isActive
                 fun offset(): Float=tops.getOrElse(scroll.firstVisibleItemIndex) {0f}+scroll.firstVisibleItemScrollOffset
                 var current by remember {mutableIntStateOf(initial)}
                 val visual=remember {mutableStateOf(LyricFrame(if(initial >= 0) mapOf(initial to 1f) else emptyMap(),centers.getOrElse(initial) {0f},false))}
+                val motionRunning by remember {derivedStateOf {visual.value.running}}
                 var follow by remember {mutableStateOf(true)}
                 var fingerDown by remember {mutableStateOf(false)}
                 var touched by remember {mutableLongStateOf(0)}
@@ -298,6 +313,7 @@ import kotlinx.coroutines.isActive
                     }
                 }
                 LaunchedEffect(scroll,lines,lifecycle) {
+                    val motionDurationScale=coroutineContext[MotionDurationScale]
                     lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
                         snapshotFlow {scroll.layoutInfo.totalItemsCount}.first {it == lines.size}
                         var transition: LyricTransition?=null
@@ -310,14 +326,19 @@ import kotlinx.coroutines.isActive
                         val initialClock=android.os.SystemClock.elapsedRealtime()
                         var wasVisible=latestVisible
                         var wasFollowing=follow
+                        var previousDurationScale=(motionDurationScale?.scaleFactor ?: 1f).takeIf {it.isFinite()}?.coerceAtLeast(0f) ?: 1f
+                        val recoveryDuration=(300.0*previousDurationScale).toLong()
                         // Recover an interrupted foreground presentation from its visible pose.
                         transition=LyricTransition(visual.value.weights,offset(),current,
-                            if(follow) centers.getOrElse(current) {0f} else offset(),initialClock,300L,300L)
+                            if(follow) centers.getOrElse(current) {0f} else offset(),initialClock,recoveryDuration,recoveryDuration)
                         while(isActive) {
                             val now=android.os.SystemClock.elapsedRealtime()
                             val position=model.playbackPosition()
                             val actual=Lrc.current(lines,position)
                             val state=latestPlayback
+                            val durationScale=(motionDurationScale?.scaleFactor ?: 1f).takeIf {it.isFinite()}?.coerceAtLeast(0f) ?: 1f
+                            val motionEnabled=durationScale > 0f
+                            val scaleChanged=durationScale != previousDurationScale
                             // Media3 reports real discontinuities. A delayed frame or a speed
                             // change must not be mistaken for a seek and restart the animation.
                             val seeking=seekRequest != lastRequest || state.seekRevision != lastSeek
@@ -325,27 +346,28 @@ import kotlinx.coroutines.isActive
                             if(seeking || entering || !latestVisible) follow=true
                             val returning=follow && !wasFollowing
                             val followChanged=follow != wasFollowing
-                            val lead=Lrc.lead(lines,position,state.speed)
+                            val lead=if(motionEnabled) Lrc.lead(lines,position,state.speed) else null
                             if(actual >= suppressedLead) suppressedLead=-1
                             if(seeking) suppressedLead=lead?.targetIndex ?: -1
                             val candidate=lead?.takeIf {it.targetIndex != suppressedLead}?.targetIndex ?: actual
                             // Slowing playback can move the lead window into the future. Keep
                             // the already selected row instead of briefly scrolling backward.
                             val anticipated=if(mediaClock && current > actual && !seeking) current else candidate
-                            val retime=mediaClock && state.playing && transition != null && current > actual && state.speed != motionSpeed
+                            val retime=motionEnabled && mediaClock && state.playing && transition != null && current > actual && state.speed != motionSpeed
                             val targetIndex=when {
+                                !motionEnabled -> actual
                                 seeking -> actual
                                 state.playing -> anticipated
                                 entering || returning -> actual
                                 else -> current // Pausing an anticipated row freezes its presentation.
                             }
                             val changed=targetIndex != current
-                            if(changed || seeking || entering || returning || followChanged || retime) {
+                            if(changed || seeking || entering || returning || followChanged || retime || scaleChanged) {
                                 val weights=visual.value.weights
                                 val target=if(follow && (latestDynamic || seeking || entering || returning)) centers.getOrElse(targetIndex) {0f} else offset()
                                 val targetLead=lead?.takeIf {it.targetIndex == targetIndex} ?: if(retime)
                                     Lrc.lead(lines,lines[targetIndex].startTime-1L,state.speed) else null
-                                val natural=state.playing && !seeking && (changed || entering || returning || retime) && targetLead?.targetIndex == targetIndex
+                                val natural=motionEnabled && state.playing && !seeking && (changed || entering || returning || retime || scaleChanged) && targetLead?.targetIndex == targetIndex
                                 if(natural) {
                                     // Start from the actual rendered frame, never backdate new weights.
                                     // Both layers and scrolling reach the next row before its timestamp.
@@ -355,8 +377,10 @@ import kotlinx.coroutines.isActive
                                     transition=LyricTransition(weights,offset(),targetIndex,target,position,remaining,remaining)
                                     mediaClock=true
                                 } else {
-                                    val remaining=if(mediaClock && !seeking && !entering && !returning && followChanged) (finishPosition-position).coerceAtLeast(0L) else 300L
-                                    val keepMedia=mediaClock && !seeking && !entering && !returning && followChanged
+                                    // A disabled animation snaps both text layers and centering together.
+                                    // Scale wall-clock seeks/returns, while natural media deadlines stay tied to the LRC.
+                                    val keepMedia=motionEnabled && mediaClock && !seeking && !entering && !returning && (followChanged || scaleChanged)
+                                    val remaining=if(!motionEnabled) 0L else if(keepMedia) (finishPosition-position).coerceAtLeast(0L) else (300.0*durationScale).toLong()
                                     transition=LyricTransition(weights,offset(),targetIndex,target,if(keepMedia) position else now,remaining,remaining)
                                     mediaClock=keepMedia
                                 }
@@ -374,12 +398,12 @@ import kotlinx.coroutines.isActive
                                 }
                                 if(!frame.running) transition=null
                             }
-                            lastSeek=state.seekRevision;lastRequest=seekRequest;wasVisible=latestVisible;wasFollowing=follow
+                            lastSeek=state.seekRevision;lastRequest=seekRequest;wasVisible=latestVisible;wasFollowing=follow;previousDurationScale=durationScale
                             if(latestVisible && (state.playing || transition != null && !mediaClock)) withFrameNanos {} else delay(50)
                         }
                     }
                 }
-                LazyColumn(Modifier.testTag("lyrics-list").fillMaxSize().pointerInput(text) {
+                LazyColumn(Modifier.testTag("lyrics-list").semantics {lyricMotionRunning=motionRunning}.fillMaxSize().pointerInput(text) {
                     awaitEachGesture {awaitFirstDown(requireUnconsumed=false);browse(true);waitForUpOrCancellation();browse(false)}
                 },state=scroll,contentPadding=PaddingValues(horizontal=24.dp,vertical=maxHeight/2),horizontalAlignment=Alignment.CenterHorizontally) {
                     itemsIndexed(lines,key={index,_ -> index}) {index,line ->
@@ -408,14 +432,17 @@ import kotlinx.coroutines.isActive
     LaunchedEffect(source) {draft=reconcileReorderIds(draft,source)}
     val order=remember(draft,source) {reconcileReorderIds(draft,source)}
     val ordered=remember(order,byId) {order.mapNotNull(byId::get)}
-    ModalBottomSheet(onDismissRequest=onCancel,modifier=Modifier.fillMaxHeight(),sheetState=rememberModalBottomSheetState(skipPartiallyExpanded=true)) {
+    val sheetState=rememberModalBottomSheetState(skipPartiallyExpanded=true)
+    val dismiss=rememberSheetDismiss(sheetState)
+    var closing by remember {mutableStateOf(false)}
+    AppModalBottomSheet(onDismissRequest=onCancel,modifier=Modifier.fillMaxHeight(),sheetState=sheetState,sheetGesturesEnabled=!closing) {
         Column(Modifier.fillMaxWidth().fillMaxHeight()) {
             SheetTitle("自定义顺序 · "+order.size+" 首","按住手柄拖动，点按手柄可逐首移动")
             ReorderList(ordered,onReorder={draft=it},modifier=Modifier.weight(1f).fillMaxWidth(),onDraggingChanged={dragging=it})
             HorizontalDivider(color=MaterialTheme.colorScheme.outlineVariant.copy(alpha=.55f))
             Row(Modifier.fillMaxWidth().padding(horizontal=24.dp,vertical=16.dp),horizontalArrangement=Arrangement.spacedBy(16.dp)) {
-                OutlinedButton(onClick=onCancel,modifier=Modifier.weight(1f).heightIn(min=48.dp)) {Text("取消")}
-                Button(onClick={onSave(reconcileReorderIds(draft,source))},enabled=!dragging,modifier=Modifier.testTag("reorder-save").weight(1f).heightIn(min=48.dp)) {Text("保存顺序")}
+                OutlinedButton(onClick={if(!closing) {closing=true;dismiss(onCancel)}},enabled=!closing,modifier=Modifier.weight(1f).heightIn(min=48.dp)) {Text("取消")}
+                Button(onClick={if(!closing) {closing=true;onSave(reconcileReorderIds(draft,source));dismiss(onCancel)}},enabled=!dragging && !closing,modifier=Modifier.testTag("reorder-save").weight(1f).heightIn(min=48.dp)) {Text("保存顺序")}
             }
         }
     }
@@ -565,10 +592,10 @@ private data class ActiveReorderDrag(val id: String,val fingerY: Float,val touch
             ExpressiveIconButton(onClick={if(enabled) menu=true},enabled=enabled,modifier=Modifier.testTag("reorder-handle-"+song.id).size(48.dp)) {
                 Icon(Icons.Outlined.DragHandle,"排序 "+song.title,tint=muted)
             }
-            DropdownMenu(expanded=menu && enabled,onDismissRequest={menu=false}) {
-                DropdownMenuItem(text={Text("上移一位")},onClick={menu=false;onMove(-1)},enabled=index > 0,
+            AppDropdownMenu(expanded=menu && enabled,onDismissRequest={menu=false}) {
+                AppDropdownMenuItem(text={Text("上移一位")},onClick={menu=false;onMove(-1)},enabled=index > 0,
                     leadingIcon={Icon(Icons.Outlined.KeyboardArrowUp,null)},modifier=Modifier.testTag("move-up-"+song.id))
-                DropdownMenuItem(text={Text("下移一位")},onClick={menu=false;onMove(1)},enabled=index < count-1,
+                AppDropdownMenuItem(text={Text("下移一位")},onClick={menu=false;onMove(1)},enabled=index < count-1,
                     leadingIcon={Icon(Icons.Outlined.KeyboardArrowDown,null)},modifier=Modifier.testTag("move-down-"+song.id))
             }
         }
@@ -587,7 +614,8 @@ private data class ActiveReorderDrag(val id: String,val fingerY: Float,val touch
     fun submit() {
         val order=reconcileReorderIds(draft,liveOrder().filterNot(pendingRemovals::contains))
         draft=order
-        if(order != model.playback.value.queue) {pending=order;model.queueOrder(order);changed=true}
+        val live=model.playback.value
+        if(queueOrderChanged(order,live.queue,live.playOrder,live.mode == 3)) {pending=order;model.queueOrder(order);changed=true}
     }
     LaunchedEffect(p.queue) {pendingRemovals=pendingRemovals.intersect(p.queue.toSet())}
     LaunchedEffect(pendingRemovals) {if(pendingRemovals.isNotEmpty()) {delay(2000);pendingRemovals=emptySet()}}
@@ -602,7 +630,10 @@ private data class ActiveReorderDrag(val id: String,val fingerY: Float,val touch
     }
     val order=remember(draft,source) {reconcileReorderIds(draft,source)}
     val ordered=remember(order,byId) {order.map {id -> byId[id] ?: Song(id,"",id,"无法读取的歌曲")}}
-    ModalBottomSheet(onDismissRequest=onDismiss,modifier=Modifier.fillMaxHeight(),sheetState=rememberModalBottomSheetState(skipPartiallyExpanded=true)) {
+    val sheetState=rememberModalBottomSheetState(skipPartiallyExpanded=true)
+    val dismiss=rememberSheetDismiss(sheetState)
+    var closing by remember {mutableStateOf(false)}
+    AppModalBottomSheet(onDismissRequest=onDismiss,modifier=Modifier.fillMaxHeight(),sheetState=sheetState,sheetGesturesEnabled=!closing) {
         Column(Modifier.fillMaxWidth().fillMaxHeight()) {
             val sourceLabel=when(val origin=p.queueSource) {
                 LIBRARY_QUEUE_SOURCE -> "音乐库"
@@ -618,7 +649,7 @@ private data class ActiveReorderDrag(val id: String,val fingerY: Float,val touch
                     pendingRemovals=pendingRemovals+song.id;draft=draft-song.id;pending=pending?.minus(song.id);model.queueRemove(song.id);changed=true;onFeedback("已移出播放队列")
                 })
             HorizontalDivider(color=MaterialTheme.colorScheme.outlineVariant.copy(alpha=.55f))
-            TextButton(onClick={onDismiss();if(changed) onFeedback("队列已更新")},enabled=!dragging,
+            TextButton(onClick={if(!closing) {closing=true;if(changed) onFeedback("队列已更新");dismiss(onDismiss)}},enabled=!dragging && !closing,
                 modifier=Modifier.fillMaxWidth().padding(horizontal=16.dp,vertical=12.dp).heightIn(min=48.dp)) {Text("完成")}
         }
     }

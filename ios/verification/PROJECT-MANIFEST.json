@@ -7,6 +7,7 @@
     "Xiaohonghua/DebugFixtures.swift",
     "Xiaohonghua/Design.swift",
     "Xiaohonghua/FileLibrary.swift",
+    "Xiaohonghua/FloralUi.swift",
     "Xiaohonghua/LaunchView.swift",
     "Xiaohonghua/LibraryView.swift",
     "Xiaohonghua/LyricView.swift",
@@ -21,7 +22,9 @@
   "unitTests": [
     "Tests/CoreTests/Collection111Tests.swift",
     "Tests/CoreTests/CoreTests.swift",
-    "Tests/CoreTests/PlaybackLyrics111Tests.swift"
+    "Tests/CoreTests/Playback117IntegrationTests.swift",
+    "Tests/CoreTests/PlaybackLyrics111Tests.swift",
+    "Tests/CoreTests/PlaybackOrder117Tests.swift"
   ],
   "uiTests": [
     "Tests/UITests/PlayerUITests.swift"
@@ -52,7 +55,7 @@
     "Xiaohonghua/Resources/PrivacyInfo.xcprivacy"
   ],
   "bundleID": "com.xiaohonghua.music.ios",
-  "version": "1.1.1",
-  "build": 21,
+  "version": "1.1.7",
+  "build": 28,
   "deploymentTarget": "17.0"
 }

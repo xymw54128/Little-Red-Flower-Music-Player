@@ -1,0 +1,253 @@
+{
+  "date": "2026-10-20T08:38:22.232Z",
+  "scope": "Lyric title sprig refinement: left 2 cool blossoms, right 3 warm blossoms; shared contours have point symmetry",
+  "layouts": [
+    {
+      "width": 320,
+      "overflow": 0,
+      "counts": [
+        2,
+        3
+      ],
+      "colors": [
+        [
+          "rgb(120, 157, 187)",
+          "rgb(166, 138, 183)"
+        ],
+        [
+          "rgb(214, 181, 105)",
+          "rgb(212, 139, 151)",
+          "cream"
+        ]
+      ],
+      "midpoints": [
+        {
+          "x": 159.9921875,
+          "y": 70
+        },
+        {
+          "x": 159.9921875,
+          "y": 70
+        },
+        {
+          "x": 159.9921875,
+          "y": 70
+        },
+        {
+          "x": 159.9921875,
+          "y": 70
+        },
+        {
+          "x": 159.9921875,
+          "y": 70
+        }
+      ],
+      "titleCenter": {
+        "x": 159.9921875,
+        "y": 70
+      },
+      "titleFits": true,
+      "transparent": true,
+      "buttons": [
+        {
+          "w": 48,
+          "h": 48,
+          "hit": true
+        },
+        {
+          "w": 48,
+          "h": 48,
+          "hit": true
+        }
+      ],
+      "mask": "linear-gradient(rgba(0, 0, 0, 0), rgb(0, 0, 0) min(56px, 16%), rgb(0, 0, 0) calc(100% - min(56px, 16%)), rgba(0, 0, 0, 0))",
+      "longTitleFits": true
+    },
+    {
+      "width": 390,
+      "overflow": 0,
+      "counts": [
+        2,
+        3
+      ],
+      "colors": [
+        [
+          "rgb(120, 157, 187)",
+          "rgb(166, 138, 183)"
+        ],
+        [
+          "rgb(214, 181, 105)",
+          "rgb(212, 139, 151)",
+          "cream"
+        ]
+      ],
+      "midpoints": [
+        {
+          "x": 194.9921875,
+          "y": 70
+        },
+        {
+          "x": 194.9921875,
+          "y": 70
+        },
+        {
+          "x": 194.9921875,
+          "y": 70
+        },
+        {
+          "x": 194.9921875,
+          "y": 70
+        },
+        {
+          "x": 194.9921875,
+          "y": 70
+        }
+      ],
+      "titleCenter": {
+        "x": 194.9921875,
+        "y": 70
+      },
+      "titleFits": true,
+      "transparent": true,
+      "buttons": [
+        {
+          "w": 48,
+          "h": 48,
+          "hit": true
+        },
+        {
+          "w": 48,
+          "h": 48,
+          "hit": true
+        }
+      ],
+      "mask": "linear-gradient(rgba(0, 0, 0, 0), rgb(0, 0, 0) min(56px, 16%), rgb(0, 0, 0) calc(100% - min(56px, 16%)), rgba(0, 0, 0, 0))",
+      "longTitleFits": true
+    },
+    {
+      "width": 430,
+      "overflow": 0,
+      "counts": [
+        2,
+        3
+      ],
+      "colors": [
+        [
+          "rgb(120, 157, 187)",
+          "rgb(166, 138, 183)"
+        ],
+        [
+          "rgb(214, 181, 105)",
+          "rgb(212, 139, 151)",
+          "cream"
+        ]
+      ],
+      "midpoints": [
+        {
+          "x": 214.9921875,
+          "y": 70
+        },
+        {
+          "x": 214.9921875,
+          "y": 70
+        },
+        {
+          "x": 214.9921875,
+          "y": 70
+        },
+        {
+          "x": 214.9921875,
+          "y": 70
+        },
+        {
+          "x": 214.9921875,
+          "y": 70
+        }
+      ],
+      "titleCenter": {
+        "x": 214.9921875,
+        "y": 70
+      },
+      "titleFits": true,
+      "transparent": true,
+      "buttons": [
+        {
+          "w": 48,
+          "h": 48,
+          "hit": true
+        },
+        {
+          "w": 48,
+          "h": 48,
+          "hit": true
+        }
+      ],
+      "mask": "linear-gradient(rgba(0, 0, 0, 0), rgb(0, 0, 0) min(56px, 16%), rgb(0, 0, 0) calc(100% - min(56px, 16%)), rgba(0, 0, 0, 0))",
+      "longTitleFits": true
+    },
+    {
+      "width": 450,
+      "overflow": 0,
+      "counts": [
+        2,
+        3
+      ],
+      "colors": [
+        [
+          "rgb(120, 157, 187)",
+          "rgb(166, 138, 183)"
+        ],
+        [
+          "rgb(214, 181, 105)",
+          "rgb(212, 139, 151)",
+          "cream"
+        ]
+      ],
+      "midpoints": [
+        {
+          "x": 224.9921875,
+          "y": 70
+        },
+        {
+          "x": 224.9921875,
+          "y": 70
+        },
+        {
+          "x": 224.9921875,
+          "y": 70
+        },
+        {
+          "x": 224.9921875,
+          "y": 70
+        },
+        {
+          "x": 224.9921875,
+          "y": 70
+        }
+      ],
+      "titleCenter": {
+        "x": 224.9921875,
+        "y": 70
+      },
+      "titleFits": true,
+      "transparent": true,
+      "buttons": [
+        {
+          "w": 48,
+          "h": 48,
+          "hit": true
+        },
+        {
+          "w": 48,
+          "h": 48,
+          "hit": true
+        }
+      ],
+      "mask": "linear-gradient(rgba(0, 0, 0, 0), rgb(0, 0, 0) min(56px, 16%), rgb(0, 0, 0) calc(100% - min(56px, 16%)), rgba(0, 0, 0, 0))",
+      "longTitleFits": true
+    }
+  ],
+  "errors": [],
+  "nativeFramePerformanceMeasured": false,
+  "passed": true
+}

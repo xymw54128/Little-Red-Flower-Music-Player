@@ -300,7 +300,8 @@ extension MusicState {
             if playlists[index].isFavorites { playlists[index].name = "我喜欢" }
             playlists[index].coverPreset = min(max(playlists[index].coverPreset, 0), 10)
         }
-        if let source = queueSource, source != "library", !playlists.contains(where: { $0.id == source }) { queueSource = nil }
+        if let source = queueSource, source != "library", !playlists.contains(where: { $0.id == source }),
+           !(source.hasPrefix("album:") && songs.contains(where: { $0.albumKey == String(source.dropFirst(6)) })) { queueSource = nil }
     }
 }
 

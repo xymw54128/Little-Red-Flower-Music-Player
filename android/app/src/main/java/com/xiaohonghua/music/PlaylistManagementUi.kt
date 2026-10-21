@@ -41,6 +41,12 @@ import androidx.compose.ui.unit.sp
     var submitted by remember(playlist.id) {mutableStateOf(false)}
     val focus=LocalFocusManager.current
     val keyboard=LocalSoftwareKeyboardController.current
+    val sheetState=rememberModalBottomSheetState(skipPartiallyExpanded=true)
+    val dismissSheet=rememberSheetDismiss(sheetState)
+    var closing by remember(playlist.id) {mutableStateOf(false)}
+    fun close() {
+        if(!closing) {closing=true;submitted=true;keyboard?.hide();focus.clearFocus();dismissSheet(onDismiss)}
+    }
     val trimmedName=if(playlist.isFavorites) "我喜欢" else name.trim()
     val nameError=when {
         trimmedName.isBlank() -> "请输入歌单名称"
@@ -50,20 +56,21 @@ import androidx.compose.ui.unit.sp
     }
     val valid=nameError == null && description.length <= 300
     fun submit() {
-        if(valid && !submitted) {
+        if(valid && !submitted && !closing) {
             submitted=true
             keyboard?.hide();focus.clearFocus()
             onSave(trimmedName,description.trim())
+            close()
         }
     }
-    ModalBottomSheet(onDismissRequest=onDismiss,sheetState=rememberModalBottomSheetState(skipPartiallyExpanded=true)) {
+    AppModalBottomSheet(onDismissRequest=onDismiss,sheetState=sheetState,sheetGesturesEnabled=!closing) {
         Column(Modifier.fillMaxWidth().heightIn(max=with(LocalDensity.current) {LocalWindowInfo.current.containerSize.height.toDp()}*.88f).imePadding()) {
             SheetTitle("编辑歌单")
             Column(Modifier.weight(1f,fill=false).fillMaxWidth().verticalScroll(rememberScrollState()).padding(horizontal=24.dp),
                 verticalArrangement=Arrangement.spacedBy(16.dp)) {
                 Row(Modifier.fillMaxWidth(),verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.spacedBy(16.dp)) {
                     PlaylistCover(playlist,Modifier.size(76.dp))
-                    OutlinedButton(onClick={keyboard?.hide();focus.clearFocus();onCover()},enabled=!submitted,
+                    OutlinedButton(onClick={keyboard?.hide();focus.clearFocus();onCover()},enabled=!submitted && !closing,
                         modifier=Modifier.testTag("playlist-edit-cover")) {
                         Icon(Icons.Outlined.Edit,null,Modifier.size(18.dp));Spacer(Modifier.width(8.dp));Text("更换封面")
                     }
@@ -81,8 +88,8 @@ import androidx.compose.ui.unit.sp
                     keyboardOptions=KeyboardOptions(imeAction=ImeAction.Done),keyboardActions=KeyboardActions(onDone={submit()}))
             }
             Row(Modifier.fillMaxWidth().padding(horizontal=24.dp,vertical=16.dp),horizontalArrangement=Arrangement.spacedBy(12.dp)) {
-                OutlinedButton(onClick=onDismiss,modifier=Modifier.weight(1f)) {Text("取消")}
-                Button(onClick=::submit,enabled=valid && !submitted,modifier=Modifier.testTag("playlist-edit-save").weight(1f)) {Text("保存")}
+                OutlinedButton(onClick=::close,enabled=!closing,modifier=Modifier.weight(1f)) {Text("取消")}
+                Button(onClick=::submit,enabled=valid && !submitted && !closing,modifier=Modifier.testTag("playlist-edit-save").weight(1f)) {Text("保存")}
             }
         }
     }
@@ -104,17 +111,22 @@ import androidx.compose.ui.unit.sp
     val allSelected=matchingIds.isNotEmpty() && selection.containsAll(matchingIds)
     // Prune removed songs and new members without resetting the user's remaining choices.
     LaunchedEffect(eligibleIds) {selectedIds=selectedIds.filter(eligibleIds::contains)}
+    val sheetState=rememberModalBottomSheetState(skipPartiallyExpanded=true)
+    val dismissSheet=rememberSheetDismiss(sheetState)
+    var closing by remember(title) {mutableStateOf(false)}
     fun hideKeyboard() {keyboard?.hide();focus.clearFocus()}
+    fun close() {if(!closing) {closing=true;submitted=true;hideKeyboard();dismissSheet(onDismiss)}}
     fun submit() {
-        if(selection.isNotEmpty() && !submitted) {
+        if(selection.isNotEmpty() && !submitted && !closing) {
             submitted=true
             hideKeyboard()
             onConfirm(orderedSongs.map {it.id}.filter(selection::contains))
+            close()
         }
     }
     // The picker list owns vertical gestures, including at its boundaries. Sheet
     // dragging otherwise moves the whole page and springs it back while browsing.
-    ModalBottomSheet(onDismissRequest=onDismiss,sheetState=rememberModalBottomSheetState(skipPartiallyExpanded=true),
+    AppModalBottomSheet(onDismissRequest=onDismiss,sheetState=sheetState,
         sheetGesturesEnabled=false,dragHandle=null) {
         Column(Modifier.fillMaxWidth().heightIn(max=with(LocalDensity.current) {LocalWindowInfo.current.containerSize.height.toDp()}*.88f).imePadding()) {
             SheetTitle(title)
@@ -157,8 +169,8 @@ import androidx.compose.ui.unit.sp
             }
             HorizontalDivider(color=muted.copy(alpha=.12f))
             Row(Modifier.fillMaxWidth().padding(horizontal=24.dp,vertical=16.dp),horizontalArrangement=Arrangement.spacedBy(12.dp)) {
-                OutlinedButton(onClick=onDismiss,modifier=Modifier.weight(1f)) {Text("取消")}
-                Button(onClick=::submit,enabled=selection.isNotEmpty() && !submitted,
+                OutlinedButton(onClick=::close,enabled=!closing,modifier=Modifier.weight(1f)) {Text("取消")}
+                Button(onClick=::submit,enabled=selection.isNotEmpty() && !submitted && !closing,
                     modifier=Modifier.testTag("playlist-songs-confirm").weight(1f)) {Text("确定${if(selection.isEmpty()) "" else "（${selection.size}）"}")}
             }
         }

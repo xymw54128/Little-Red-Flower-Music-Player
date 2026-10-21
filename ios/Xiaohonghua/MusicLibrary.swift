@@ -8,6 +8,9 @@ final class MusicLibrary: ObservableObject {
     @Published private(set) var scanning = false
     @Published private(set) var visibleScan = false
     @Published private(set) var orderGeneration: UInt64 = 0
+    // Explicit user sorts are synchronous; background cache completion cannot
+    // override a later mode choice or a manual queue edit.
+    @Published private(set) var playbackOrderSource: String?
     @Published var message: String?
     @Published private var orderedCache: [Song] = []
     @Published private var playlistCache: [String: [Song]] = [:]
@@ -175,6 +178,7 @@ final class MusicLibrary: ObservableObject {
     func playlistSongs(_ id: String) -> [Song] { playlistCache[id] ?? [] }
     var orderedSongs: [Song] { orderedCache }
     func sort(_ sort: SongSort, playlistID: String? = nil) {
+        if let playlistID, !state.playlists.contains(where: { $0.id == playlistID }) { return }
         update {
             if let playlistID, let index = $0.playlists.firstIndex(where: { $0.id == playlistID }) {
                 $0.playlists[index].sort = sort
@@ -184,14 +188,17 @@ final class MusicLibrary: ObservableObject {
                 if sort == .random { $0.randomIDs = $0.songs.map(\.id).shuffled() }
             }
         }
+        playbackOrderSource = playlistID ?? "library"
     }
     func saveOrder(_ ids: [String], playlistID: String? = nil) {
+        if let playlistID, !state.playlists.contains(where: { $0.id == playlistID }) { return }
         update {
             if let playlistID, let index = $0.playlists.firstIndex(where: { $0.id == playlistID }) {
                 $0.playlists[index].songIDs = MusicOrder.mergedIDs(ids, available: $0.playlists[index].songIDs)
                 $0.playlists[index].sort = .custom
             } else { $0.customIDs = MusicOrder.mergedIDs(ids, available: $0.songs.map(\.id)); $0.sort = .custom }
         }
+        playbackOrderSource = playlistID ?? "library"
     }
     func createPlaylist(_ name: String, description: String = "") {
         let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)

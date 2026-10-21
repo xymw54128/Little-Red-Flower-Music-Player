@@ -1,0 +1,159 @@
+{
+  "date": "2026-10-20T05:15:14.653Z",
+  "scope": "A polish: photo-edge progress border, anchored sequential petals, four frame leaves",
+  "errors": [],
+  "layouts": [
+    {
+      "width": 320,
+      "overflow": 0,
+      "edges": [
+        0,
+        0
+      ],
+      "photoWidth": 40,
+      "photoTransform": "none",
+      "innerRadius": 20,
+      "centerError": 0,
+      "leaves": 4,
+      "buttons": [
+        {
+          "w": 48,
+          "h": 48,
+          "inside": true,
+          "hit": true
+        },
+        {
+          "w": 48,
+          "h": 48,
+          "inside": true,
+          "hit": true
+        },
+        {
+          "w": 48,
+          "h": 48,
+          "inside": true,
+          "hit": true
+        }
+      ]
+    },
+    {
+      "width": 360,
+      "overflow": 0,
+      "edges": [
+        0,
+        0
+      ],
+      "photoWidth": 40,
+      "photoTransform": "none",
+      "innerRadius": 20,
+      "centerError": 0,
+      "leaves": 4,
+      "buttons": [
+        {
+          "w": 48,
+          "h": 48,
+          "inside": true,
+          "hit": true
+        },
+        {
+          "w": 48,
+          "h": 48,
+          "inside": true,
+          "hit": true
+        },
+        {
+          "w": 48,
+          "h": 48,
+          "inside": true,
+          "hit": true
+        }
+      ]
+    },
+    {
+      "width": 390,
+      "overflow": 0,
+      "edges": [
+        0,
+        0
+      ],
+      "photoWidth": 40,
+      "photoTransform": "none",
+      "innerRadius": 20,
+      "centerError": 0,
+      "leaves": 4,
+      "buttons": [
+        {
+          "w": 48,
+          "h": 48,
+          "inside": true,
+          "hit": true
+        },
+        {
+          "w": 48,
+          "h": 48,
+          "inside": true,
+          "hit": true
+        },
+        {
+          "w": 48,
+          "h": 48,
+          "inside": true,
+          "hit": true
+        }
+      ]
+    },
+    {
+      "width": 430,
+      "overflow": 0,
+      "edges": [
+        0,
+        0
+      ],
+      "photoWidth": 40,
+      "photoTransform": "none",
+      "innerRadius": 20,
+      "centerError": 0,
+      "leaves": 4,
+      "buttons": [
+        {
+          "w": 48,
+          "h": 48,
+          "inside": true,
+          "hit": true
+        },
+        {
+          "w": 48,
+          "h": 48,
+          "inside": true,
+          "hit": true
+        },
+        {
+          "w": 48,
+          "h": 48,
+          "inside": true,
+          "hit": true
+        }
+      ]
+    }
+  ],
+  "nativeFramePerformanceMeasured": false,
+  "circleTouchesPhoto": true,
+  "singlePetalSequence": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    0,
+    1,
+    2,
+    3
+  ],
+  "maxRootRadiusErrorPx": 4.768372541263943e-7,
+  "pauseSettles": true,
+  "controlsAndProgress": true,
+  "reducedMotion": true,
+  "passed": true
+}

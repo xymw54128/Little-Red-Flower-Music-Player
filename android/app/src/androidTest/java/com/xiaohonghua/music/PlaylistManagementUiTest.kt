@@ -96,7 +96,7 @@ class PlaylistManagementUiTest {
         assertEquals(originalSearch.top.value,search.getUnclippedBoundsInRoot().top.value,.5f)
         compose.onNodeWithText("已选 1 首").assertIsDisplayed()
         compose.onNodeWithTag("playlist-songs-confirm").performClick()
-        compose.runOnIdle {assertEquals(0,dismisses);assertEquals(listOf(listOf("pick-1")),confirmed)}
+        compose.runOnIdle {assertEquals(1,dismisses);assertEquals(listOf(listOf("pick-1")),confirmed)}
     }
 
     @Test fun editorKeepsDraftAcrossCoverChangesAndSavesTrimmedValuesOnce() {
@@ -130,4 +130,63 @@ class PlaylistManagementUiTest {
         compose.onNodeWithTag("playlist-edit-save").performClick()
         compose.runOnIdle {assertEquals(listOf("我喜欢" to "我的收藏"),saved)}
     }
+    @Test fun confirmationCommitsImmediatelyAndKeepsSheetMountedUntilNativeHideFinishes() {
+        val shown=mutableStateOf(true)
+        var confirms=0
+        var dismisses=0
+        compose.setContent {MaterialTheme {
+            if(shown.value) PlaylistSongPicker("退出动画",songs,initialSelected=setOf("b"),
+                onConfirm={confirms++},onDismiss={dismisses++;shown.value=false})
+        }}
+        val confirm=compose.onNodeWithTag("playlist-songs-confirm")
+        confirm.assertIsDisplayed()
+        compose.mainClock.autoAdvance=false
+        confirm.performClick()
+        compose.runOnIdle {assertEquals(1,confirms);assertEquals(0,dismisses)}
+        confirm.assertExists()
+        compose.mainClock.advanceTimeBy(80)
+        confirm.assertExists()
+        compose.mainClock.advanceTimeBy(1000)
+        confirm.assertDoesNotExist()
+        compose.runOnIdle {assertEquals(1,dismisses)}
+    }
+    @Test fun cancelWaitsForTheSheetToHideAndNeverConfirms() {
+        val shown=mutableStateOf(true)
+        var confirms=0
+        var dismisses=0
+        compose.setContent {MaterialTheme {
+            if(shown.value) PlaylistSongPicker("取消退出动画",songs,initialSelected=setOf("b"),
+                onConfirm={confirms++},onDismiss={dismisses++;shown.value=false})
+        }}
+        val cancel=compose.onNodeWithText("取消")
+        cancel.assertIsDisplayed()
+        compose.mainClock.autoAdvance=false
+        cancel.performClick()
+        compose.runOnIdle {assertEquals(0,confirms);assertEquals(0,dismisses)}
+        cancel.assertExists()
+        compose.mainClock.advanceTimeBy(80)
+        cancel.assertExists()
+        compose.mainClock.advanceTimeBy(1000)
+        cancel.assertDoesNotExist()
+        compose.runOnIdle {assertEquals(0,confirms);assertEquals(1,dismisses)}
+    }
+    @Test fun replacingAnExitingSheetCancelsItsOldCompletionCallback() {
+        val request=mutableStateOf<String?>("旧面板")
+        val dismissed=mutableListOf<String>()
+        var confirms=0
+        compose.setContent {MaterialTheme {
+            request.value?.let {current -> androidx.compose.runtime.key(current) {
+                PlaylistSongPicker(current,songs,initialSelected=setOf("b"),onConfirm={confirms++},
+                    onDismiss={dismissed+=current;request.value=null})
+            }}
+        }}
+        compose.onNodeWithTag("playlist-songs-confirm").assertIsDisplayed()
+        compose.mainClock.autoAdvance=false
+        compose.onNodeWithTag("playlist-songs-confirm").performClick()
+        compose.runOnIdle {assertEquals(1,confirms);request.value="新面板"}
+        compose.mainClock.advanceTimeBy(1000)
+        compose.onNodeWithText("新面板").assertIsDisplayed()
+        compose.runOnIdle {assertEquals(emptyList<String>(),dismissed)}
+    }
+
 }

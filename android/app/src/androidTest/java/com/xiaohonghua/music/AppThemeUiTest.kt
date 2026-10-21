@@ -28,24 +28,24 @@ class AppThemeUiTest {
         assertEquals(expected.blue,actual.blue,.025f)
     }
 
-    @Test fun openSongMenuRecolorsWithTheSelectedAppTheme() {
+    @Test fun openSongMenuKeepsTheHomeBackgroundAcrossThemeChanges() {
         val theme=mutableStateOf(0)
         compose.setContent {MaterialTheme(colorScheme=appColorScheme(theme.value,false)) {
-            Box {DropdownMenu(true,{},modifier=Modifier.testTag("theme-popup")) {
+            Box {AppDropdownMenu(true,{},modifier=Modifier.testTag("theme-popup")) {
                 DropdownMenuItem(text={Text("下一首播放")},onClick={})
             }}
         }}
-        matches(appColorScheme(0,false).surfaceContainer,menuBackground())
+        matches(appColorScheme(0,false).background,menuBackground())
         compose.runOnIdle {theme.value=1}
-        matches(appColorScheme(1,false).surfaceContainer,menuBackground())
+        matches(appColorScheme(1,false).background,menuBackground())
     }
 
-    @Test fun popupUsesNightContainerInsteadOfLightPurple() {
+    @Test fun popupUsesTheNightHomeBackgroundWithoutATintedContainer() {
         compose.setContent {MaterialTheme(colorScheme=appColorScheme(2,true)) {
-            Box {DropdownMenu(true,{},modifier=Modifier.testTag("theme-popup")) {
+            Box {AppDropdownMenu(true,{},modifier=Modifier.testTag("theme-popup")) {
                 DropdownMenuItem(text={Text("歌曲信息")},onClick={})
             }}
         }}
-        matches(appColorScheme(2,true).surfaceContainer,menuBackground())
+        matches(appColorScheme(2,true).background,menuBackground())
     }
 }

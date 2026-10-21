@@ -1,0 +1,148 @@
+{
+  "date": "2026-10-20T13:30:36.478Z",
+  "versionName": "1.1.5",
+  "versionCode": 25,
+  "scope": "Local Android official release; no iOS changes or GitHub push",
+  "apk": "D:\\music player app\\dist\\小红花-1.1.5.apk",
+  "sha256": "04bfb47303b377a90f50af7ac1dd12871d79b3134e72ba32fe4c2148cd19b039",
+  "bytes": 64035215,
+  "build": {
+    "command": "node tools/build-android.cjs :app:assembleRelease :app:assembleDebug :app:testReleaseUnitTest :app:lintRelease :app:assembleDebugAndroidTest",
+    "result": "passed"
+  },
+  "unitTests": {
+    "tests": 125,
+    "failures": 0,
+    "errors": 0
+  },
+  "lint": {
+    "errors": 0,
+    "warnings": 17
+  },
+  "instrumentedTests": {
+    "sourceCases": 100,
+    "compilation": "passed",
+    "execution": "not-run",
+    "reason": "No connected physical device; existing emulator started in software mode but remained offline and was stopped after the attempt"
+  },
+  "nativeFramePerformanceMeasured": false,
+  "deviceAudioOutputMeasured": false,
+  "geometry": {
+    "report": "ANDROID-1.1.5-FLORAL-GEOMETRY-CHECK.json",
+    "coverBlossoms": 7,
+    "swayAnglesDegrees": [
+      -0.65,
+      0,
+      0.65
+    ],
+    "miniMaxPetalRadiusDp": 34.2355,
+    "miniMinimumVerticalMarginDp": 1.7645,
+    "miniHeightDp": 72
+  },
+  "audio": {
+    "audit": "docs/design/1.1.5-audio-audit.md",
+    "coreFiles": [
+      {
+        "file": "android/app/src/main/java/com/xiaohonghua/music/PlaybackService.kt",
+        "unchangedVsHead": true,
+        "sha256": "4aa0ab329fdbfdead2a28e133d02abc94e2a1d2f45f53b1a0a68852935b1409c"
+      },
+      {
+        "file": "android/app/src/main/java/com/xiaohonghua/music/MusicModel.kt",
+        "unchangedVsHead": true,
+        "sha256": "217f3e1734e65fac5c23e6eacf74a7a5daf6da9abc4451420b22ac9481d9a151"
+      },
+      {
+        "file": "android/app/src/main/java/com/xiaohonghua/music/Tags.kt",
+        "unchangedVsHead": true,
+        "sha256": "76044eab3ab83da195d804dfeb2de036161702aeaf8b62405c42de47d711be95"
+      },
+      {
+        "file": "android/app/src/main/java/com/xiaohonghua/music/LibraryStore.kt",
+        "unchangedVsHead": true,
+        "sha256": "ecc7ae4086fa90da0d5684ba481c435739324ab463c21184d003c652c592da79"
+      }
+    ],
+    "media3Version": "1.9.3",
+    "newTranscoding": false,
+    "newDsp": false,
+    "playbackSpeedOrVolumeConfigurationChanged": false,
+    "musicUriOrOriginalFileWritePathChanged": false,
+    "bitPerfectOutputClaimed": false
+  },
+  "motionAudit": "docs/design/1.1.5-motion-audit.md",
+  "checks": {
+    "miniShadowRemoved": true,
+    "miniToggleBackdropRemoved": true,
+    "sequentialHopAmplitude": 4.2,
+    "rightOnlyConnectedLeaves": true,
+    "detailThinFrameRemoved": true,
+    "detailFlowerDp": 32,
+    "detailRotationDegreesPerSecond": 60,
+    "miniRotationDegreesPerSecond": 48,
+    "favoriteRowWaitsForAnimation": true,
+    "libraryCategorySlideFade": true,
+    "whiteFloralSnackbarWithRingThenTick": true,
+    "nativeSheetHideBeforeDisposal": true,
+    "closingGestureInterruptionPrevented": true,
+    "sortSheetRetainsPreparedDataThroughHide": true,
+    "liveReducedMotionInLyricsAndHeader": true
+  },
+  "historicalSigningBaselines": 18,
+  "sameSigningCertificateAs113": true,
+  "previousApksPreserved": [
+    {
+      "apk": "小红花-1.1.3.apk",
+      "sha256": "e1a691836285117268db52dbfc33a28f4b76cc489c27366bb044a7075a660973",
+      "unchanged": true
+    },
+    {
+      "apk": "小红花-1.1.3-圆润花枝修订版.apk",
+      "sha256": "515f5d495705f36db1c633413e40902304233a55f52efd33334c4487e5ab8f6b",
+      "unchanged": true
+    },
+    {
+      "apk": "小红花-1.1.2.apk",
+      "sha256": "7c0ffc071dd40bf90c850f5de070cf9517eaa9ac5bb86b71f1390249fea79129",
+      "unchanged": true
+    }
+  ],
+  "sourceHashes": {
+    "AppTheme.kt": "f0c8ed2162467fcc8f4872a0ceb6d91e2ffcc742fd3a32ebdd7f93d3adaebd97",
+    "ArtworkCache.kt": "cccda7edd9039876618a5620f757b1c86c50c5ec2133649783c11c72a0348370",
+    "BotanicalCoverFrame.kt": "3d908a4997994dbf78021e2aabc6d5c7c398e187ddafc7ac19f8c817781cce7b",
+    "Core.kt": "3954b0c59bc690ad9dc60115906b45aab56ae80778c07088763061b9aae3e50d",
+    "FavoriteButton.kt": "5a4f7f046e703b3ff66800fceef9a6e5c0645dd3baadec2e2663869e71fe7b02",
+    "HeaderFlower.kt": "7f8054ba7c04c632fc1e78adaf1796e140830e6d5994b9545c95f1a3b2efd48d",
+    "HeaderFlowerMotion.kt": "d8595e08dd6dad4cc3b02c9c2e46c28d7a77ca7f09dfe7daacf918be5bc0b640",
+    "InteractionUi.kt": "2d5397f694bf54e7992e40342fb220c62ff41d41dc2e2708a556203d8d9f9b68",
+    "LaunchMotion.kt": "21c9a8524f6205d8d1d2598edeacc6de02b9ee596c14dfd97a66be5607579fc4",
+    "LaunchUi.kt": "c72651490b8bb90f5cecad2f45ce608bbed05b43439a0885af6f5f7a24902f32",
+    "LibraryStore.kt": "ecc7ae4086fa90da0d5684ba481c435739324ab463c21184d003c652c592da79",
+    "LyricFontNames.kt": "8870002451904d308bb58027dcc2968880c30e45a1fe80039c68c1bd2003d343",
+    "LyricFonts.kt": "e587b35545f3db0682547ba528b5deb5cea0a701219fd86f4313cd199649c189",
+    "MainActivity.kt": "010585c355c9e0268749b8cedc08e6d9a552c8e9a97fdd91f95b4a1642ebc275",
+    "MiniPlayerFlower.kt": "3b89da59b38c852691a2f454c1814e91d3cab5559390268eac69926f3df8d369",
+    "MiniPlayerFlowerMotion.kt": "9e0d701db4505c9953137dc99e413837a50c5d14584cf411a2fcdd5e0474c355",
+    "MiniPlayerUi.kt": "848ec8bfb21bc2efe3c9113f219ea7245513246e8a2772fad8e659ee75e29694",
+    "MusicModel.kt": "217f3e1734e65fac5c23e6eacf74a7a5daf6da9abc4451420b22ac9481d9a151",
+    "MusicRepository.kt": "4d0ece6a36ab348b571a95670e6a7f77f6e9183d52a3d2df4e264cd2fe8e8298",
+    "Playback107Logic.kt": "62966e43e965bee56ce9cdef422e34ac851739c04f59492a8382586dd691749e",
+    "PlaybackFlower.kt": "599fd65bb43bfe9dbf3d7de33687e374fb85d107f5017fbcc807275f29bc5a46",
+    "PlaybackFlowerMotion.kt": "858300f0756d6438337478f2734fffc47153cee62e2fdb1e69e2418bda864126",
+    "PlaybackService.kt": "4aa0ab329fdbfdead2a28e133d02abc94e2a1d2f45f53b1a0a68852935b1409c",
+    "PlayerUi.kt": "0010e259568a463d271d444463887056cc7a2b1bb17557f45eca66ab51a4d8bb",
+    "PlaylistCovers.kt": "916c9838129b791b74eec98228956891ce3bccb4d4a474156999e865a51340ed",
+    "PlaylistDetailUi.kt": "ac785e44659a4e402c52a6ae7dc4522a634a04d6d64ffd5523449c8ab9aadf92",
+    "PlaylistManagementUi.kt": "eb18809016fee742ed5b65dc600e483bd1ce65ab102666a9360b04e78c8bd3e1",
+    "ReorderDrag.kt": "4be291473efb0e1d8408ad3cbb2806ebbdc820362887cda87a92515255421518",
+    "Screens.kt": "d61bcd06d6c369d5a7218b1b76e97a690bbe72147c86f4313e0091aee5100dca",
+    "SettingsUi.kt": "01194c274d27a8c899895dd5c0a9be92032266a8731456a6da4bdeaac6b83433",
+    "SongArtworkUi.kt": "017be0cd2727f55ae11770972fdd02271fa018170495cfe5931f92b2b80ddbb8",
+    "SongSearch.kt": "72f01d11d6b449eeac2f38a859d3756daa6ebd341da90ced97e7154782389466",
+    "Tags.kt": "76044eab3ab83da195d804dfeb2de036161702aeaf8b62405c42de47d711be95"
+  },
+  "iosChanged": false,
+  "pushPerformed": false,
+  "gitCommitPerformed": false
+}

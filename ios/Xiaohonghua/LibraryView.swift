@@ -2,6 +2,7 @@ import SwiftUI
 
 struct LibraryView: View {
     @EnvironmentObject private var library: MusicLibrary
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var rootVisible = false
     var hiddenFlower: Bool
     @State private var category = 0
@@ -14,7 +15,7 @@ struct LibraryView: View {
             FlowerHeader(title: "音乐库", hiddenFlower: hiddenFlower, searchText: $query)
             HStack(spacing: 10) {
                 ForEach(Array(["歌曲", "专辑", "歌手"].enumerated()), id: \.offset) { index, title in
-                    Button { withAnimation(.easeOut(duration: 0.18)) { category = index } } label: {
+                    Button { withAnimation(reduceMotion ? nil : .easeOut(duration: 0.22)) { category = index } } label: {
                         Text(title).font(.system(size: 16, weight: .medium)).frame(width: 70, height: 44)
                             .foregroundStyle(category == index ? Color.white : Brand.ink)
                             .background(category == index ? Brand.accent(library.state.settings) : .clear, in: RoundedRectangle(cornerRadius: 13))
@@ -30,8 +31,12 @@ struct LibraryView: View {
             if library.visibleScan { ProgressView().progressViewStyle(.linear).padding(.horizontal, 24).padding(.bottom, 8).accessibilityLabel("正在导入音乐") }
             if songs.isEmpty {
                 EmptyMusic(title: query.isEmpty ? "让音乐在这里开花" : "没有找到歌曲", detail: query.isEmpty ? "前往设置导入歌曲或文件夹\n也可在“文件”里的小红花 / Music 放入音乐" : "换个关键词试试")
-            } else if category == 0 { SongList(songs: songs, queueSource: query.isEmpty ? "library" : nil) }
-            else { SongGroups(songs: songs, category: category) }
+            } else {
+                ZStack {
+                    if category == 0 { SongList(songs: songs, queueSource: "library").transition(.opacity) }
+                    else { SongGroups(songs: songs, category: category).id(category).transition(.opacity) }
+                }.animation(reduceMotion ? nil : .easeOut(duration: 0.22), value: category)
+            }
         }.background(Brand.paper).toolbar(.hidden, for: .navigationBar)
             .preference(key: RootPagePreferenceKey.self, value: [0: rootVisible])
             .onAppear { rootVisible = true }.onDisappear { rootVisible = false }
@@ -51,7 +56,7 @@ private struct SongGroups: View {
                     let title = category == 1 ? first?.album ?? key : key
                     let artist = first.map { $0.albumArtist.isEmpty ? $0.artist : $0.albumArtist } ?? ""
                     let count = "\(grouped[key]?.count ?? 0) 首歌曲"
-                    NavigationLink { GroupSongsView(title: title, ids: (grouped[key] ?? []).map(\.id), album: category == 1) } label: {
+                    NavigationLink { GroupSongsView(title: title, ids: (grouped[key] ?? []).map(\.id), album: category == 1, queueSource: category == 1 ? "album:" + key : "library") } label: {
                         HStack(spacing: 14) {
                             Artwork(name: grouped[key]?.first?.artwork ?? "", pixels: 192).frame(width: 58, height: 58)
                             VStack(alignment: .leading, spacing: 7) { Text(title).font(.system(size: 17)); Text(category == 1 ? artist + " · " + count : count).font(.caption).foregroundStyle(Brand.muted) }
@@ -77,11 +82,12 @@ struct GroupSongsView: View {
     var title: String
     var ids: [String]
     var album = false
+    var queueSource: String? = "library"
     @State private var songs: [Song] = []
     var body: some View {
         VStack(spacing: 12) {
             HStack { Text("共 \(songs.count) 首").font(.caption).foregroundStyle(Brand.muted); Spacer() }.padding(.horizontal, 24)
-            SongList(songs: songs, queueSource: nil)
+            SongList(songs: songs, queueSource: queueSource)
         }.background(Brand.paper).navigationTitle(title).navigationBarTitleDisplayMode(.inline).toolbar(.visible, for: .navigationBar)
             .task(id: library.orderGeneration) {
                 let all = library.orderedSongs, allowed = Set(ids), isAlbum = album

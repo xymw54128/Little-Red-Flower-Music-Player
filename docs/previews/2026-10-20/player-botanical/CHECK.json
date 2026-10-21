@@ -1,0 +1,415 @@
+{
+  "date": "2026-10-20T08:29:48.959Z",
+  "scope": "Three local botanical cover previews; Android flower shortcut is verified separately",
+  "layouts": [
+    {
+      "width": 320,
+      "documentOverflow": 0,
+      "phoneOverflow": 0,
+      "photoWithinPhone": true,
+      "coverTransform": "none",
+      "controls": [
+        {
+          "label": "收起播放器",
+          "width": 48,
+          "height": 48,
+          "inside": true,
+          "hit": true
+        },
+        {
+          "label": "旋转小红花",
+          "width": 48,
+          "height": 48,
+          "inside": true,
+          "hit": true
+        },
+        {
+          "label": "加入我喜欢",
+          "width": 48,
+          "height": 48,
+          "inside": true,
+          "hit": true
+        },
+        {
+          "label": "歌曲封面",
+          "width": 48,
+          "height": 48,
+          "inside": true,
+          "hit": true
+        },
+        {
+          "label": "歌词",
+          "width": 48,
+          "height": 48,
+          "inside": true,
+          "hit": true
+        },
+        {
+          "label": "顺序播放",
+          "width": 48,
+          "height": 48,
+          "inside": true,
+          "hit": true
+        },
+        {
+          "label": "上一首",
+          "width": 48,
+          "height": 48,
+          "inside": true,
+          "hit": true
+        },
+        {
+          "label": "播放",
+          "width": 66,
+          "height": 66,
+          "inside": true,
+          "hit": true
+        },
+        {
+          "label": "下一首",
+          "width": 48,
+          "height": 48,
+          "inside": true,
+          "hit": true
+        },
+        {
+          "label": "播放队列",
+          "width": 48,
+          "height": 48,
+          "inside": true,
+          "hit": true
+        },
+        {
+          "label": "歌曲更多选项",
+          "width": 48,
+          "height": 48,
+          "inside": true,
+          "hit": true
+        }
+      ],
+      "decorations": [
+        "none"
+      ],
+      "lyricsFlower": true
+    },
+    {
+      "width": 390,
+      "documentOverflow": 0,
+      "phoneOverflow": 0,
+      "photoWithinPhone": true,
+      "coverTransform": "none",
+      "controls": [
+        {
+          "label": "收起播放器",
+          "width": 48,
+          "height": 48,
+          "inside": true,
+          "hit": true
+        },
+        {
+          "label": "旋转小红花",
+          "width": 48,
+          "height": 48,
+          "inside": true,
+          "hit": true
+        },
+        {
+          "label": "加入我喜欢",
+          "width": 48,
+          "height": 48,
+          "inside": true,
+          "hit": true
+        },
+        {
+          "label": "歌曲封面",
+          "width": 48,
+          "height": 48,
+          "inside": true,
+          "hit": true
+        },
+        {
+          "label": "歌词",
+          "width": 48,
+          "height": 48,
+          "inside": true,
+          "hit": true
+        },
+        {
+          "label": "顺序播放",
+          "width": 48,
+          "height": 48,
+          "inside": true,
+          "hit": true
+        },
+        {
+          "label": "上一首",
+          "width": 48,
+          "height": 48,
+          "inside": true,
+          "hit": true
+        },
+        {
+          "label": "播放",
+          "width": 66,
+          "height": 66,
+          "inside": true,
+          "hit": true
+        },
+        {
+          "label": "下一首",
+          "width": 48,
+          "height": 48,
+          "inside": true,
+          "hit": true
+        },
+        {
+          "label": "播放队列",
+          "width": 48,
+          "height": 48,
+          "inside": true,
+          "hit": true
+        },
+        {
+          "label": "歌曲更多选项",
+          "width": 48,
+          "height": 48,
+          "inside": true,
+          "hit": true
+        }
+      ],
+      "decorations": [
+        "none"
+      ],
+      "lyricsFlower": true
+    },
+    {
+      "width": 430,
+      "documentOverflow": 0,
+      "phoneOverflow": 0,
+      "photoWithinPhone": true,
+      "coverTransform": "none",
+      "controls": [
+        {
+          "label": "收起播放器",
+          "width": 48,
+          "height": 48,
+          "inside": true,
+          "hit": true
+        },
+        {
+          "label": "旋转小红花",
+          "width": 48,
+          "height": 48,
+          "inside": true,
+          "hit": true
+        },
+        {
+          "label": "加入我喜欢",
+          "width": 48,
+          "height": 48,
+          "inside": true,
+          "hit": true
+        },
+        {
+          "label": "歌曲封面",
+          "width": 48,
+          "height": 48,
+          "inside": true,
+          "hit": true
+        },
+        {
+          "label": "歌词",
+          "width": 48,
+          "height": 48,
+          "inside": true,
+          "hit": true
+        },
+        {
+          "label": "顺序播放",
+          "width": 48,
+          "height": 48,
+          "inside": true,
+          "hit": true
+        },
+        {
+          "label": "上一首",
+          "width": 48,
+          "height": 48,
+          "inside": true,
+          "hit": true
+        },
+        {
+          "label": "播放",
+          "width": 66,
+          "height": 66,
+          "inside": true,
+          "hit": true
+        },
+        {
+          "label": "下一首",
+          "width": 48,
+          "height": 48,
+          "inside": true,
+          "hit": true
+        },
+        {
+          "label": "播放队列",
+          "width": 48,
+          "height": 48,
+          "inside": true,
+          "hit": true
+        },
+        {
+          "label": "歌曲更多选项",
+          "width": 48,
+          "height": 48,
+          "inside": true,
+          "hit": true
+        }
+      ],
+      "decorations": [
+        "none"
+      ],
+      "lyricsFlower": true
+    }
+  ],
+  "designs": [
+    {
+      "id": "A",
+      "geometry": {
+        "artwork": {
+          "left": 59.4375,
+          "top": 120.890625,
+          "width": 271.109375,
+          "height": 271.109375
+        },
+        "decoration": {
+          "left": 42.5,
+          "top": 103.953125,
+          "width": 304.984375,
+          "height": 304.984375
+        },
+        "flowerColors": [
+          "color(srgb 0.884706 0.541176 0.578824)",
+          "rgb(206, 60, 76)",
+          "rgb(217, 182, 90)",
+          "rgb(217, 182, 90)",
+          "rgb(217, 182, 90)"
+        ]
+      },
+      "buttons": true,
+      "coverToLyrics": true,
+      "flowerAvailableOnLyrics": true,
+      "flowerBounds": {
+        "x": 384,
+        "y": 294.28125,
+        "width": 48,
+        "height": 48
+      },
+      "coverStatic": true,
+      "favorite": true,
+      "previousNext": true,
+      "seek": {
+        "value": 136.8,
+        "max": 228,
+        "progress": "60.00000000000001%"
+      },
+      "modeAndQueue": true,
+      "ornamentPausesOffPage": true
+    },
+    {
+      "id": "B",
+      "geometry": {
+        "artwork": {
+          "left": 59.4375,
+          "top": 120.890625,
+          "width": 271.109375,
+          "height": 271.109375
+        },
+        "decoration": {
+          "left": 42.5,
+          "top": 103.953125,
+          "width": 304.984375,
+          "height": 304.984375
+        },
+        "flowerColors": [
+          "color(srgb 0.884706 0.541176 0.578824)",
+          "rgb(206, 60, 76)",
+          "rgb(217, 182, 90)",
+          "rgb(217, 182, 90)",
+          "rgb(217, 182, 90)"
+        ]
+      },
+      "buttons": true,
+      "coverToLyrics": true,
+      "flowerAvailableOnLyrics": true,
+      "flowerBounds": {
+        "x": 809,
+        "y": 294.28125,
+        "width": 48,
+        "height": 48
+      },
+      "coverStatic": true,
+      "favorite": true,
+      "previousNext": true,
+      "seek": {
+        "value": 136.8,
+        "max": 228,
+        "progress": "60.0036403508772%"
+      },
+      "modeAndQueue": true,
+      "ornamentPausesOffPage": true
+    },
+    {
+      "id": "C",
+      "geometry": {
+        "artwork": {
+          "left": 59.4375,
+          "top": 120.890625,
+          "width": 271.109375,
+          "height": 271.109375
+        },
+        "decoration": {
+          "left": 42.5,
+          "top": 103.953125,
+          "width": 304.984375,
+          "height": 304.984375
+        },
+        "flowerColors": [
+          "color(srgb 0.884706 0.541176 0.578824)",
+          "rgb(206, 60, 76)",
+          "rgb(217, 182, 90)",
+          "rgb(217, 182, 90)",
+          "rgb(217, 182, 90)"
+        ]
+      },
+      "buttons": true,
+      "coverToLyrics": true,
+      "flowerAvailableOnLyrics": true,
+      "flowerBounds": {
+        "x": 1234,
+        "y": 294.28125,
+        "width": 48,
+        "height": 48
+      },
+      "coverStatic": true,
+      "favorite": true,
+      "previousNext": true,
+      "seek": {
+        "value": 136.8,
+        "max": 228,
+        "progress": "60.0036403508772%"
+      },
+      "modeAndQueue": true,
+      "ornamentPausesOffPage": true
+    }
+  ],
+  "errors": [],
+  "nativeFramePerformanceMeasured": false,
+  "actualAudioPlayback": false,
+  "themeSwitching": true,
+  "reducedMotion": true,
+  "independentPhoneStates": true,
+  "directLyricsRoute": true,
+  "passed": true
+}

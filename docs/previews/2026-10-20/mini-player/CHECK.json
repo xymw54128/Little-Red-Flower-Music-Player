@@ -1,0 +1,462 @@
+{
+  "date": "2026-10-20T04:36:32.430Z",
+  "scope": "Standalone mini-player design options only; no Android integration",
+  "errors": [],
+  "layouts": [
+    {
+      "width": 320,
+      "scheme": "A",
+      "overflow": 0,
+      "barInsideScene": true,
+      "aboveNavigation": true,
+      "titleWidth": 75,
+      "controls": [
+        {
+          "w": 48,
+          "h": 48,
+          "inside": true,
+          "hit": true
+        },
+        {
+          "w": 48,
+          "h": 48,
+          "inside": true,
+          "hit": true
+        },
+        {
+          "w": 48,
+          "h": 48,
+          "inside": true,
+          "hit": true
+        }
+      ]
+    },
+    {
+      "width": 320,
+      "scheme": "B",
+      "overflow": 0,
+      "barInsideScene": true,
+      "aboveNavigation": true,
+      "titleWidth": 107,
+      "controls": [
+        {
+          "w": 48,
+          "h": 48,
+          "inside": true,
+          "hit": true
+        },
+        {
+          "w": 48,
+          "h": 48,
+          "inside": true,
+          "hit": true
+        },
+        {
+          "w": 48,
+          "h": 48,
+          "inside": true,
+          "hit": true
+        }
+      ]
+    },
+    {
+      "width": 320,
+      "scheme": "C",
+      "overflow": 0,
+      "barInsideScene": true,
+      "aboveNavigation": true,
+      "titleWidth": 80,
+      "controls": [
+        {
+          "w": 48,
+          "h": 48,
+          "inside": true,
+          "hit": true
+        },
+        {
+          "w": 52,
+          "h": 54,
+          "inside": true,
+          "hit": true
+        },
+        {
+          "w": 48,
+          "h": 48,
+          "inside": true,
+          "hit": true
+        }
+      ]
+    },
+    {
+      "width": 320,
+      "scheme": "D",
+      "overflow": 0,
+      "barInsideScene": true,
+      "aboveNavigation": true,
+      "titleWidth": 74,
+      "controls": [
+        {
+          "w": 48,
+          "h": 48,
+          "inside": true,
+          "hit": true
+        },
+        {
+          "w": 48,
+          "h": 48,
+          "inside": true,
+          "hit": true
+        },
+        {
+          "w": 48,
+          "h": 48,
+          "inside": true,
+          "hit": true
+        }
+      ]
+    },
+    {
+      "width": 360,
+      "scheme": "A",
+      "overflow": 0,
+      "barInsideScene": true,
+      "aboveNavigation": true,
+      "titleWidth": 115,
+      "controls": [
+        {
+          "w": 48,
+          "h": 48,
+          "inside": true,
+          "hit": true
+        },
+        {
+          "w": 48,
+          "h": 48,
+          "inside": true,
+          "hit": true
+        },
+        {
+          "w": 48,
+          "h": 48,
+          "inside": true,
+          "hit": true
+        }
+      ]
+    },
+    {
+      "width": 360,
+      "scheme": "B",
+      "overflow": 0,
+      "barInsideScene": true,
+      "aboveNavigation": true,
+      "titleWidth": 147,
+      "controls": [
+        {
+          "w": 48,
+          "h": 48,
+          "inside": true,
+          "hit": true
+        },
+        {
+          "w": 48,
+          "h": 48,
+          "inside": true,
+          "hit": true
+        },
+        {
+          "w": 48,
+          "h": 48,
+          "inside": true,
+          "hit": true
+        }
+      ]
+    },
+    {
+      "width": 360,
+      "scheme": "C",
+      "overflow": 0,
+      "barInsideScene": true,
+      "aboveNavigation": true,
+      "titleWidth": 120,
+      "controls": [
+        {
+          "w": 48,
+          "h": 48,
+          "inside": true,
+          "hit": true
+        },
+        {
+          "w": 52,
+          "h": 54,
+          "inside": true,
+          "hit": true
+        },
+        {
+          "w": 48,
+          "h": 48,
+          "inside": true,
+          "hit": true
+        }
+      ]
+    },
+    {
+      "width": 360,
+      "scheme": "D",
+      "overflow": 0,
+      "barInsideScene": true,
+      "aboveNavigation": true,
+      "titleWidth": 114,
+      "controls": [
+        {
+          "w": 48,
+          "h": 48,
+          "inside": true,
+          "hit": true
+        },
+        {
+          "w": 48,
+          "h": 48,
+          "inside": true,
+          "hit": true
+        },
+        {
+          "w": 48,
+          "h": 48,
+          "inside": true,
+          "hit": true
+        }
+      ]
+    },
+    {
+      "width": 390,
+      "scheme": "A",
+      "overflow": 0,
+      "barInsideScene": true,
+      "aboveNavigation": true,
+      "titleWidth": 121,
+      "controls": [
+        {
+          "w": 48,
+          "h": 48,
+          "inside": true,
+          "hit": true
+        },
+        {
+          "w": 48,
+          "h": 48,
+          "inside": true,
+          "hit": true
+        },
+        {
+          "w": 48,
+          "h": 48,
+          "inside": true,
+          "hit": true
+        }
+      ]
+    },
+    {
+      "width": 390,
+      "scheme": "B",
+      "overflow": 0,
+      "barInsideScene": true,
+      "aboveNavigation": true,
+      "titleWidth": 151,
+      "controls": [
+        {
+          "w": 48,
+          "h": 48,
+          "inside": true,
+          "hit": true
+        },
+        {
+          "w": 48,
+          "h": 48,
+          "inside": true,
+          "hit": true
+        },
+        {
+          "w": 48,
+          "h": 48,
+          "inside": true,
+          "hit": true
+        }
+      ]
+    },
+    {
+      "width": 390,
+      "scheme": "C",
+      "overflow": 0,
+      "barInsideScene": true,
+      "aboveNavigation": true,
+      "titleWidth": 133,
+      "controls": [
+        {
+          "w": 48,
+          "h": 48,
+          "inside": true,
+          "hit": true
+        },
+        {
+          "w": 52,
+          "h": 54,
+          "inside": true,
+          "hit": true
+        },
+        {
+          "w": 48,
+          "h": 48,
+          "inside": true,
+          "hit": true
+        }
+      ]
+    },
+    {
+      "width": 390,
+      "scheme": "D",
+      "overflow": 0,
+      "barInsideScene": true,
+      "aboveNavigation": true,
+      "titleWidth": 134,
+      "controls": [
+        {
+          "w": 48,
+          "h": 48,
+          "inside": true,
+          "hit": true
+        },
+        {
+          "w": 48,
+          "h": 48,
+          "inside": true,
+          "hit": true
+        },
+        {
+          "w": 48,
+          "h": 48,
+          "inside": true,
+          "hit": true
+        }
+      ]
+    },
+    {
+      "width": 430,
+      "scheme": "A",
+      "overflow": 0,
+      "barInsideScene": true,
+      "aboveNavigation": true,
+      "titleWidth": 161,
+      "controls": [
+        {
+          "w": 48,
+          "h": 48,
+          "inside": true,
+          "hit": true
+        },
+        {
+          "w": 48,
+          "h": 48,
+          "inside": true,
+          "hit": true
+        },
+        {
+          "w": 48,
+          "h": 48,
+          "inside": true,
+          "hit": true
+        }
+      ]
+    },
+    {
+      "width": 430,
+      "scheme": "B",
+      "overflow": 0,
+      "barInsideScene": true,
+      "aboveNavigation": true,
+      "titleWidth": 191,
+      "controls": [
+        {
+          "w": 48,
+          "h": 48,
+          "inside": true,
+          "hit": true
+        },
+        {
+          "w": 48,
+          "h": 48,
+          "inside": true,
+          "hit": true
+        },
+        {
+          "w": 48,
+          "h": 48,
+          "inside": true,
+          "hit": true
+        }
+      ]
+    },
+    {
+      "width": 430,
+      "scheme": "C",
+      "overflow": 0,
+      "barInsideScene": true,
+      "aboveNavigation": true,
+      "titleWidth": 173,
+      "controls": [
+        {
+          "w": 48,
+          "h": 48,
+          "inside": true,
+          "hit": true
+        },
+        {
+          "w": 52,
+          "h": 54,
+          "inside": true,
+          "hit": true
+        },
+        {
+          "w": 48,
+          "h": 48,
+          "inside": true,
+          "hit": true
+        }
+      ]
+    },
+    {
+      "width": 430,
+      "scheme": "D",
+      "overflow": 0,
+      "barInsideScene": true,
+      "aboveNavigation": true,
+      "titleWidth": 174,
+      "controls": [
+        {
+          "w": 48,
+          "h": 48,
+          "inside": true,
+          "hit": true
+        },
+        {
+          "w": 48,
+          "h": 48,
+          "inside": true,
+          "hit": true
+        },
+        {
+          "w": 48,
+          "h": 48,
+          "inside": true,
+          "hit": true
+        }
+      ]
+    }
+  ],
+  "nativeFramePerformanceMeasured": false,
+  "playPauseAndCoasting": true,
+  "rapidToggleAndTrackChange": true,
+  "sharedProgress": true,
+  "simulatedHiddenPageStopsDrawing": true,
+  "reducedMotion": true,
+  "passed": true
+}

@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <link rel="icon" href="flower.svg" type="image/svg+xml">
+  <title>小红花 · 迷你播放栏设计预览</title>
+  <link rel="stylesheet" href="preview.css">
+  <script src="preview.js" defer></script>
+</head>
+<body>
+  <svg class="svg-defs" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <symbol id="i-play" viewBox="0 0 24 24"><path d="m9 5 10 7-10 7Z"/></symbol>
+      <symbol id="i-pause" viewBox="0 0 24 24"><path d="M8 5h3v14H8zM15 5h3v14h-3z"/></symbol>
+      <symbol id="i-previous" viewBox="0 0 24 24"><path d="M5 5h2v14H5zM18 5v14L8 12Z"/></symbol>
+      <symbol id="i-next" viewBox="0 0 24 24"><path d="M17 5h2v14h-2zM6 5l10 7-10 7Z"/></symbol>
+      <symbol id="i-back" viewBox="0 0 24 24"><path d="m14 5-7 7 7 7M7 12h14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+      <symbol id="i-expand" viewBox="0 0 24 24"><path d="M8 4H4v4m12-4h4v4M4 16v4h4m12-4v4h-4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></symbol>
+      <symbol id="flower" viewBox="0 0 100 100"><g fill="currentColor"><path d="M50 51C36 42 25 29 32 16C39 3 59 4 66 18C72 31 61 43 50 51Z"/><path d="M50 51C36 42 25 29 32 16C39 3 59 4 66 18C72 31 61 43 50 51Z" transform="rotate(72 50 50)"/><path d="M50 51C36 42 25 29 32 16C39 3 59 4 66 18C72 31 61 43 50 51Z" transform="rotate(144 50 50)"/><path d="M50 51C36 42 25 29 32 16C39 3 59 4 66 18C72 31 61 43 50 51Z" transform="rotate(216 50 50)"/><path d="M50 51C36 42 25 29 32 16C39 3 59 4 66 18C72 31 61 43 50 51Z" transform="rotate(288 50 50)"/></g></symbol>
+      <symbol id="rainbow" viewBox="0 0 100 100">
+        <path id="rainbow-petal" d="M50 49C38 43 30 22 39 12C49 1 65 14 64 27C63 39 57 43 50 49Z" fill="#D85D67"/>
+        <path d="M50 49C38 43 30 22 39 12C49 1 65 14 64 27C63 39 57 43 50 49Z" transform="rotate(51.4286 50 50)" fill="#E79A5D"/>
+        <path d="M50 49C38 43 30 22 39 12C49 1 65 14 64 27C63 39 57 43 50 49Z" transform="rotate(102.8571 50 50)" fill="#D7BC59"/>
+        <path d="M50 49C38 43 30 22 39 12C49 1 65 14 64 27C63 39 57 43 50 49Z" transform="rotate(154.2857 50 50)" fill="#86AA7A"/>
+        <path d="M50 49C38 43 30 22 39 12C49 1 65 14 64 27C63 39 57 43 50 49Z" transform="rotate(205.7143 50 50)" fill="#69A8AF"/>
+        <path d="M50 49C38 43 30 22 39 12C49 1 65 14 64 27C63 39 57 43 50 49Z" transform="rotate(257.1429 50 50)" fill="#798FC2"/>
+        <path d="M50 49C38 43 30 22 39 12C49 1 65 14 64 27C63 39 57 43 50 49Z" transform="rotate(308.5714 50 50)" fill="#AD86B5"/>
+        <circle cx="50" cy="50" r="10" fill="#F4CF7F"/><circle cx="47" cy="47" r="3" fill="#FFE8B4"/>
+      </symbol>
+    </defs>
+  </svg>
+  <main>
+    <header class="page-heading">
+      <div>
+        <a class="back-link" href="index.html"><svg><use href="#i-back"/></svg>返回四款对比</a>
+        <div class="brand"><svg><use href="#flower"/></svg><span>小红花</span></div>
+        <h1>迷你播放栏，四种花的性格</h1>
+        <p class="intro">结合你的音乐库截图预览。点播放看动效，点前后切歌试手感。</p>
+      </div>
+      <div class="demo-controls">
+        <button class="demo-play" type="button" data-action="play"><svg><use href="#i-play"/></svg><span>播放动效</span></button>
+        <label class="progress-control">进度预览 <input id="progress" type="range" min="0" max="100" step="0.1" value="32"><output id="time">0:58 / 3:00</output></label>
+        <small>演示播放状态，不播放实际音频；尚未接入 App。</small>
+      </div>
+    </header>
+    <section class="designs" aria-label="四款迷你播放栏方案"></section>
+    <p class="bottom-note">四款共用同一首演示歌曲和相同操作，方便对比。可点“放大体验”查看完整首页效果。</p>
+  </main>
+</body>
+</html>

@@ -50,6 +50,7 @@ class MusicModel(application: Application) : AndroidViewModel(application) {
     private val refreshQueue=Runnable {updatePlayback(queueChanged=true)}
     private var sortJob: Job?=null
     private var queueOrderJob: Job?=null
+    private var modeRevision=0L
     private val future: ListenableFuture<MediaController>
     init {
         future = MediaController.Builder(application,SessionToken(application,ComponentName(application,PlaybackService::class.java))).buildAsync()
@@ -115,18 +116,23 @@ class MusicModel(application: Application) : AndroidViewModel(application) {
     }
     // Called on the UI thread's frame clock; no per-frame StateFlow emissions or timeline scans.
     fun playbackPosition(): Long = controller?.currentPosition?.coerceAtLeast(0) ?: playback.value.position
+    private fun cancelQueueOrderWork() {sortJob?.cancel();queueOrderJob?.cancel()}
     fun play(songs: List<Song>, id: String? = null, playlistId: String? = null) {
-        sortJob?.cancel()
-        queueOrderJob?.cancel()
-        val playable=songs.filter {it.available}.distinctBy {it.id}
-        if(playable.isEmpty()) return
-        controller?.apply {setMediaItems(playable.map {it.mediaItem(playlistId ?: LIBRARY_QUEUE_SOURCE)},playable.indexOfFirst {it.id == id}.coerceAtLeast(0),0);prepare();play()}
+        val source=playlistId ?: LIBRARY_QUEUE_SOURCE
+        // Favorites can retain outgoing rows while their UI sort worker prepares a new order.
+        // Use current tags/membership/order, while keeping the clicked search/group subset.
+        val playable=playbackSourceSongs(library.value,source,songs.mapTo(mutableSetOf()) {it.id})
+        if(playable.isEmpty() || id != null && playable.none {it.id == id}) return
+        cancelQueueOrderWork()
+        controller?.apply {setMediaItems(playable.map {it.mediaItem(source)},playable.indexOfFirst {it.id == id}.coerceAtLeast(0),0);prepare();play()}
     }
     fun playNext(song: Song): Boolean = enqueue(song,QUEUE_NEXT_COMMAND)
     fun appendQueue(song: Song): Boolean = enqueue(song,QUEUE_LAST_COMMAND)
     private fun enqueue(song: Song,action: String): Boolean {
         val player=controller ?: return false
         if(!song.available || library.value.songs.none {it.id == song.id && it.available}) return false
+        if(player.currentMediaItem?.mediaId == song.id) return true // The current song is an explicit queue no-op.
+        cancelQueueOrderWork()
         player.sendCustomCommand(SessionCommand(action,Bundle.EMPTY),Bundle().apply {putString("songId",song.id)})
         return true
     }
@@ -137,19 +143,18 @@ class MusicModel(application: Application) : AndroidViewModel(application) {
         if(repository.customOrder(ids,playlistId)) syncSourceOrder(playlistId)
     }
     private fun syncSourceOrder(playlistId: String?) {
+        val source=playlistId ?: LIBRARY_QUEUE_SOURCE
+        // Editing an inactive playlist must not cancel the active source's pending sync.
+        if(controller?.queueSource != source) return
         val state=library.value
-        val playlist=playlistId?.let {id -> state.playlists.find {it.id == id} ?: return}
+        val requestedModeRevision=modeRevision
         sortJob?.cancel()
         sortJob=viewModelScope.launch {
-            val ids=withContext(Dispatchers.Default) {
-                val members=playlist?.songIds?.toSet()
-                val songs=if(members == null) state.songs else state.songs.filter {it.id in members}
-                orderedSongs(songs,playlist?.sort ?: state.sort,playlist?.songIds ?: state.custom,playlist?.randomIds ?: state.random).map {it.id}
-            }
-            reorderQueue(ids,playlistId ?: LIBRARY_QUEUE_SOURCE)
+            val ids=withContext(Dispatchers.Default) {playbackSourceSongs(state,source).map {it.id}}
+            reorderQueue(ids,source,exitShuffle=requestedModeRevision == modeRevision)
         }
     }
-    private fun reorderQueue(ids: List<String>, source: String?) {
+    private fun reorderQueue(ids: List<String>, source: String?,exitShuffle: Boolean=true) {
         val player=controller ?: return
         if(player.queueSource != source) return
         queueOrderJob?.cancel()
@@ -157,7 +162,7 @@ class MusicModel(application: Application) : AndroidViewModel(application) {
         val ordered=orderedQueueIds(queue,player.queueSource,ids,source)
         val moves=queueMovePlan(queue,ordered)
         queueOrderJob=viewModelScope.launch(start=CoroutineStart.UNDISPATCHED) {
-            player.shuffleModeEnabled=false
+            if(exitShuffle) player.shuffleModeEnabled=false
             val expected=queue.toMutableList()
             var frameStarted=System.nanoTime()
             moves.forEachIndexed {index,(from,to) ->
@@ -179,21 +184,24 @@ class MusicModel(application: Application) : AndroidViewModel(application) {
     fun next() { controller?.seekToNext() }
     fun seek(position: Long) { controller?.seekTo(position.coerceAtLeast(0)); updatePlayback() }
     fun mode() { controller?.apply {
-        when(playback.value.mode) {
+        modeRevision++
+        // Read optimistic controller state so rapid mode taps do not reuse an old UI snapshot.
+        val currentMode=if(shuffleModeEnabled) 3 else when(repeatMode) {Player.REPEAT_MODE_ALL -> 1;Player.REPEAT_MODE_ONE -> 2;else -> 0}
+        when(currentMode) {
             0 -> repeatMode=Player.REPEAT_MODE_ALL
             1 -> repeatMode=Player.REPEAT_MODE_ONE
-            2 -> { repeatMode=Player.REPEAT_MODE_ALL; shuffleModeEnabled=true }
-            else -> { shuffleModeEnabled=false; repeatMode=Player.REPEAT_MODE_OFF }
+            2 -> { repeatMode=Player.REPEAT_MODE_ALL;shuffleModeEnabled=true }
+            else -> { shuffleModeEnabled=false;repeatMode=Player.REPEAT_MODE_OFF }
         }
     } }
-    fun queueMove(from: Int, to: Int) { queueOrderJob?.cancel();controller?.moveMediaItem(from,to) }
-    fun queueOrder(ids: List<String>) { reorderQueue(ids,controller?.queueSource) }
-    fun queueRemove(index: Int) { queueOrderJob?.cancel();controller?.removeMediaItem(index) }
+    fun queueMove(from: Int, to: Int) {cancelQueueOrderWork();controller?.apply {shuffleModeEnabled=false;moveMediaItem(from,to)}}
+    fun queueOrder(ids: List<String>) {cancelQueueOrderWork();reorderQueue(ids,controller?.queueSource)}
+    fun queueRemove(index: Int) {cancelQueueOrderWork();controller?.removeMediaItem(index)}
     fun queuePlay(index: Int) { controller?.apply { seekToDefaultPosition(index); play() } }
     fun queueRemove(id: String) { queuedIndex(id)?.let(::queueRemove) }
     fun queuePlay(id: String) { queuedIndex(id)?.let(::queuePlay) }
     private fun queuedIndex(id: String): Int? = controller?.let {player -> (0 until player.mediaItemCount).firstOrNull {player.getMediaItemAt(it).mediaId == id}}
-    fun stopForRestore() { sortJob?.cancel();queueOrderJob?.cancel();controller?.apply { stop(); clearMediaItems() } }
+    fun stopForRestore() {cancelQueueOrderWork();controller?.apply { stop(); clearMediaItems() }}
     fun importLyrics(id: String, uri: Uri, onResult: (String) -> Unit) = viewModelScope.launch {
         val result=runCatching { withContext(Dispatchers.IO) { TagReader(getApplication()).lyricText(uri) } }
         result.fold({ repository.lyrics(id,it); onResult("歌词已导入") },{ onResult(it.message ?: "歌词读取失败") })

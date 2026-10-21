@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#f8f8f6">
+  <title>小红花 · 封面花枝预览</title>
+  <link rel="icon" href="assets/flower.svg">
+  <link rel="stylesheet" href="preview.css">
+  <script src="preview.js" defer></script>
+</head>
+<body>
+  <header class="workbench">
+    <div class="wordmark"><img src="assets/flower.svg" alt="">小红花 <span>播放页设计预览</span></div>
+    <div class="intro-row"><div><h1>让花枝，沿着封面生长。</h1><p>沿用原版 B 的大封面与播放布局，只改变封面周围的装饰。</p></div>
+    <label>主题颜色<select id="theme"><option value="red">小红花红</option><option value="green">叶芽绿</option><option value="blue">矢车菊蓝</option></select></label></div>
+    <div class="preview-notes">点击封面进入歌词页，右上角小红花始终保留。点击播放，观察枝梢的轻微摇曳。<span>本地演示素材 · 无实际音频</span></div>
+  </header>
+  <main class="designs" aria-label="三款封面花枝方案"></main>
+  <footer class="page-note">花枝装饰先预览，选定后再接入 Android。封面保持静止，歌词与按键位置一致。</footer>
+  <svg class="symbols" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><defs>
+    <symbol id="down" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>
+    <symbol id="play" viewBox="0 0 24 24"><path d="m8 4 12 8-12 8Z"/></symbol>
+    <symbol id="pause" viewBox="0 0 24 24"><path d="M8 5v14M16 5v14"/></symbol>
+    <symbol id="previous" viewBox="0 0 24 24"><path d="m18 5-10 7 10 7ZM5 5v14"/></symbol>
+    <symbol id="next" viewBox="0 0 24 24"><path d="m6 5 10 7-10 7ZM19 5v14"/></symbol>
+    <symbol id="heart" viewBox="0 0 24 24"><path d="M20.8 4.8a5.3 5.3 0 0 0-7.5 0L12 6.1l-1.3-1.3a5.3 5.3 0 0 0-7.5 7.5L12 21l8.8-8.7a5.3 5.3 0 0 0 0-7.5Z"/></symbol>
+    <symbol id="mode" viewBox="0 0 24 24"><path d="M4 9V6h15m-4-4 4 4-4 4M20 15v3H5m4-4-4 4 4 4"/></symbol>
+    <symbol id="queue" viewBox="0 0 24 24"><path d="M3 5h16M3 10h12M3 15h8m7-3v7m0-7 4-1v6"/><path d="M18 19c0 3-5 3-5 0s5-3 5 0m4-2c0 3-4 3-4 0s4-3 4 0"/></symbol>
+    <symbol id="more" viewBox="0 0 24 24"><circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/></symbol>
+  </defs></svg>
+</body>
+</html>

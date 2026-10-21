@@ -68,18 +68,24 @@ struct RootView: View {
             .onChange(of: reduceMotion) { _, value in if value { launchFinished = true } }
     }
     @ViewBuilder private var miniPlayer: some View {
-        if playback.current != nil { MiniPlayer { showPlayer = true } }
+        if playback.current != nil { MiniPlayer(active: !showPlayer) { showPlayer = true } }
     }
 }
 
 struct MiniPlayer: View {
     @EnvironmentObject private var playback: Playback
+    @EnvironmentObject private var library: MusicLibrary
+    var active = true
     var open: () -> Void
     var body: some View {
-        HStack(spacing: 10) {
+        HStack(spacing: 4) {
             Button(action: open) {
-                HStack(spacing: 12) {
-                    Artwork(name: playback.current?.artwork ?? "", radius: 13).frame(width: 44, height: 44)
+                HStack(spacing: 8) {
+                    ZStack {
+                        RainbowFlower(playing: playback.playing, orbit: true, active: active).frame(width: 64, height: 64)
+                        Artwork(name: playback.current?.artwork ?? "", radius: 22).frame(width: 44, height: 44)
+                        MiniProgressRing(progress: playback.progress, color: Brand.accent(library.state.settings)).frame(width: 46, height: 46)
+                    }.frame(width: 64, height: 64)
                     VStack(alignment: .leading, spacing: 4) {
                         Text(playback.current?.title ?? "").font(.system(size: 16, weight: .medium)).lineLimit(1).accessibilityIdentifier("mini.title")
                         Text(playback.current?.artist ?? "").font(.system(size: 12)).foregroundStyle(Brand.muted).lineLimit(1)
@@ -91,8 +97,9 @@ struct MiniPlayer: View {
                 Group { if playback.loading { ProgressView() } else { Image(systemName: playback.playing ? "pause.fill" : "play.fill") } }.frame(width: 44, height: 44)
             }.accessibilityLabel(playback.playing ? "暂停" : "播放")
             Button { playback.next() } label: { Image(systemName: "forward.end.fill").frame(width: 44, height: 44) }.accessibilityLabel("下一首")
-        }.padding(.horizontal, 16).padding(.vertical, 10).background(.regularMaterial)
-            .overlay(alignment: .top) { Rectangle().fill(Brand.ink.opacity(0.05)).frame(height: 0.5) }
-            .buttonStyle(.plain)
+        }.padding(.horizontal, 8).padding(.vertical, 2)
+            .background(Color(uiColor: .secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 32, style: .continuous))
+            .overlay(alignment: .bottomTrailing) { FiveLeafBranch().frame(width: 148, height: 17).padding(.trailing, 9).padding(.bottom, 1) }
+            .buttonStyle(.plain).foregroundStyle(Brand.ink)
     }
 }

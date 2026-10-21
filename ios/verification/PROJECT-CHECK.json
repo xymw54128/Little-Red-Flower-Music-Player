@@ -1,10 +1,10 @@
 {
   "result": "pass",
   "scope": "Project format, paths, build settings, assets, font hashes/names/glyphs, XML and test discovery; NOT Xcode compilation or test execution",
-  "version": "1.1.1",
-  "build": 21,
+  "version": "1.1.7",
+  "build": 28,
   "minimumIOS": "17.0",
-  "appSources": 17,
+  "appSources": 18,
   "fonts": [
     {
       "file": "lxgw_wenkai.ttf",
@@ -190,31 +190,34 @@
       "mode": "RGBA"
     }
   ],
-  "coreTestsDiscovered": 39,
-  "uiTestsDiscovered": 7,
+  "coreTestsDiscovered": 52,
+  "uiTestsDiscovered": 9,
   "xcodeBuild": "not_run_no_mac",
   "iPhoneTest": "not_run_no_device",
   "sourceSha256": {
     "Xiaohonghua/Core/AudioTags.swift": "cc1a24d87799784eaeaa3e4ad389fe32a8c011650c8dcc9e8ed9ddb8bdfde125",
     "Xiaohonghua/Core/Lyrics.swift": "1ecef2a417f565a9774a4564bfa51b792d8a42d05beb92ff5d10ff119a13210b",
-    "Xiaohonghua/Core/Models.swift": "95af802cce5bbbb7c7fa90654447aae76c1545f0b9efce4378236539a4a0dc00",
-    "Xiaohonghua/Core/PlaybackOrder.swift": "390fd97ec502dbdf5c9ff688fd2b8f49a5e30f6834c53de804eed8286365b730",
+    "Xiaohonghua/Core/Models.swift": "dbe41f347ee2a197972e2f9d7c44d012dafd38f439494ad880f2caafa7a24275",
+    "Xiaohonghua/Core/PlaybackOrder.swift": "cda5676516cda5fed67c4e58705857780d89fee115f374c7ba031a03ffdebf69",
     "Xiaohonghua/DebugFixtures.swift": "36c717944634d86a9452b677e6051d6e70559d5ab9e604440e7ab13dbe3c5ad7",
     "Xiaohonghua/Design.swift": "3d3b865512eb7a2fe4af31c79f7cf8b06cdb7d6007a5dbdb0d47598183a463ae",
     "Xiaohonghua/FileLibrary.swift": "c11f804f0e6eaf578931026b29a6c1db3b2ecd3d8245839cf37a72efbc7065ec",
+    "Xiaohonghua/FloralUi.swift": "b74c49e232dfa44ada1ae7f51bc35b92da3a9dc56f41947128e8e4d74af5f001",
     "Xiaohonghua/LaunchView.swift": "0bcd5b60ed7e9f246cdc6af24a7eae8085b0a40adc3d69d939e0eafa1f27b6f7",
-    "Xiaohonghua/LibraryView.swift": "591d31c93fcf8d672805df75b3767f094381917e4a0da849444870cab52f0a8f",
+    "Xiaohonghua/LibraryView.swift": "ca1ccaed657039d99c63815543b6f486a18c94e7e0ce1daafb2f36d0e05e0c0a",
     "Xiaohonghua/LyricView.swift": "63874a1cdffb92faa95976b6d84ee81d8e14ddd1eb508b75562b4942a04b84c5",
-    "Xiaohonghua/MusicLibrary.swift": "b1c3cb98382d63870768c1e41bfab051fd54bfd4bcc68402fa66af3eb45efdf9",
-    "Xiaohonghua/Playback.swift": "49ea3bbef5052d4ca000637988eff7ea0d76645b632f077e43befd5f398b7612",
-    "Xiaohonghua/PlayerView.swift": "221a4b9c2b59ccb314f32d4081767271c3069954cc53d2f1ab3c2a6251f03782",
-    "Xiaohonghua/PlaylistsView.swift": "91a0f46bf68000e83c87a5fae3de32076e5eaf1d4a247cd1106d215a27e77212",
-    "Xiaohonghua/SettingsView.swift": "8d30969644aecc5fc856324e64b35180ea1524dc4c4cd12f94496b4ccdc2d34f",
-    "Xiaohonghua/SongList.swift": "a14f49f43460861e2a6a5534e2d316967803d65ece91f914f28912a80edde31b",
-    "Xiaohonghua/XiaohonghuaApp.swift": "c9bdaec4ae005a69b1433c3fa0eb6f4b1d6917ea887651ecfb6650c62803fd78",
+    "Xiaohonghua/MusicLibrary.swift": "da1e5bd1adc2c69b92e1da475c70a8c87a920d38b044c367239b32c63ca1feee",
+    "Xiaohonghua/Playback.swift": "2566f59d30346a30d72ffc749cf84ed1aed36baf71b7a8189e726815db216a9c",
+    "Xiaohonghua/PlayerView.swift": "dd753859d57bdf09bede8b7e9c03562c8f822d9876b3784664ecf5930628cf68",
+    "Xiaohonghua/PlaylistsView.swift": "5df28cd84e6737fcf47fa1c2a3aff890c7821f38c8eacf9dacfa2e615518b7e8",
+    "Xiaohonghua/SettingsView.swift": "dcdc65e2550e286fe8c53e88540e0a549c7fec2e89f3ade3f73cc8f5596212e6",
+    "Xiaohonghua/SongList.swift": "3b636f37f1caf4085d0cf18b09d28f64c5079b6e2c85757572bfad38321a73ee",
+    "Xiaohonghua/XiaohonghuaApp.swift": "5d578fb2f2d00aad74f96e942ebdcd231040d6d146ec5329da78162183d08dbc",
     "Tests/CoreTests/Collection111Tests.swift": "c0e5f991eec2212a0c75b50ff6b6bba07f60001ce4ef37cb3968ba71afd313bf",
     "Tests/CoreTests/CoreTests.swift": "0180859bb4a33235017b4e9067ce901a3990c20ebe74e9a30aa45542a29923df",
+    "Tests/CoreTests/Playback117IntegrationTests.swift": "a18708dc4c37476a24ff016280de064c9031da7e7325eac0cd1f9864ccde6c22",
     "Tests/CoreTests/PlaybackLyrics111Tests.swift": "aeb9cbefaf05950da7dfd7f78969a9983bda1f1959073049321f877e2b067b92",
-    "Tests/UITests/PlayerUITests.swift": "ce132abf74ea3320e5a2d5b0c3aaadb36b6d7a99eadc4a8df35d238ef2469dd3"
+    "Tests/CoreTests/PlaybackOrder117Tests.swift": "c20ca838ac5661adaad3674f9e5c4c3baa4e98de2f98bfaaaadbc3505de1eab0",
+    "Tests/UITests/PlayerUITests.swift": "fa4fe764b89f4e7aa5cc43763544decff76270b28641c5a68ae37a74972b94e5"
   }
 }

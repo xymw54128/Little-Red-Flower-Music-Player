@@ -1,0 +1,218 @@
+{
+  "date": "2026-10-20T07:52:10.636Z",
+  "scope": "Android local mini-player update based on 1.1.1 code 21; full-width A with tightly adjacent broad rainbow petals, unchanged border progress, sequential motion and leaf accents; no iOS changes or GitHub push",
+  "apk": "D:\\music player app\\dist\\小红花-Android-七色花紧密花瓣版.apk",
+  "bytes": 64002443,
+  "sha256": "790619a959f5bae9d8c2835a8412ee5f6a85ff1b364288241054987771f8792f",
+  "package": "com.xiaohonghua.music",
+  "versionName": "1.1.1",
+  "versionCode": 21,
+  "sameCertificateAsPublished111": true,
+  "certificateSha256": "bc582313cf7ef2723931a83b0836ffd143e09905c420760b073ef434375a416b",
+  "debuggable": false,
+  "networkPermissionAbsent": true,
+  "recordAudioPermissionAbsent": true,
+  "testComponentsAbsent": true,
+  "zipAlign16k": true,
+  "unitTests": {
+    "tests": 124,
+    "failures": 0,
+    "errors": 0,
+    "suites": [
+      {
+        "name": "TEST-com.xiaohonghua.music.AppThemeTest.xml",
+        "tests": 3,
+        "failures": 0,
+        "errors": 0
+      },
+      {
+        "name": "TEST-com.xiaohonghua.music.CollectionMetadataTest.xml",
+        "tests": 4,
+        "failures": 0,
+        "errors": 0
+      },
+      {
+        "name": "TEST-com.xiaohonghua.music.CoreTest.xml",
+        "tests": 6,
+        "failures": 0,
+        "errors": 0
+      },
+      {
+        "name": "TEST-com.xiaohonghua.music.FavoritesTest.xml",
+        "tests": 12,
+        "failures": 0,
+        "errors": 0
+      },
+      {
+        "name": "TEST-com.xiaohonghua.music.HeaderFlowerMotionTest.xml",
+        "tests": 7,
+        "failures": 0,
+        "errors": 0
+      },
+      {
+        "name": "TEST-com.xiaohonghua.music.LaunchMotionTest.xml",
+        "tests": 3,
+        "failures": 0,
+        "errors": 0
+      },
+      {
+        "name": "TEST-com.xiaohonghua.music.LibraryCacheTest.xml",
+        "tests": 1,
+        "failures": 0,
+        "errors": 0
+      },
+      {
+        "name": "TEST-com.xiaohonghua.music.LyricFontNamesTest.xml",
+        "tests": 3,
+        "failures": 0,
+        "errors": 0
+      },
+      {
+        "name": "TEST-com.xiaohonghua.music.LyricMotionTest.xml",
+        "tests": 16,
+        "failures": 0,
+        "errors": 0
+      },
+      {
+        "name": "TEST-com.xiaohonghua.music.MiniPlayerFlowerMotionTest.xml",
+        "tests": 6,
+        "failures": 0,
+        "errors": 0
+      },
+      {
+        "name": "TEST-com.xiaohonghua.music.Playback107LogicTest.xml",
+        "tests": 3,
+        "failures": 0,
+        "errors": 0
+      },
+      {
+        "name": "TEST-com.xiaohonghua.music.PlaybackFlowerMotionTest.xml",
+        "tests": 6,
+        "failures": 0,
+        "errors": 0
+      },
+      {
+        "name": "TEST-com.xiaohonghua.music.PlaylistCoverMigrationTest.xml",
+        "tests": 3,
+        "failures": 0,
+        "errors": 0
+      },
+      {
+        "name": "TEST-com.xiaohonghua.music.PlaylistOrderTest.xml",
+        "tests": 8,
+        "failures": 0,
+        "errors": 0
+      },
+      {
+        "name": "TEST-com.xiaohonghua.music.PlaylistUndoTest.xml",
+        "tests": 12,
+        "failures": 0,
+        "errors": 0
+      },
+      {
+        "name": "TEST-com.xiaohonghua.music.ReorderDragTest.xml",
+        "tests": 4,
+        "failures": 0,
+        "errors": 0
+      },
+      {
+        "name": "TEST-com.xiaohonghua.music.SongArtworkPanTest.xml",
+        "tests": 3,
+        "failures": 0,
+        "errors": 0
+      },
+      {
+        "name": "TEST-com.xiaohonghua.music.SongSearchTest.xml",
+        "tests": 7,
+        "failures": 0,
+        "errors": 0
+      },
+      {
+        "name": "TEST-com.xiaohonghua.music.TagParserTest.xml",
+        "tests": 4,
+        "failures": 0,
+        "errors": 0
+      },
+      {
+        "name": "TEST-com.xiaohonghua.music.TagStreamingTest.xml",
+        "tests": 2,
+        "failures": 0,
+        "errors": 0
+      },
+      {
+        "name": "TEST-com.xiaohonghua.music.ThousandCollectionLogicTest.xml",
+        "tests": 8,
+        "failures": 0,
+        "errors": 0
+      },
+      {
+        "name": "TEST-com.xiaohonghua.music.ThousandSongSearchTest.xml",
+        "tests": 3,
+        "failures": 0,
+        "errors": 0
+      }
+    ]
+  },
+  "lint": {
+    "errors": 0,
+    "warnings": 17
+  },
+  "instrumentedTests": {
+    "sourceCases": 89,
+    "compilation": "passed",
+    "execution": "not-run",
+    "reason": "No connected Android device; visual feel and native frame performance require phone acceptance"
+  },
+  "changes": [
+    "Existing cover breathing removal and shared favorite motion are retained",
+    "Full-width 26dp rounded A mini-player surface with 48dp previous/play/next controls",
+    "Seven broad petals meet with slight organic overlap; unchanged anchored sequential hops, one clock and 900ms braking",
+    "Circular progress directly borders the 40dp artwork, with attached petals and cached green leaves on the bar frame"
+  ],
+  "previewChecks": "docs/previews/2026-10-20/mini-player/PACKED-CHECK.json",
+  "geometryReview": {
+    "scope": "Sampled outline and angular coverage, static and max 1.15 stretch",
+    "maxRestRadiusDp": 30.025,
+    "maxHopRadiusDp": 31.52875,
+    "artworkSlotDp": 64,
+    "uncoveredAnglesAtRadiiDp": [
+      {
+        "radius": 21.6,
+        "uncoveredDegrees": 0
+      },
+      {
+        "radius": 22,
+        "uncoveredDegrees": 0
+      },
+      {
+        "radius": 22.5,
+        "uncoveredDegrees": 0
+      },
+      {
+        "radius": 23,
+        "uncoveredDegrees": 0
+      },
+      {
+        "radius": 24,
+        "uncoveredDegrees": 0
+      },
+      {
+        "radius": 25,
+        "uncoveredDegrees": 0
+      }
+    ],
+    "nativeFramePerformanceMeasured": false
+  },
+  "animation": {
+    "degreesPerSecond": 48,
+    "brakingMillis": 900,
+    "singleActivePetal": true,
+    "cyclesPerRotation": 2,
+    "rootAnchored": true,
+    "photoDiameterDp": 40,
+    "ringRadiusDp": 20.8,
+    "ringStrokeDp": 1.6,
+    "frameLeaves": 4,
+    "audioBeatDetection": false
+  }
+}

@@ -1,0 +1,182 @@
+{
+  "date": "2026-10-20T05:00:23.472Z",
+  "scope": "Android local mini-player update based on 1.1.1 code 21; full-width A with orbiting rainbow petals; no iOS changes or GitHub push",
+  "apk": "D:\\music player app\\dist\\小红花-Android-七色花迷你栏本地版.apk",
+  "bytes": 64002443,
+  "sha256": "d8950760483165d06341947cf1365b32fffb7054827a24b373673d66d1aecc2a",
+  "package": "com.xiaohonghua.music",
+  "versionName": "1.1.1",
+  "versionCode": 21,
+  "sameCertificateAsPublished111": true,
+  "certificateSha256": "bc582313cf7ef2723931a83b0836ffd143e09905c420760b073ef434375a416b",
+  "debuggable": false,
+  "networkPermissionAbsent": true,
+  "recordAudioPermissionAbsent": true,
+  "testComponentsAbsent": true,
+  "zipAlign16k": true,
+  "unitTests": {
+    "tests": 122,
+    "failures": 0,
+    "errors": 0,
+    "suites": [
+      {
+        "name": "TEST-com.xiaohonghua.music.AppThemeTest.xml",
+        "tests": 3,
+        "failures": 0,
+        "errors": 0
+      },
+      {
+        "name": "TEST-com.xiaohonghua.music.CollectionMetadataTest.xml",
+        "tests": 4,
+        "failures": 0,
+        "errors": 0
+      },
+      {
+        "name": "TEST-com.xiaohonghua.music.CoreTest.xml",
+        "tests": 6,
+        "failures": 0,
+        "errors": 0
+      },
+      {
+        "name": "TEST-com.xiaohonghua.music.FavoritesTest.xml",
+        "tests": 12,
+        "failures": 0,
+        "errors": 0
+      },
+      {
+        "name": "TEST-com.xiaohonghua.music.HeaderFlowerMotionTest.xml",
+        "tests": 7,
+        "failures": 0,
+        "errors": 0
+      },
+      {
+        "name": "TEST-com.xiaohonghua.music.LaunchMotionTest.xml",
+        "tests": 3,
+        "failures": 0,
+        "errors": 0
+      },
+      {
+        "name": "TEST-com.xiaohonghua.music.LibraryCacheTest.xml",
+        "tests": 1,
+        "failures": 0,
+        "errors": 0
+      },
+      {
+        "name": "TEST-com.xiaohonghua.music.LyricFontNamesTest.xml",
+        "tests": 3,
+        "failures": 0,
+        "errors": 0
+      },
+      {
+        "name": "TEST-com.xiaohonghua.music.LyricMotionTest.xml",
+        "tests": 16,
+        "failures": 0,
+        "errors": 0
+      },
+      {
+        "name": "TEST-com.xiaohonghua.music.MiniPlayerFlowerMotionTest.xml",
+        "tests": 4,
+        "failures": 0,
+        "errors": 0
+      },
+      {
+        "name": "TEST-com.xiaohonghua.music.Playback107LogicTest.xml",
+        "tests": 3,
+        "failures": 0,
+        "errors": 0
+      },
+      {
+        "name": "TEST-com.xiaohonghua.music.PlaybackFlowerMotionTest.xml",
+        "tests": 6,
+        "failures": 0,
+        "errors": 0
+      },
+      {
+        "name": "TEST-com.xiaohonghua.music.PlaylistCoverMigrationTest.xml",
+        "tests": 3,
+        "failures": 0,
+        "errors": 0
+      },
+      {
+        "name": "TEST-com.xiaohonghua.music.PlaylistOrderTest.xml",
+        "tests": 8,
+        "failures": 0,
+        "errors": 0
+      },
+      {
+        "name": "TEST-com.xiaohonghua.music.PlaylistUndoTest.xml",
+        "tests": 12,
+        "failures": 0,
+        "errors": 0
+      },
+      {
+        "name": "TEST-com.xiaohonghua.music.ReorderDragTest.xml",
+        "tests": 4,
+        "failures": 0,
+        "errors": 0
+      },
+      {
+        "name": "TEST-com.xiaohonghua.music.SongArtworkPanTest.xml",
+        "tests": 3,
+        "failures": 0,
+        "errors": 0
+      },
+      {
+        "name": "TEST-com.xiaohonghua.music.SongSearchTest.xml",
+        "tests": 7,
+        "failures": 0,
+        "errors": 0
+      },
+      {
+        "name": "TEST-com.xiaohonghua.music.TagParserTest.xml",
+        "tests": 4,
+        "failures": 0,
+        "errors": 0
+      },
+      {
+        "name": "TEST-com.xiaohonghua.music.TagStreamingTest.xml",
+        "tests": 2,
+        "failures": 0,
+        "errors": 0
+      },
+      {
+        "name": "TEST-com.xiaohonghua.music.ThousandCollectionLogicTest.xml",
+        "tests": 8,
+        "failures": 0,
+        "errors": 0
+      },
+      {
+        "name": "TEST-com.xiaohonghua.music.ThousandSongSearchTest.xml",
+        "tests": 3,
+        "failures": 0,
+        "errors": 0
+      }
+    ]
+  },
+  "lint": {
+    "errors": 0,
+    "warnings": 17,
+    "warningsInChangedSources": 0
+  },
+  "instrumentedTests": {
+    "sourceCases": 89,
+    "compilation": "passed",
+    "execution": "not-run",
+    "reason": "No connected Android device; visual feel and native frame performance require phone acceptance"
+  },
+  "changes": [
+    "Existing cover breathing removal and shared favorite motion are retained",
+    "Full-width 26dp rounded A mini-player surface with 48dp previous/play/next controls",
+    "D seven-color petals orbit and pulse around still cached artwork; one clock, 900ms braking",
+    "Real circular playback progress collected locally, including seek and track-change handling"
+  ],
+  "compiledMiniPlayerSymbolsPresent": true,
+  "previewChecks": "docs/previews/2026-10-20/mini-player/REFINED-CHECK.json",
+  "animation": {
+    "steadyDegreesPerSecond": 48,
+    "accelerationMillis": 240,
+    "brakingMillis": 900,
+    "maxPetalHopDp": 1.5,
+    "audioBeatDetection": false
+  }
+}

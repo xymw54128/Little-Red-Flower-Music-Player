@@ -12,6 +12,7 @@ import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.lifecycle.ViewModelProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeout
@@ -99,6 +100,24 @@ class MainNavigationUiTest {
         compose.onNodeWithText(label).performClick()
     }
 
+
+    private fun sequentialPlayback(model: MusicModel) {
+        repeat(4) {
+            val previous=model.playback.value.mode
+            if(previous == 0) return
+            compose.runOnIdle {model.mode()}
+            compose.waitUntil(30_000) {model.playback.value.mode != previous}
+        }
+        assertEquals(0,model.playback.value.mode)
+    }
+
+    // Await the actual worker rather than a sleep: its result can only commit on Main
+    // after the same-turn user action below. No production-only scheduler hook is needed.
+    private fun sourceSortJob(model: MusicModel): Job = MusicModel::class.java.getDeclaredField("sortJob")
+        .apply {isAccessible=true}.get(model) as Job
+
+    private fun awaitSourceSort(job: Job) {runBlocking {withTimeout(30_000) {job.join()}}}
+
     @Test fun horizontalMainPagesSearchAndFavoritesPreservePlayback() {
         val model=ready()
         home("library")
@@ -153,6 +172,43 @@ class MainNavigationUiTest {
         back()
         compose.onNodeWithTag("library-search-field").assertDoesNotExist()
         compose.onNodeWithTag("favorite-${song.id}").assertIsDisplayed()
+    }
+
+    @Test fun favoritesHeartAndRowExitSurviveFullAppAsyncSortReload() {
+        val model=ready()
+        val songs=model.library.value.songs
+        compose.runOnIdle {model.repository.addPlaylistSongs(FAVORITES_PLAYLIST_ID,songs.map {it.id})}
+        compose.onNodeWithTag("nav-playlists").performClick()
+        home("playlists")
+        compose.onNodeWithTag("playlist-"+FAVORITES_PLAYLIST_ID).performClick()
+        compose.waitUntil(30_000) {compose.onAllNodesWithTag("favorite-"+songs.first().id).fetchSemanticsNodes().isNotEmpty()}
+        compose.waitForIdle()
+        compose.onNodeWithTag("page-playlist").assertIsDisplayed()
+        compose.mainClock.autoAdvance=false
+        for((index,song) in songs.withIndex()) {
+            val button=compose.onNodeWithTag("favorite-"+song.id)
+            val row=compose.onNodeWithTag("favorite-row-exit-"+song.id)
+            val initialHeight=row.fetchSemanticsNode().boundsInRoot.height
+            button.assertIsSelected().performClick()
+            compose.runOnIdle {assertFalse(song.id in model.library.value.playlists.first {it.isFavorites}.songIds)}
+            compose.mainClock.advanceTimeBy(400)
+            button.assertExists().assertIsNotSelected()
+            assertEquals(initialHeight,row.fetchSemanticsNode().boundsInRoot.height,1f)
+            compose.onNodeWithTag("song-"+song.id).performClick() // A retained outgoing row must not play another source item.
+            compose.onNodeWithTag("playlist-song-count").assertTextEquals("共 "+(songs.size-index)+" 首")
+            compose.onNodeWithText("歌单还没有歌曲").assertDoesNotExist()
+            compose.mainClock.advanceTimeBy(272)
+            val shrinkingHeight=row.fetchSemanticsNode().boundsInRoot.height
+            assertTrue("Row exit follows the heart and is visibly collapsing",shrinkingHeight > 0f && shrinkingHeight < initialHeight)
+            compose.mainClock.advanceTimeBy(320)
+            button.assertDoesNotExist()
+        }
+        compose.onNodeWithText("歌单还没有歌曲").assertIsDisplayed()
+        compose.runOnIdle {
+            assertTrue(model.library.value.playlists.first {it.isFavorites}.songIds.isEmpty())
+            assertNull(model.playback.value.currentId)
+        }
+        compose.mainClock.autoAdvance=true
     }
 
     @Test fun playlistCoverOpensDetailsWithoutChangingPlaybackAndManagementStaysInItsRoute() {
@@ -540,6 +596,234 @@ class MainNavigationUiTest {
         assertEquals(1_050L,model.playbackPosition())
         back()
         home("settings")
+    }
+
+
+    @Test fun sharedSongSwitchesToTheNewPlaylistsWholeQueueAndItsNextTrack() {
+        val model=ready()
+        sequentialPlayback(model)
+        val songs=orderedSongs(model.library.value.songs,SortMode.TITLE,emptyList(),emptyList())
+        val ids=songs.map {it.id}
+        lateinit var first: Playlist
+        lateinit var second: Playlist
+        compose.runOnIdle {
+            first=model.repository.createPlaylist("来源 A")
+            second=model.repository.createPlaylist("来源 B")
+            model.repository.playlist(first.copy(songIds=ids,sort=SortMode.CUSTOM))
+            model.repository.playlist(second.copy(songIds=ids.reversed(),sort=SortMode.CUSTOM))
+            model.play(songs,ids.last(),first.id)
+        }
+        compose.waitUntil(30_000) {
+            model.playback.value.queue == ids && model.playback.value.currentId == ids.last() &&
+                model.playback.value.queueSource == first.id
+        }
+        // Selecting the same song from another playlist must replace the origin too.
+        compose.runOnIdle {model.play(songs.reversed(),ids.last(),second.id)}
+        compose.waitUntil(30_000) {
+            model.playback.value.queue == ids.reversed() && model.playback.value.currentId == ids.last() &&
+                model.playback.value.queueSource == second.id
+        }
+        compose.runOnIdle {model.next()}
+        compose.waitUntil(30_000) {model.playback.value.currentId == ids.first()}
+        compose.runOnIdle {
+            assertEquals(ids.reversed(),model.playback.value.queue)
+            assertEquals(second.id,model.playback.value.queueSource)
+        }
+    }
+
+    @Test fun inactivePlaylistSortCannotCancelThePlayingLibraryOrPlaylistOrder() {
+        val model=ready()
+        sequentialPlayback(model)
+        val songs=orderedSongs(model.library.value.songs,SortMode.TITLE,emptyList(),emptyList())
+        val ids=songs.map {it.id}
+        lateinit var first: Playlist
+        lateinit var second: Playlist
+        compose.runOnIdle {
+            first=model.repository.createPlaylist("活动顺序")
+            second=model.repository.createPlaylist("非活动顺序")
+            model.repository.playlist(first.copy(songIds=ids,sort=SortMode.CUSTOM))
+            model.repository.playlist(second.copy(songIds=ids.reversed(),sort=SortMode.CUSTOM))
+        }
+        for(source in listOf<String?>(null,first.id)) {
+            val expectedSource=source ?: LIBRARY_QUEUE_SOURCE
+            val inactive=if(source == null) first.id else second.id
+            compose.runOnIdle {
+                model.repository.customOrder(ids,source)
+                model.play(songs,ids.first(),source)
+            }
+            compose.waitUntil(30_000) {
+                model.playback.value.queueSource == expectedSource && model.playback.value.queue == ids && model.playback.value.playing
+            }
+            compose.runOnIdle {model.toggle();model.seek(500)}
+            compose.waitUntil(30_000) {!model.playback.value.playing && model.playback.value.position == 500L}
+            if(model.playback.value.mode == 0) {
+                compose.runOnIdle {model.mode()}
+                compose.waitUntil(30_000) {model.playback.value.mode == 1}
+            }
+            lateinit var pending: Job
+            compose.runOnIdle {
+                model.customOrder(ids.reversed(),source)
+                pending=sourceSortJob(model)
+                model.customOrder(ids,inactive)
+                assertFalse("Editing another playlist must not cancel the active source worker",pending.isCancelled)
+            }
+            awaitSourceSort(pending)
+            compose.waitUntil(30_000) {model.playback.value.queue == ids.reversed()}
+            compose.runOnIdle {
+                assertEquals(expectedSource,model.playback.value.queueSource)
+                assertEquals(ids.first(),model.playback.value.currentId)
+                assertEquals(500L,model.playbackPosition())
+                assertFalse(model.playback.value.playing)
+                assertEquals(1,model.playback.value.mode)
+            }
+        }
+        compose.waitUntil(30_000) {
+            val saved=LibraryStore(context).playlists()
+            saved.first {it.id == first.id}.songIds == ids.reversed() && saved.first {it.id == second.id}.songIds == ids
+        }
+    }
+
+    @Test fun aLaterManualQueueOrderWinsOverAnAlreadyScheduledSourceSort() {
+        val model=ready()
+        sequentialPlayback(model)
+        val songs=orderedSongs(model.library.value.songs,SortMode.TITLE,emptyList(),emptyList())
+        val ids=songs.map {it.id}
+        lateinit var playlist: Playlist
+        compose.runOnIdle {
+            playlist=model.repository.createPlaylist("队列覆盖回归")
+            model.repository.playlist(playlist.copy(songIds=ids,sort=SortMode.CUSTOM))
+            model.play(songs,ids.first(),playlist.id)
+        }
+        compose.waitUntil(30_000) {model.playback.value.queue == ids && model.playback.value.playing}
+        compose.runOnIdle {model.toggle();model.seek(600)}
+        compose.waitUntil(30_000) {!model.playback.value.playing && model.playback.value.position == 600L}
+        lateinit var obsolete: Job
+        compose.runOnIdle {
+            model.customOrder(ids.reversed(),playlist.id)
+            obsolete=sourceSortJob(model)
+            // The requested manual order equals the current timeline, but must still
+            // cancel the older worker before it can move that timeline in reverse.
+            model.queueOrder(ids)
+            assertTrue("A newer explicit queue order cancels the older source sort",obsolete.isCancelled)
+        }
+        awaitSourceSort(obsolete)
+        compose.waitUntil(30_000) {model.playback.value.queue == ids}
+        compose.runOnIdle {
+            assertEquals(playlist.id,model.playback.value.queueSource)
+            assertEquals(ids.first(),model.playback.value.currentId)
+            assertEquals(600L,model.playbackPosition())
+            assertFalse(model.playback.value.playing)
+            assertEquals(ids.reversed(),model.library.value.playlists.first {it.id == playlist.id}.songIds)
+        }
+    }
+
+    @Test fun latestFavoriteSortWinsOverRetainedRowsAndPreservesTheSelectedSubset() {
+        val model=ready()
+        sequentialPlayback(model)
+        val staleRows=orderedSongs(model.library.value.songs,SortMode.TITLE,emptyList(),emptyList())
+        val ids=staleRows.map {it.id}
+        compose.runOnIdle {
+            model.repository.addPlaylistSongs(FAVORITES_PLAYLIST_ID,ids)
+            // The favorite UI deliberately retains these old rows while its new sort
+            // prepares. The playback entry point must use the latest stored source.
+            model.customOrder(ids.reversed(),FAVORITES_PLAYLIST_ID)
+            model.play(staleRows,ids.last(),FAVORITES_PLAYLIST_ID)
+        }
+        compose.waitUntil(30_000) {
+            model.playback.value.queue == ids.reversed() && model.playback.value.currentId == ids.last() &&
+                model.playback.value.queueSource == FAVORITES_PLAYLIST_ID
+        }
+        compose.waitUntil(30_000) {LibraryStore(context).playlists().first {it.isFavorites}.songIds == ids.reversed()}
+        compose.runOnIdle {model.play(listOf(staleRows.first()),ids.first(),FAVORITES_PLAYLIST_ID)}
+        compose.waitUntil(30_000) {
+            model.playback.value.queue == listOf(ids.first()) && model.playback.value.currentId == ids.first()
+        }
+        compose.runOnIdle {assertEquals(FAVORITES_PLAYLIST_ID,model.playback.value.queueSource)}
+    }
+
+
+    @Test fun rapidModeCycleUsesControllerStateAndSourceSortKeepsTheLaterMode() {
+        val model=ready()
+        sequentialPlayback(model)
+        val songs=orderedSongs(model.library.value.songs,SortMode.TITLE,emptyList(),emptyList())
+        val ids=songs.map {it.id}
+        lateinit var playlist: Playlist
+        compose.runOnIdle {
+            playlist=model.repository.createPlaylist("快速播放模式")
+            model.repository.playlist(playlist.copy(songIds=ids,sort=SortMode.CUSTOM))
+            model.play(songs,ids.first(),playlist.id)
+        }
+        compose.waitUntil(30_000) {model.playback.value.queue == ids && model.playback.value.playing}
+        compose.runOnIdle {model.toggle();model.seek(700)}
+        compose.waitUntil(30_000) {!model.playback.value.playing && model.playback.value.position == 700L}
+        lateinit var firstSort: Job
+        compose.runOnIdle {
+            model.customOrder(ids.reversed(),playlist.id)
+            firstSort=sourceSortJob(model)
+            repeat(4) {model.mode()}
+            // Pull a fresh controller snapshot without waiting for Flow between
+            // presses. Returning to sequential mode must not discard this sort.
+            model.seek(700)
+            assertEquals(0,model.playback.value.mode)
+            assertFalse("Cycling modes must not discard the pending source order",firstSort.isCancelled)
+        }
+        awaitSourceSort(firstSort)
+        compose.waitUntil(30_000) {model.playback.value.queue == ids.reversed()}
+        compose.runOnIdle {
+            model.seek(700)
+            assertEquals(0,model.playback.value.mode)
+            assertEquals(ids.reversed(),model.playback.value.queue)
+        }
+        lateinit var secondSort: Job
+        compose.runOnIdle {
+            model.customOrder(ids,playlist.id)
+            secondSort=sourceSortJob(model)
+            repeat(3) {model.mode()}
+            model.seek(700)
+            assertEquals(3,model.playback.value.mode)
+            assertFalse("The saved source order still applies after a newer mode choice",secondSort.isCancelled)
+        }
+        awaitSourceSort(secondSort)
+        compose.waitUntil(30_000) {model.playback.value.queue == ids}
+        compose.runOnIdle {
+            model.seek(700)
+            assertEquals(3,model.playback.value.mode)
+            assertEquals(ids,model.playback.value.queue)
+            assertEquals(playlist.id,model.playback.value.queueSource)
+            assertFalse(model.playback.value.playing)
+        }
+    }
+
+    @Test fun enqueueingTheCurrentSongIsANoOpAndDoesNotCancelItsSourceSort() {
+        val model=ready()
+        sequentialPlayback(model)
+        val songs=orderedSongs(model.library.value.songs,SortMode.TITLE,emptyList(),emptyList())
+        val ids=songs.map {it.id}
+        lateinit var playlist: Playlist
+        compose.runOnIdle {
+            playlist=model.repository.createPlaylist("当前歌曲不改队列")
+            model.repository.playlist(playlist.copy(songIds=ids,sort=SortMode.CUSTOM))
+            model.play(songs,ids.first(),playlist.id)
+        }
+        compose.waitUntil(30_000) {model.playback.value.queue == ids && model.playback.value.playing}
+        compose.runOnIdle {model.toggle();model.seek(650)}
+        compose.waitUntil(30_000) {!model.playback.value.playing && model.playback.value.position == 650L}
+        lateinit var pending: Job
+        compose.runOnIdle {
+            model.customOrder(ids.reversed(),playlist.id)
+            pending=sourceSortJob(model)
+            assertTrue(model.appendQueue(songs.first()))
+            assertTrue(model.playNext(songs.first()))
+            assertFalse("A no-op current-song request must not discard the saved source order",pending.isCancelled)
+        }
+        awaitSourceSort(pending)
+        compose.waitUntil(30_000) {model.playback.value.queue == ids.reversed()}
+        compose.runOnIdle {
+            assertEquals(playlist.id,model.playback.value.queueSource)
+            assertEquals(ids.first(),model.playback.value.currentId)
+            assertEquals(650L,model.playbackPosition())
+            assertFalse(model.playback.value.playing)
+        }
     }
 
 }

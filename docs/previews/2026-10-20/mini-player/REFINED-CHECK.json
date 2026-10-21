@@ -1,0 +1,130 @@
+{
+  "date": "2026-10-20T04:59:19.111Z",
+  "scope": "Chosen A refinement: full-width rounded bar, seven-color orbital petals, still cover, A progress circle",
+  "errors": [],
+  "layouts": [
+    {
+      "width": 320,
+      "overflow": 0,
+      "edges": [
+        0,
+        0
+      ],
+      "cover": "none",
+      "buttons": [
+        {
+          "w": 48,
+          "h": 48,
+          "inside": true,
+          "hit": true
+        },
+        {
+          "w": 48,
+          "h": 48,
+          "inside": true,
+          "hit": true
+        },
+        {
+          "w": 48,
+          "h": 48,
+          "inside": true,
+          "hit": true
+        }
+      ]
+    },
+    {
+      "width": 360,
+      "overflow": 0,
+      "edges": [
+        0,
+        0
+      ],
+      "cover": "none",
+      "buttons": [
+        {
+          "w": 48,
+          "h": 48,
+          "inside": true,
+          "hit": true
+        },
+        {
+          "w": 48,
+          "h": 48,
+          "inside": true,
+          "hit": true
+        },
+        {
+          "w": 48,
+          "h": 48,
+          "inside": true,
+          "hit": true
+        }
+      ]
+    },
+    {
+      "width": 390,
+      "overflow": 0,
+      "edges": [
+        0,
+        0
+      ],
+      "cover": "none",
+      "buttons": [
+        {
+          "w": 48,
+          "h": 48,
+          "inside": true,
+          "hit": true
+        },
+        {
+          "w": 48,
+          "h": 48,
+          "inside": true,
+          "hit": true
+        },
+        {
+          "w": 48,
+          "h": 48,
+          "inside": true,
+          "hit": true
+        }
+      ]
+    },
+    {
+      "width": 430,
+      "overflow": 0,
+      "edges": [
+        0,
+        0
+      ],
+      "cover": "none",
+      "buttons": [
+        {
+          "w": 48,
+          "h": 48,
+          "inside": true,
+          "hit": true
+        },
+        {
+          "w": 48,
+          "h": 48,
+          "inside": true,
+          "hit": true
+        },
+        {
+          "w": 48,
+          "h": 48,
+          "inside": true,
+          "hit": true
+        }
+      ]
+    }
+  ],
+  "nativeFramePerformanceMeasured": false,
+  "playPauseCoastingAndPetalSettlement": true,
+  "previousNext": true,
+  "progressCircle": true,
+  "rapidToggles": true,
+  "reducedMotion": true,
+  "passed": true
+}

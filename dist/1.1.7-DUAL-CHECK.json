@@ -1,0 +1,53 @@
+{
+  "date": "2026-10-21T10:50:40.547Z",
+  "version": "1.1.7",
+  "repo": "https://github.com/xymw54128/Little-Red-Flower-Music-Player",
+  "releaseTarget": "https://github.com/xymw54128/Little-Red-Flower-Music-Player/releases/tag/v1.1.7",
+  "android": {
+    "asset": "Xiaohonghua-1.1.7.apk",
+    "bytes": 64052755,
+    "sha256": "72d0860f808c1313baa9471080513f0bccf5bfb9a5ec53186ce77bd0a871b45f",
+    "versionCode": 28,
+    "sameVerifiedApkAsLocal117": true,
+    "unitTests": {
+      "tests": 135,
+      "failures": 0,
+      "errors": 0
+    },
+    "lint": {
+      "errors": 0,
+      "warnings": 17
+    },
+    "nativeTests": {
+      "compiled": 114,
+      "execution": "not_run_no_device"
+    },
+    "audioConfigurationChanged": false
+  },
+  "ios": {
+    "asset": "Xiaohonghua-iOS-1.1.7-source.zip",
+    "bytes": 49633255,
+    "sha256": "d8aa611ed225112888148d34daed1131ddfeca6ada01665fd4c805c0a6da29cf",
+    "build": 28,
+    "minimumIOS": "17.0",
+    "files": 99,
+    "swiftFiles": 25,
+    "grammarErrors": 0,
+    "projectResourcesFontsAndZip": "pass",
+    "coreModelTestsProvided": 52,
+    "swiftPackageCoreTests": 47,
+    "iosOnlyModelTests": 5,
+    "uiTestsProvided": 9,
+    "testExecution": "not_run_no_mac",
+    "audioPreparationSessionAndCallbacksUnchanged": true,
+    "notRun": [
+      "Xcode SDK type checking and compilation",
+      "XCTest execution",
+      "iPhone simulator",
+      "iPhone device and performance",
+      "Apple signing and IPA export"
+    ]
+  },
+  "previousIOS111SourceUnchanged": true,
+  "sourceReview": "Independent review found no remaining P1/P2; not a substitute for SDK compilation or device testing"
+}

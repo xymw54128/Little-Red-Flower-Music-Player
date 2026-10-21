@@ -1,0 +1,304 @@
+{
+  "date": "2026-10-21T06:32:14.664Z",
+  "versionName": "1.1.7",
+  "versionCode": 28,
+  "scope": "Local Android official release; no GitHub push or iOS changes",
+  "apk": "D:\\music player app\\dist\\小红花-1.1.7.apk",
+  "sha256": "72d0860f808c1313baa9471080513f0bccf5bfb9a5ec53186ce77bd0a871b45f",
+  "bytes": 64052755,
+  "build": {
+    "command": "node tools/build-android.cjs :app:assembleRelease :app:assembleDebug :app:testReleaseUnitTest :app:lintRelease :app:assembleDebugAndroidTest",
+    "result": "passed",
+    "duration": "1m 22s"
+  },
+  "unitTests": {
+    "tests": 135,
+    "failures": 0,
+    "errors": 0
+  },
+  "lint": {
+    "errors": 0,
+    "warnings": 17
+  },
+  "instrumentedTests": {
+    "sourceCases": 114,
+    "files": [
+      {
+        "file": "ActionSnackbarUiTest.kt",
+        "tests": 2
+      },
+      {
+        "file": "AppThemeUiTest.kt",
+        "tests": 2
+      },
+      {
+        "file": "ArtworkCacheTest.kt",
+        "tests": 3
+      },
+      {
+        "file": "CollectionDocumentsProvider.kt",
+        "tests": 0
+      },
+      {
+        "file": "CollectionPersistenceTest.kt",
+        "tests": 5
+      },
+      {
+        "file": "FavoriteMotionUiTest.kt",
+        "tests": 5
+      },
+      {
+        "file": "HeaderFlowerUiTest.kt",
+        "tests": 1
+      },
+      {
+        "file": "LargeLibraryPersistenceTest.kt",
+        "tests": 2
+      },
+      {
+        "file": "LyricFontRenderingTest.kt",
+        "tests": 2
+      },
+      {
+        "file": "MainNavigationUiTest.kt",
+        "tests": 17
+      },
+      {
+        "file": "MiniPlayerFlowerUiTest.kt",
+        "tests": 2
+      },
+      {
+        "file": "MiniPlayerUiTest.kt",
+        "tests": 5
+      },
+      {
+        "file": "NativeSmokeTest.kt",
+        "tests": 1
+      },
+      {
+        "file": "OverlayUiTest.kt",
+        "tests": 4
+      },
+      {
+        "file": "Playback107Test.kt",
+        "tests": 5
+      },
+      {
+        "file": "PlaybackFlowerUiTest.kt",
+        "tests": 2
+      },
+      {
+        "file": "PlaybackOrderTest.kt",
+        "tests": 2
+      },
+      {
+        "file": "PlayerNavigationUiTest.kt",
+        "tests": 17
+      },
+      {
+        "file": "PlaylistCoverUiTest.kt",
+        "tests": 3
+      },
+      {
+        "file": "PlaylistDetailUiTest.kt",
+        "tests": 3
+      },
+      {
+        "file": "PlaylistManagementUiTest.kt",
+        "tests": 9
+      },
+      {
+        "file": "ReorderUiTest.kt",
+        "tests": 6
+      },
+      {
+        "file": "SettingsInteractionUiTest.kt",
+        "tests": 8
+      },
+      {
+        "file": "SongArtworkUiTest.kt",
+        "tests": 2
+      },
+      {
+        "file": "SongListUiTest.kt",
+        "tests": 3
+      },
+      {
+        "file": "SongSearchNativeTest.kt",
+        "tests": 3
+      }
+    ],
+    "compilation": "passed",
+    "execution": "not-run",
+    "reason": "ADB device list is empty; native MediaController, audio output, system gestures and frame timing not executed",
+    "newCases": 6,
+    "newCoverage": [
+      "Shared-song A-to-B playback source and full queue/next track",
+      "Sort active library or playlist then sort an inactive playlist in the same main-thread turn",
+      "Source sort followed by manual queue order cancels older worker and preserves paused current/position",
+      "Retained favorites rows replay with latest source sort while preserving search subset",
+      "Pending source sort completes while rapid four-step mode cycling ends in sequential mode or three-step cycling ends in shuffle; later mode is preserved without cancelling saved order",
+      "Appending current song or marking it play-next is a no-op and does not cancel pending source sorting"
+    ]
+  },
+  "queueOrderAudit": {
+    "sources": [
+      "library",
+      "favorites",
+      "independent playlist A",
+      "independent playlist B",
+      "encoded album"
+    ],
+    "sortModes": [
+      "TITLE",
+      "ARTIST",
+      "RANDOM",
+      "CUSTOM"
+    ],
+    "jvmMatrixSourceModeCombinations": 16,
+    "largeMatrixSongCount": 1000,
+    "selectionSubsetPreserved": true,
+    "latestSourceMembershipAndTagsUsed": true,
+    "unknownDeletedUnavailableSourceEntriesExcluded": true,
+    "duplicateIdsExcludedFromNewSourcePlayback": true,
+    "albumDiscTrackOrderRetained": true,
+    "browsingOtherPlaylistDoesNotReplaceQueue": true,
+    "sourceQueueRemainsASessionSubset": true,
+    "sourceSortUsesNativeMovesInsteadOfRestart": true,
+    "currentIdPositionAndPausedStateRetention": "Source-reviewed and compiled instrumented coverage; native runtime not measured",
+    "fixedBugs": [
+      "Inactive source sort no longer cancels active sort worker",
+      "Actual manual queue edits and non-current enqueue operations cancel older sort/move workers; current-song no-op keeps valid sorting",
+      "Shuffled queue changes compare actual traversal, including zero-physical-move exit",
+      "Retained favorites rows cannot start playback in an obsolete prepared order",
+      "Mode cycling uses live controller state; mode revision preserves later selection and allows earlier saved source order to complete"
+    ],
+    "currentSongEnqueuePreservesPendingSort": true,
+    "laterModePreservedWithoutDroppingSavedSort": true
+  },
+  "regressionEvidence": {
+    "testClass": "QueueTraversalOrderTest",
+    "before": {
+      "tests": 3,
+      "failures": 2,
+      "errors": 0,
+      "behaviour": "Extracted unchanged physical-queue comparison before the fix"
+    },
+    "after": {
+      "name": "com.xiaohonghua.music.QueueTraversalOrderTest",
+      "tests": 3,
+      "failures": 0,
+      "errors": 0
+    },
+    "sourceMatrix": {
+      "name": "com.xiaohonghua.music.PlaybackSourceMatrixTest",
+      "tests": 7,
+      "failures": 0,
+      "errors": 0
+    }
+  },
+  "performance": {
+    "desktopJUnitThousandSourceMatrixSeconds": 0.068,
+    "desktopTimingIsNotAndroidFrameMeasurement": true,
+    "sourceClickOrderCost": "O(n log n) in worst case; not on position ticks or per-frame callbacks",
+    "nativeFramePerformanceMeasured": false,
+    "thousandRealFlacLibraryImportMeasured": false
+  },
+  "audio": {
+    "playbackServiceUnchangedVs116Overlay": true,
+    "tagsUnchangedVs116Overlay": true,
+    "libraryStoreUnchangedVs116Overlay": true,
+    "media3Version": "1.9.3",
+    "musicModelChangeScope": "Playback selection, source sort cancellation, queue order and playback mode only",
+    "newDsp": false,
+    "newTranscoding": false,
+    "decoderAudioAttributesVolumeAndSpeedConfigurationChanged": false,
+    "bitPerfectOutputClaimed": false,
+    "deviceAudioOutputMeasured": false
+  },
+  "sourceReview": {
+    "result": "No remaining P1/P2 found in independent read-only review",
+    "deviceIntegrationVerified": false
+  },
+  "sameSigningCertificateAs116": true,
+  "sameSigningCertificateAs116Overlay": true,
+  "historicalSigningBaselines": 21,
+  "previousArtifactsPreserved": [
+    {
+      "file": "小红花-1.1.6.apk",
+      "sha256": "01ad2338c69712004785b73c9d1bcf334f0433ae775b29d2d19f3185bc53513d",
+      "unchanged": true
+    },
+    {
+      "file": "小红花-1.1.6-CHECK.json",
+      "sha256": "1f6fa1eb9f971c11edb41f798189d93cb4b03668a71fff45cc70eefd7994b10a",
+      "unchanged": true
+    },
+    {
+      "file": "小红花-1.1.6.apk.sha256",
+      "sha256": "cada970d3d55da291d67d24d2b66eb7c60d0caac3d214182715a778d7642b63c",
+      "unchanged": true
+    },
+    {
+      "file": "小红花-1.1.6-弹层修订版.apk",
+      "sha256": "613f6f28553cf9198fcc944bb8eba39734f8a638d50605977467419f892a08f8",
+      "unchanged": true
+    },
+    {
+      "file": "小红花-1.1.6-弹层修订版-CHECK.json",
+      "sha256": "2af72f613e59c487d28359aa310099978dd92ffe66bd4d26ab986c67a40fadd3",
+      "unchanged": true
+    },
+    {
+      "file": "小红花-1.1.6-弹层修订版.apk.sha256",
+      "sha256": "16b1de58ea5f80be43543d6c826eee215ccfe33f4ac3210dc9f367f5b3bc19e3",
+      "unchanged": true
+    }
+  ],
+  "sourceHashes": {
+    "AppTheme.kt": "f0c8ed2162467fcc8f4872a0ceb6d91e2ffcc742fd3a32ebdd7f93d3adaebd97",
+    "ArtworkCache.kt": "cccda7edd9039876618a5620f757b1c86c50c5ec2133649783c11c72a0348370",
+    "BotanicalCoverFrame.kt": "3d908a4997994dbf78021e2aabc6d5c7c398e187ddafc7ac19f8c817781cce7b",
+    "Core.kt": "3954b0c59bc690ad9dc60115906b45aab56ae80778c07088763061b9aae3e50d",
+    "FavoriteButton.kt": "5a4f7f046e703b3ff66800fceef9a6e5c0645dd3baadec2e2663869e71fe7b02",
+    "HeaderFlower.kt": "7f8054ba7c04c632fc1e78adaf1796e140830e6d5994b9545c95f1a3b2efd48d",
+    "HeaderFlowerMotion.kt": "d8595e08dd6dad4cc3b02c9c2e46c28d7a77ca7f09dfe7daacf918be5bc0b640",
+    "InteractionUi.kt": "2d5397f694bf54e7992e40342fb220c62ff41d41dc2e2708a556203d8d9f9b68",
+    "LaunchMotion.kt": "21c9a8524f6205d8d1d2598edeacc6de02b9ee596c14dfd97a66be5607579fc4",
+    "LaunchUi.kt": "c72651490b8bb90f5cecad2f45ce608bbed05b43439a0885af6f5f7a24902f32",
+    "LibraryStore.kt": "ecc7ae4086fa90da0d5684ba481c435739324ab463c21184d003c652c592da79",
+    "LyricFontNames.kt": "8870002451904d308bb58027dcc2968880c30e45a1fe80039c68c1bd2003d343",
+    "LyricFonts.kt": "e587b35545f3db0682547ba528b5deb5cea0a701219fd86f4313cd199649c189",
+    "MainActivity.kt": "010585c355c9e0268749b8cedc08e6d9a552c8e9a97fdd91f95b4a1642ebc275",
+    "MiniPlayerFlower.kt": "3b89da59b38c852691a2f454c1814e91d3cab5559390268eac69926f3df8d369",
+    "MiniPlayerFlowerMotion.kt": "9e0d701db4505c9953137dc99e413837a50c5d14584cf411a2fcdd5e0474c355",
+    "MiniPlayerUi.kt": "b85e466858ef187de4e16578dbbb6a562341898543dd4aa26fbf2a650767735a",
+    "MusicModel.kt": "3b5dacee4ff4a5d30f778b385284ddf84518fead74d97891a64ae20508242c1c",
+    "MusicRepository.kt": "4d0ece6a36ab348b571a95670e6a7f77f6e9183d52a3d2df4e264cd2fe8e8298",
+    "OverlayUi.kt": "460fcde0044c45f61444ec93379bb033f46d1c5af70a2f43c24678857c11edd8",
+    "Playback107Logic.kt": "62966e43e965bee56ce9cdef422e34ac851739c04f59492a8382586dd691749e",
+    "PlaybackFlower.kt": "599fd65bb43bfe9dbf3d7de33687e374fb85d107f5017fbcc807275f29bc5a46",
+    "PlaybackFlowerMotion.kt": "858300f0756d6438337478f2734fffc47153cee62e2fdb1e69e2418bda864126",
+    "PlaybackOrder.kt": "428127afb51ba93517f8161e4584a4411a8580999a536ebba6f82947c0acfa66",
+    "PlaybackService.kt": "4aa0ab329fdbfdead2a28e133d02abc94e2a1d2f45f53b1a0a68852935b1409c",
+    "PlayerUi.kt": "1fdd4ca2ea441d9157da8951c44af5931132d614c8e642798088d074f0e1441c",
+    "PlaylistCovers.kt": "452c5e4da3f0ec8c619dce5248cb3644dca5ced63a5619c71960db85489c75a4",
+    "PlaylistDetailUi.kt": "e6510699c0fee28494b4d137ace83d41122c2dd5ed98cb6a6a799dd1e89509dc",
+    "PlaylistManagementUi.kt": "78e66b685ff7258e534f8bff11cf4b9b203734297aeff2be602bb2ff3d03c111",
+    "ReorderDrag.kt": "4be291473efb0e1d8408ad3cbb2806ebbdc820362887cda87a92515255421518",
+    "Screens.kt": "04714bd951599d83bdbecc3a87ac89b9f9e493f1625d0ece7de414b5fb0a626d",
+    "SettingsUi.kt": "5145d2706e45dfe7c624f81c0b2d9c20aa2158e419fe23daceadc0c3980fff36",
+    "SongArtworkUi.kt": "1ab6e0c936d158c38b292eb8d1a0ac653dc5470c60b5805f85eb3679a1ae28ac",
+    "SongSearch.kt": "72f01d11d6b449eeac2f38a859d3756daa6ebd341da90ced97e7154782389466",
+    "Tags.kt": "76044eab3ab83da195d804dfeb2de036161702aeaf8b62405c42de47d711be95"
+  },
+  "changedSourcesVs116Overlay": [
+    "MusicModel.kt",
+    "PlaybackOrder.kt",
+    "PlayerUi.kt"
+  ],
+  "design": "docs/design/1.1.7-playback-order.md",
+  "iosChanged": false,
+  "pushPerformed": false,
+  "gitCommitPerformed": false
+}

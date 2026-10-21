@@ -1,6 +1,5 @@
 package com.xiaohonghua.music
 
-import android.provider.Settings as SystemSettings
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -9,6 +8,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.MotionDurationScale
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
@@ -20,7 +20,6 @@ import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.graphics.drawscope.translate
 import androidx.compose.ui.graphics.drawscope.withTransform
 import androidx.compose.ui.graphics.vector.PathParser
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.Role
@@ -30,6 +29,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.repeatOnLifecycle
+import kotlinx.coroutines.flow.collectLatest
 import kotlin.math.cos
 import kotlin.math.sin
 
@@ -50,11 +50,7 @@ internal fun InteractiveHeaderFlower(page: String,modifier: Modifier=Modifier) {
     val elapsed=remember(page) {mutableLongStateOf(HeaderFlowerMotion.DURATION)}
     val request=remember(page) {mutableLongStateOf(0L)}
     val lifecycle=LocalLifecycleOwner.current.lifecycle
-    val context=LocalContext.current
     val haptic=rememberActionHaptic()
-    val durationScale=remember(context) {runCatching {
-        SystemSettings.Global.getFloat(context.contentResolver,SystemSettings.Global.ANIMATOR_DURATION_SCALE,1f).coerceAtLeast(0f)
-    }.getOrDefault(1f)}
     val outline=remember {PathParser().parsePathString(headerFlowerOutline).toPath()}
     val petals=remember {headerFlowerPetals.map {PathParser().parsePathString(it).toPath()}}
     val measure=remember(outline) {PathMeasure().apply {setPath(outline,true)}}
@@ -72,20 +68,23 @@ internal fun InteractiveHeaderFlower(page: String,modifier: Modifier=Modifier) {
     val pink=Color(0xFFE87985)
     val gold=Color(0xFFF6D88C)
 
-    LaunchedEffect(page,request.longValue,durationScale,lifecycle) {
+    LaunchedEffect(page,request.longValue,lifecycle) {
         if(request.longValue == 0L) return@LaunchedEffect
         val generation=request.longValue
-        if(durationScale == 0f) {elapsed.longValue=HeaderFlowerMotion.DURATION;return@LaunchedEffect}
-        var playedNanos=0L
-        // Background time is excluded. Resume from the same pose when the app is foregrounded.
-        lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
-            var previousFrame=0L
-            while(elapsed.longValue < HeaderFlowerMotion.DURATION && generation == request.longValue) {
-                withFrameNanos {frame ->
-                    if(generation == request.longValue) {
-                        if(previousFrame != 0L) playedNanos+=frame-previousFrame
-                        previousFrame=frame
-                        elapsed.longValue=(playedNanos/(1_000_000.0*durationScale)).toLong().coerceAtMost(HeaderFlowerMotion.DURATION)
+        val motionScale=coroutineContext[MotionDurationScale]
+        var playedMillis=0.0
+        snapshotFlow {motionScale?.scaleFactor ?: 1f}.collectLatest {durationScale ->
+            if(durationScale <= 0f) {elapsed.longValue=HeaderFlowerMotion.DURATION;return@collectLatest}
+            // Preserve fractional progress across scale changes and exclude background time.
+            lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                var previousFrame=0L
+                while(elapsed.longValue < HeaderFlowerMotion.DURATION && generation == request.longValue) {
+                    withFrameNanos {frame ->
+                        if(generation == request.longValue) {
+                            if(previousFrame != 0L) playedMillis+=(frame-previousFrame)/(1_000_000.0*durationScale)
+                            previousFrame=frame
+                            elapsed.longValue=playedMillis.toLong().coerceAtMost(HeaderFlowerMotion.DURATION)
+                        }
                     }
                 }
             }

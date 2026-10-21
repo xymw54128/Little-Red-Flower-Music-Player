@@ -13,6 +13,7 @@ struct SongList: View {
     @State private var addPresented = false
     @State private var scrollingState = SongScrollingState()
     @State private var locateVisible = false
+    @State private var departingIDs = Set<String>()
 
     var body: some View {
         ScrollViewReader { reader in
@@ -20,6 +21,7 @@ struct SongList: View {
                 LazyVStack(spacing: 0) {
                     if let header { header }
                     ForEach(Array(songs.enumerated()), id: \.element.id) { index, song in
+                        let favorite = library.isFavorite(song.id)
                         HStack(spacing: 12) {
                             Text(String(index + 1)).font(.system(size: 12).monospacedDigit())
                                 .foregroundStyle(playback.current?.id == song.id ? Brand.accent(library.state.settings) : Brand.muted)
@@ -35,12 +37,13 @@ struct SongList: View {
                                     Text(timeLabel(song.duration)).font(.system(size: 12).monospacedDigit()).foregroundStyle(Brand.muted)
                                 }.contentShape(Rectangle()).opacity(song.available ? 1 : 0.5)
                             }.buttonStyle(.plain).accessibilityLabel(song.title + "，" + song.artist)
-                            Button { library.toggleFavorite(song.id) } label: {
-                                Image(systemName: library.isFavorite(song.id) ? "heart.fill" : "heart")
-                                    .font(.system(size: 19)).foregroundStyle(library.isFavorite(song.id) ? Brand.accent(library.state.settings) : Brand.muted.opacity(0.6))
-                                    .frame(width: 36, height: 44)
-                            }.buttonStyle(.plain).accessibilityLabel(library.isFavorite(song.id) ? "取消喜欢" : "喜欢这首歌")
-                                .sensoryFeedback(.selection, trigger: library.isFavorite(song.id))
+                            FavoriteBloomButton(isOn: favorite, deferRemoval: playlistID == Playlist.favoritesID, onDeparture: {
+                                withAnimation(reduceMotion ? nil : .easeOut(duration: 0.22)) { departingIDs.insert(song.id) }
+                            }) {
+                                // A delayed departure applies its original target once;
+                                // it cannot undo a newer change made on another page.
+                                if library.isFavorite(song.id) == favorite { library.toggleFavorite(song.id) }
+                            }.id(song.id)
                             Menu {
                                 Button("下一首播放", systemImage: "text.insert") { playback.insertNext([song.id]) }
                                 Button("追加队尾", systemImage: "text.append") { playback.appendToQueue([song.id]) }
@@ -51,7 +54,11 @@ struct SongList: View {
                                 }
                             } label: { Image(systemName: "ellipsis").rotationEffect(.degrees(90)).foregroundStyle(Brand.muted.opacity(0.55)).frame(width: 28, height: 44) }
                                 .accessibilityLabel(song.title + "的更多操作")
-                        }.padding(.horizontal, 18).padding(.vertical, 12).id(song.id)
+                        }.padding(.horizontal, 18).padding(.vertical, 12)
+                            .opacity(departingIDs.contains(song.id) ? 0 : 1)
+                            .offset(x: departingIDs.contains(song.id) ? -18 : 0)
+                            .frame(height: departingIDs.contains(song.id) ? 0 : nil)
+                            .clipped().allowsHitTesting(!departingIDs.contains(song.id)).id(song.id)
                     }
                     Text("共 \(songs.count) 首歌曲").font(.system(size: 12)).foregroundStyle(Brand.muted).padding(.vertical, 22)
                 }.background(GeometryReader { geometry in
@@ -79,8 +86,9 @@ struct SongList: View {
                             .transition(.opacity.combined(with: .scale(scale: 0.94)))
                     }
                 }
-        }.sheet(isPresented: $addPresented) { AddToPlaylist(songIDs: addIDs) }
-            .sheet(item: $infoSong) { SongInfoView(song: $0) }
+        }.sheet(isPresented: $addPresented) { AddToPlaylist(songIDs: addIDs).flowerPanel() }
+            .sheet(item: $infoSong) { SongInfoView(song: $0).flowerPanel() }
+            .onChange(of: songs.map(\.id)) { _, ids in departingIDs.formIntersection(ids) }
             .onDisappear { scrollingState.hideTask?.cancel() }
     }
     private func scrolling() {
@@ -131,7 +139,7 @@ struct SortMenu: View {
             }
         } label: { Text(sort.label).font(.system(size: 13, weight: .medium)); Image(systemName: "arrow.up.arrow.down").font(.system(size: 12)) }
             .sheet(isPresented: $reorder) {
-                ReorderSongs(songs: playlistID.map { library.playlistSongs($0) } ?? library.orderedSongs) { ids in library.saveOrder(ids, playlistID: playlistID) }
+                ReorderSongs(songs: playlistID.map { library.playlistSongs($0) } ?? library.orderedSongs) { ids in library.saveOrder(ids, playlistID: playlistID) }.flowerPanel()
             }
     }
 }
@@ -150,7 +158,8 @@ struct ReorderSongs: View {
                     }.padding(.vertical, 3)
                 }
                     .onMove { songs.move(fromOffsets: $0, toOffset: $1) }
-            }.environment(\.editMode, .constant(.active)).navigationTitle("拖动调整顺序").navigationBarTitleDisplayMode(.inline)
+            }.scrollContentBackground(.hidden).background(Brand.paper)
+                .environment(\.editMode, .constant(.active)).navigationTitle("拖动调整顺序").navigationBarTitleDisplayMode(.inline)
                 .toolbar {
                     ToolbarItem(placement: .cancellationAction) { Button("取消") { dismiss() } }
                     ToolbarItem(placement: .confirmationAction) { Button("保存") { save(songs.map(\.id)); dismiss() } }
@@ -177,7 +186,8 @@ struct AddToPlaylist: View {
                     }
                 }
                 Button("新建歌单", systemImage: "plus") { creating = true }
-            }.navigationTitle("选择歌单").navigationBarTitleDisplayMode(.inline)
+            }.scrollContentBackground(.hidden).background(Brand.paper)
+                .navigationTitle("选择歌单").navigationBarTitleDisplayMode(.inline)
                 .toolbar { ToolbarItem(placement: .cancellationAction) { Button("取消") { dismiss() } } }
                 .alert("创建歌单", isPresented: $creating) {
                     TextField("歌单名称", text: $name)
@@ -215,7 +225,8 @@ struct SongInfoView: View {
                     if song.bitDepth > 0 { LabeledContent("位深", value: "\(song.bitDepth) bit") }
                     LabeledContent("文件", value: song.name)
                 }.textSelection(.enabled)
-            }.navigationTitle("歌曲信息").navigationBarTitleDisplayMode(.inline)
+            }.scrollContentBackground(.hidden).background(Brand.paper)
+                .navigationTitle("歌曲信息").navigationBarTitleDisplayMode(.inline)
                 .toolbar { ToolbarItem(placement: .confirmationAction) { Button("完成") { dismiss() } } }
         }.fullScreenCover(isPresented: $showingArtwork) {
             ZStack(alignment: .topTrailing) {

@@ -22,19 +22,26 @@ struct PlayerView: View {
             HStack(spacing: 2) {
                 Button { dismiss() } label: { Image(systemName: "chevron.down").frame(width: 44, height: 44) }
                     .accessibilityLabel("收起播放页")
-                if page == 0 { HeaderFlower() }
                 Spacer(minLength: 4)
-                Text(page == 0 ? "正在播放" : (playback.current.map { $0.title + " - " + $0.artist } ?? "歌词"))
-                    .font(.system(size: 14, weight: .medium)).foregroundStyle(Brand.muted).lineLimit(1)
+                HStack(spacing: 2) {
+                    TitleFlowerSprig().frame(width: 42, height: 38).opacity(page == 1 ? 1 : 0)
+                        .animation(reduceMotion ? nil : .easeOut(duration: 0.22), value: page)
+                    LyricMarquee(text: page == 0 ? "正在播放" : (playback.current.map { $0.title + " - " + $0.artist } ?? "歌词"),
+                                 font: .systemFont(ofSize: 14, weight: .medium), color: UIColor(Brand.muted),
+                                 active: page == 1 && phase == .active && !reduceMotion)
+                        .frame(height: 38)
+                    TitleFlowerSprig(right: true).frame(width: 42, height: 38).opacity(page == 1 ? 1 : 0)
+                        .animation(reduceMotion ? nil : .easeOut(duration: 0.22), value: page)
+                }.frame(maxWidth: .infinity)
                 Spacer(minLength: 4)
-                Button { queueSheet = true } label: { Image(systemName: "text.line.first.and.arrowtriangle.forward").frame(width: 44, height: 44) }
-                    .accessibilityLabel("播放队列")
+                HeaderFlower()
             }.padding(.horizontal, 12)
             TabView(selection: $page) {
                 coverPage.tag(0)
                 LyricView(text: lyrics, settings: library.state.settings, playback: playback,
                           active: page == 1 && phase == .active && !queueSheet && !addSheet && !infoSheet,
-                          reduceMotion: reduceMotion).padding(.vertical, 8).tag(1)
+                          reduceMotion: reduceMotion).padding(.vertical, 8)
+                    .mask { LinearGradient(stops: [.init(color: .clear, location: 0), .init(color: .black, location: 0.08), .init(color: .black, location: 0.91), .init(color: .clear, location: 1)], startPoint: .top, endPoint: .bottom) }.tag(1)
             }.tabViewStyle(.page(indexDisplayMode: .never))
             HStack(spacing: 0) {
                 ForEach(0..<2) { index in
@@ -60,9 +67,9 @@ struct PlayerView: View {
             }.frame(height: 36).padding(.horizontal, 30).padding(.bottom, 4)
         }.background(Brand.paper.ignoresSafeArea()).foregroundStyle(Brand.ink)
             .tint(Brand.accent(library.state.settings)).buttonStyle(.plain)
-            .sheet(isPresented: $queueSheet) { QueueView() }
-            .sheet(isPresented: $addSheet) { AddToPlaylist(songIDs: playback.current.map { [$0.id] } ?? []) }
-            .sheet(isPresented: $infoSheet) { if let song = playback.current { SongInfoView(song: song) } }
+            .sheet(isPresented: $queueSheet) { QueueView().flowerPanel() }
+            .sheet(isPresented: $addSheet) { AddToPlaylist(songIDs: playback.current.map { [$0.id] } ?? []).flowerPanel() }
+            .sheet(isPresented: $infoSheet) { if let song = playback.current { SongInfoView(song: song).flowerPanel() } }
     }
 
     private var controls: some View {
@@ -87,10 +94,11 @@ struct PlayerView: View {
     private var coverPage: some View {
         VStack(spacing: 0) {
             GeometryReader { space in
-                let side = max(0, min(400, space.size.width - 4, space.size.height - 4))
-                Artwork(name: playback.current?.artwork ?? "", radius: 22, pixels: 1200)
-                    .frame(width: side, height: side)
-                    .scaleEffect(breathingScale)
+                let side = max(0, min(400, space.size.width - 24, space.size.height - 24))
+                ZStack {
+                    Artwork(name: playback.current?.artwork ?? "", radius: 22, pixels: 1200)
+                    BotanicalCoverFrame()
+                }.frame(width: side, height: side)
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                     .contentShape(Rectangle()).onTapGesture { openLyrics() }
                     .accessibilityElement(children: .ignore).accessibilityHidden(false).accessibilityLabel("歌曲封面，查看歌词").accessibilityAddTraits(.isButton)
@@ -102,11 +110,13 @@ struct PlayerView: View {
                     Text(playback.current?.title ?? "未选择歌曲").font(.system(size: 24, weight: .semibold))
                         .lineLimit(2).frame(maxWidth: .infinity, alignment: .leading)
                     if let song = playback.current {
-                        Button { library.toggleFavorite(song.id) } label: {
-                            Image(systemName: library.isFavorite(song.id) ? "heart.fill" : "heart")
-                                .font(.system(size: 22)).foregroundStyle(library.isFavorite(song.id) ? Brand.red : Brand.muted)
-                                .frame(width: 44, height: 44)
-                        }.accessibilityLabel(library.isFavorite(song.id) ? "取消喜欢" : "我喜欢")
+                        let favorite = library.isFavorite(song.id)
+                        VStack(spacing: 7) {
+                            FavoriteBloomButton(isOn: favorite) {
+                                if library.isFavorite(song.id) == favorite { library.toggleFavorite(song.id) }
+                            }.id(song.id)
+                            RainbowFlower(playing: playback.playing, active: page == 0 && !queueSheet && !addSheet && !infoSheet).frame(width: 34, height: 34)
+                        }
                     }
                 }
                 Text(playback.current?.subtitle ?? "").font(.system(size: 13)).foregroundStyle(Brand.muted).lineLimit(2)
@@ -119,20 +129,7 @@ struct PlayerView: View {
                 .frame(height: 48).contentShape(Rectangle()).onTapGesture { openLyrics() }
                 .accessibilityAddTraits(.isButton).accessibilityAction { openLyrics() }
                 .accessibilityIdentifier("player.lyric-preview")
-        }.padding(.horizontal, 24).padding(.vertical, 6)
-            .onChange(of: playback.playing) { _, _ in updateBreathing() }
-            .onChange(of: page) { _, _ in updateBreathing() }
-            .onChange(of: phase) { _, _ in updateBreathing() }
-            .onChange(of: reduceMotion) { _, _ in updateBreathing() }
-            .onAppear { updateBreathing() }
-    }
-    @State private var breathingScale: CGFloat = 1
-    private func updateBreathing() {
-        var transaction = Transaction(); transaction.disablesAnimations = true
-        withTransaction(transaction) { breathingScale = 1 }
-        if playback.playing && page == 0 && phase == .active && !reduceMotion {
-            withAnimation(.easeInOut(duration: 4.5).repeatForever(autoreverses: true)) { breathingScale = 1.015 }
-        }
+        }.padding(.horizontal, 20).padding(.vertical, 6)
     }
     private func openLyrics() { withAnimation(reduceMotion ? nil : .easeOut(duration: 0.3)) { page = 1 } }
     private func quality(_ song: Song) -> String {
@@ -188,7 +185,7 @@ private final class MarqueeLabelView: UIView {
     required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
     func configure(text: String, font: UIFont, color: UIColor, active: Bool) {
         label.text = text; label.font = font; label.textColor = color; self.active = active
-        accessibilityLabel = text; isAccessibilityElement = true
+        accessibilityLabel = text; accessibilityTraits = .staticText; isAccessibilityElement = true
         setNeedsLayout()
     }
     override func layoutSubviews() {
@@ -253,7 +250,8 @@ struct QueueView: View {
                     }
                 }.onMove { indices, destination in var ids = songs.map(\.id); ids.move(fromOffsets: indices, toOffset: destination); playback.setQueue(ids) }
                     .onDelete { indices in var ids = songs.map(\.id); ids.remove(atOffsets: indices); playback.setQueue(ids) }
-            }.navigationTitle("播放队列 · \(songs.count)").navigationBarTitleDisplayMode(.inline)
+            }.scrollContentBackground(.hidden).background(Brand.paper)
+                .navigationTitle("播放队列 · \(songs.count)").navigationBarTitleDisplayMode(.inline)
                 .toolbar { ToolbarItem(placement: .cancellationAction) { Button("完成") { dismiss() } }; ToolbarItem(placement: .topBarTrailing) { EditButton() } }
         }.presentationDetents([.medium, .large])
     }

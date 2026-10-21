@@ -10,4 +10,8 @@
     <style name="LaunchTheme" parent="AppTheme">
         <item name="android:windowBackground">@drawable/launch_background</item>
     </style>
+    <style name="AppOverlayDialogAnimation">
+        <item name="android:windowEnterAnimation">@anim/overlay_dialog_enter</item>
+        <item name="android:windowExitAnimation">@anim/overlay_dialog_exit</item>
+    </style>
 </resources>

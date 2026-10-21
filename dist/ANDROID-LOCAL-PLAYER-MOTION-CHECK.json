@@ -1,0 +1,166 @@
+{
+  "date": "2026-10-20T04:19:48.020Z",
+  "scope": "Android local preview based on 1.1.1 code 21; no iOS changes or GitHub push",
+  "apk": "D:\\music player app\\dist\\小红花-Android-七色花本地版.apk",
+  "bytes": 64002443,
+  "sha256": "5b568402ebcdea949077175b515e84475c2531db71abc72bd07ec6cfeac4b4bb",
+  "package": "com.xiaohonghua.music",
+  "versionName": "1.1.1",
+  "versionCode": 21,
+  "sameCertificateAsPublished111": true,
+  "certificateSha256": "bc582313cf7ef2723931a83b0836ffd143e09905c420760b073ef434375a416b",
+  "debuggable": false,
+  "networkPermissionAbsent": true,
+  "testComponentsAbsent": true,
+  "zipAlign16k": true,
+  "unitTests": {
+    "tests": 118,
+    "failures": 0,
+    "errors": 0,
+    "suites": [
+      {
+        "name": "TEST-com.xiaohonghua.music.AppThemeTest.xml",
+        "tests": 3,
+        "failures": 0,
+        "errors": 0
+      },
+      {
+        "name": "TEST-com.xiaohonghua.music.CollectionMetadataTest.xml",
+        "tests": 4,
+        "failures": 0,
+        "errors": 0
+      },
+      {
+        "name": "TEST-com.xiaohonghua.music.CoreTest.xml",
+        "tests": 6,
+        "failures": 0,
+        "errors": 0
+      },
+      {
+        "name": "TEST-com.xiaohonghua.music.FavoritesTest.xml",
+        "tests": 12,
+        "failures": 0,
+        "errors": 0
+      },
+      {
+        "name": "TEST-com.xiaohonghua.music.HeaderFlowerMotionTest.xml",
+        "tests": 7,
+        "failures": 0,
+        "errors": 0
+      },
+      {
+        "name": "TEST-com.xiaohonghua.music.LaunchMotionTest.xml",
+        "tests": 3,
+        "failures": 0,
+        "errors": 0
+      },
+      {
+        "name": "TEST-com.xiaohonghua.music.LibraryCacheTest.xml",
+        "tests": 1,
+        "failures": 0,
+        "errors": 0
+      },
+      {
+        "name": "TEST-com.xiaohonghua.music.LyricFontNamesTest.xml",
+        "tests": 3,
+        "failures": 0,
+        "errors": 0
+      },
+      {
+        "name": "TEST-com.xiaohonghua.music.LyricMotionTest.xml",
+        "tests": 16,
+        "failures": 0,
+        "errors": 0
+      },
+      {
+        "name": "TEST-com.xiaohonghua.music.Playback107LogicTest.xml",
+        "tests": 3,
+        "failures": 0,
+        "errors": 0
+      },
+      {
+        "name": "TEST-com.xiaohonghua.music.PlaybackFlowerMotionTest.xml",
+        "tests": 6,
+        "failures": 0,
+        "errors": 0
+      },
+      {
+        "name": "TEST-com.xiaohonghua.music.PlaylistCoverMigrationTest.xml",
+        "tests": 3,
+        "failures": 0,
+        "errors": 0
+      },
+      {
+        "name": "TEST-com.xiaohonghua.music.PlaylistOrderTest.xml",
+        "tests": 8,
+        "failures": 0,
+        "errors": 0
+      },
+      {
+        "name": "TEST-com.xiaohonghua.music.PlaylistUndoTest.xml",
+        "tests": 12,
+        "failures": 0,
+        "errors": 0
+      },
+      {
+        "name": "TEST-com.xiaohonghua.music.ReorderDragTest.xml",
+        "tests": 4,
+        "failures": 0,
+        "errors": 0
+      },
+      {
+        "name": "TEST-com.xiaohonghua.music.SongArtworkPanTest.xml",
+        "tests": 3,
+        "failures": 0,
+        "errors": 0
+      },
+      {
+        "name": "TEST-com.xiaohonghua.music.SongSearchTest.xml",
+        "tests": 7,
+        "failures": 0,
+        "errors": 0
+      },
+      {
+        "name": "TEST-com.xiaohonghua.music.TagParserTest.xml",
+        "tests": 4,
+        "failures": 0,
+        "errors": 0
+      },
+      {
+        "name": "TEST-com.xiaohonghua.music.TagStreamingTest.xml",
+        "tests": 2,
+        "failures": 0,
+        "errors": 0
+      },
+      {
+        "name": "TEST-com.xiaohonghua.music.ThousandCollectionLogicTest.xml",
+        "tests": 8,
+        "failures": 0,
+        "errors": 0
+      },
+      {
+        "name": "TEST-com.xiaohonghua.music.ThousandSongSearchTest.xml",
+        "tests": 3,
+        "failures": 0,
+        "errors": 0
+      }
+    ]
+  },
+  "lint": {
+    "errors": 0,
+    "warnings": 17,
+    "warningsInChangedSources": 0
+  },
+  "instrumentedTests": {
+    "sourceCases": 82,
+    "compilation": "passed",
+    "execution": "not-run",
+    "reason": "No connected Android device; visual feel and native frame performance require phone acceptance"
+  },
+  "changes": [
+    "Removed cover breathing scale",
+    "Shared favorite/unfavorite animation without circular ripple background",
+    "Seven-color seven-petal flower rotates while playing and smoothly decelerates when paused"
+  ],
+  "published111PreservedSha256": "40409d59feb55828a84fbce367870c6ac8c616bd6cc4813ab8928484a1a4ee59"
+}

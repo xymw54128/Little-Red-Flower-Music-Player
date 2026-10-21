@@ -189,8 +189,10 @@ class CollectionPersistenceTest {
             assertEquals(before.getInt("lyrics"),counts().getInt("lyrics"))
             assertEquals(listOf("旧文件夹标签","旧单文件标签"),repo.state.value.songs.map {it.title})
             assertFalse(repo.state.value.busy)
+            assertFalse(repo.state.value.scanSucceeded)
             repo.requestRefresh()
             runBlocking {withTimeout(10_000) {repo.state.first {!it.busy && it.status.startsWith("新增 ")}}}
+            assertTrue(repo.state.value.scanSucceeded)
             assertTrue(counts().getInt("audio") > before.getInt("audio"))
             assertEquals(before.getInt("lyrics")+1,counts().getInt("lyrics"))
             assertTrue(repo.state.value.songs.none {it.title.startsWith("旧")})
@@ -202,6 +204,7 @@ class CollectionPersistenceTest {
             runBlocking {withTimeout(10_000) {
                 repo.state.first {!it.busy && it.songs.find {song -> song.id == folderSong.id}?.lyrics == "[00:01]第二版本"}
             }}
+            assertTrue(repo.state.value.scanSucceeded)
             assertTrue(counts().getInt("audio") > first.getInt("audio"))
             assertEquals(first.getInt("lyrics")+1,counts().getInt("lyrics"))
             val portable=JSONObject(repo.backup())

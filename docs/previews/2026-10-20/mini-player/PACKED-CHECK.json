@@ -1,0 +1,192 @@
+{
+  "date": "2026-10-20T07:49:49.282Z",
+  "scope": "A compact petals: broad overlapping shoulders, unchanged photo-edge progress and sequential animation",
+  "errors": [],
+  "layouts": [
+    {
+      "width": 320,
+      "overflow": 0,
+      "edges": [
+        0,
+        0
+      ],
+      "photoWidth": 40,
+      "photoTransform": "none",
+      "innerRadius": 20,
+      "centerError": 0,
+      "leaves": 4,
+      "buttons": [
+        {
+          "w": 48,
+          "h": 48,
+          "inside": true,
+          "hit": true
+        },
+        {
+          "w": 48,
+          "h": 48,
+          "inside": true,
+          "hit": true
+        },
+        {
+          "w": 48,
+          "h": 48,
+          "inside": true,
+          "hit": true
+        }
+      ]
+    },
+    {
+      "width": 360,
+      "overflow": 0,
+      "edges": [
+        0,
+        0
+      ],
+      "photoWidth": 40,
+      "photoTransform": "none",
+      "innerRadius": 20,
+      "centerError": 0,
+      "leaves": 4,
+      "buttons": [
+        {
+          "w": 48,
+          "h": 48,
+          "inside": true,
+          "hit": true
+        },
+        {
+          "w": 48,
+          "h": 48,
+          "inside": true,
+          "hit": true
+        },
+        {
+          "w": 48,
+          "h": 48,
+          "inside": true,
+          "hit": true
+        }
+      ]
+    },
+    {
+      "width": 390,
+      "overflow": 0,
+      "edges": [
+        0,
+        0
+      ],
+      "photoWidth": 40,
+      "photoTransform": "none",
+      "innerRadius": 20,
+      "centerError": 0,
+      "leaves": 4,
+      "buttons": [
+        {
+          "w": 48,
+          "h": 48,
+          "inside": true,
+          "hit": true
+        },
+        {
+          "w": 48,
+          "h": 48,
+          "inside": true,
+          "hit": true
+        },
+        {
+          "w": 48,
+          "h": 48,
+          "inside": true,
+          "hit": true
+        }
+      ]
+    },
+    {
+      "width": 430,
+      "overflow": 0,
+      "edges": [
+        0,
+        0
+      ],
+      "photoWidth": 40,
+      "photoTransform": "none",
+      "innerRadius": 20,
+      "centerError": 0,
+      "leaves": 4,
+      "buttons": [
+        {
+          "w": 48,
+          "h": 48,
+          "inside": true,
+          "hit": true
+        },
+        {
+          "w": 48,
+          "h": 48,
+          "inside": true,
+          "hit": true
+        },
+        {
+          "w": 48,
+          "h": 48,
+          "inside": true,
+          "hit": true
+        }
+      ]
+    }
+  ],
+  "nativeFramePerformanceMeasured": false,
+  "circleTouchesPhoto": true,
+  "singlePetalSequence": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    0,
+    1,
+    2,
+    3
+  ],
+  "maxRootRadiusErrorPx": 4.768372541263943e-7,
+  "pauseSettles": true,
+  "controlsAndProgress": true,
+  "reducedMotion": true,
+  "passed": true,
+  "geometryReview": {
+    "scope": "Sampled outline and angular coverage, static and max 1.15 stretch",
+    "maxRestRadiusDp": 30.025,
+    "maxHopRadiusDp": 31.52875,
+    "artworkSlotDp": 64,
+    "uncoveredAnglesAtRadiiDp": [
+      {
+        "radius": 21.6,
+        "uncoveredDegrees": 0
+      },
+      {
+        "radius": 22,
+        "uncoveredDegrees": 0
+      },
+      {
+        "radius": 22.5,
+        "uncoveredDegrees": 0
+      },
+      {
+        "radius": 23,
+        "uncoveredDegrees": 0
+      },
+      {
+        "radius": 24,
+        "uncoveredDegrees": 0
+      },
+      {
+        "radius": 25,
+        "uncoveredDegrees": 0
+      }
+    ],
+    "nativeFramePerformanceMeasured": false
+  }
+}

@@ -1,0 +1,78 @@
+{
+  "date": "2026-10-20T08:31:38.334Z",
+  "versionName": "1.1.2",
+  "versionCode": 22,
+  "scope": "Local Android formal release; no iOS changes or GitHub push",
+  "apk": "D:\\music player app\\dist\\小红花-1.1.2.apk",
+  "sha256": "7c0ffc071dd40bf90c850f5de070cf9517eaa9ac5bb86b71f1390249fea79129",
+  "build": {
+    "command": "node tools/build-android.cjs :app:assembleRelease :app:assembleDebug :app:testReleaseUnitTest :app:lintRelease :app:assembleDebugAndroidTest",
+    "result": "passed"
+  },
+  "unitTests": {
+    "tests": 124,
+    "failures": 0,
+    "errors": 0
+  },
+  "lint": {
+    "errors": 0,
+    "warnings": 17
+  },
+  "instrumentedTests": {
+    "sourceCases": 91,
+    "newCases": 2,
+    "compilation": "passed",
+    "execution": "not-run",
+    "reason": "adb devices -l returned an empty device list; native runtime and frame performance were not measured"
+  },
+  "webPreview": {
+    "report": "docs/previews/2026-10-20/player-botanical/CHECK.json",
+    "passed": true,
+    "actualAudio": false,
+    "nativeFramePerformanceMeasured": false
+  },
+  "geometryReview": {
+    "method": "Read-only sampled SVG contours, transforms, stroke outsets and 41 sway angles; not native screenshot measurement",
+    "designBounds": {
+      "left": 0.6912,
+      "right": 358.9713,
+      "top": 1.4687,
+      "bottom": 359.4702
+    },
+    "designSize": 360,
+    "pageWidthsDp": [
+      320,
+      390,
+      430,
+      450
+    ],
+    "minimumPageMarginDp": 0.864
+  },
+  "lyricEdges": {
+    "method": "Cached theme-page-color feather overlay on fixed viewport",
+    "maximumEdgeDp": 56,
+    "maximumHeightFraction": 0.16,
+    "wholePageGaussianBlur": false,
+    "changesLrcTiming": false
+  },
+  "signatureMatches111": true,
+  "includedClasses": {
+    "BotanicalCoverFrameKt": "classes3.dex",
+    "FavoriteButtonKt": "classes3.dex",
+    "MiniPlayerUiKt": "classes3.dex",
+    "MiniPlayerFlowerKt": "classes3.dex",
+    "PlaybackFlowerKt": "classes3.dex"
+  },
+  "sourceHashes": {
+    "PlayerUi.kt": "455763bdd94dd64960aa85b8b62091f10d441d7a6ea6630ed638b44956acf7f4",
+    "BotanicalCoverFrame.kt": "fac4829df339589b5816651680ca0758d461ca60065140779602a13bbb662af8",
+    "FavoriteButton.kt": "30736620e96ab602a25356dd1eafe209149d7c5a91d7e1b846e058054db55ce0",
+    "MiniPlayerUi.kt": "cd8ff8eec4a75ee9dcacd36d4e52af722bedd43f64b2c08c5f2d3b7adeaab726",
+    "MiniPlayerFlower.kt": "3b89da59b38c852691a2f454c1814e91d3cab5559390268eac69926f3df8d369",
+    "MiniPlayerFlowerMotion.kt": "3bd7d6d488141726775224ec83f5a6f0ec22a6478aed4602741c56d00b4d0f28",
+    "PlaybackFlower.kt": "ab1429b23f7ba7b7702e7670d38d5b9606ca1a900406b9a277dfbca59331b877",
+    "PlaybackFlowerMotion.kt": "354deb5d8f3db5dd3d10eae36dca291849a7f97e34595c37d675154f207566c0"
+  },
+  "pushPerformed": false,
+  "iosChanged": false
+}

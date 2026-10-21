@@ -8,7 +8,9 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.MotionDurationScale
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.semantics.SemanticsActions
@@ -24,6 +26,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Rule
@@ -32,8 +35,12 @@ import org.junit.runner.RunWith
 
 /** Synthetic UI only; does not import audio, modify the stored library or start playback. */
 @RunWith(AndroidJUnit4::class)
+@OptIn(ExperimentalTestApi::class)
 class PlayerNavigationUiTest {
-    @get:Rule val compose=createComposeRule()
+    private val durationScale=mutableFloatStateOf(1f)
+    @get:Rule val compose=createComposeRule(effectContext=object: MotionDurationScale {
+        override val scaleFactor: Float get()=durationScale.floatValue
+    })
     private val instrumentation=InstrumentationRegistry.getInstrumentation()
     private val store=ViewModelStore()
     private lateinit var model: MusicModel
@@ -100,6 +107,15 @@ class PlayerNavigationUiTest {
         player()
         compose.onNodeWithTag("player-duration").assertTextEquals("0:10").assertIsDisplayed()
         compose.onNodeWithTag("player-elapsed").assertTextEquals("0:00").assertIsDisplayed()
+    }
+    @Test fun enlargedPlaybackFlowerSitsDirectlyBelowFavoriteAtCompactWidth() {
+        player(modifier=Modifier.size(320.dp,640.dp),fontScale=1.3f)
+        val favorite=compose.onNodeWithTag("favorite-${song.id}").fetchSemanticsNode().boundsInRoot
+        val flower=compose.onNodeWithTag("player-playback-flower")
+            .assertWidthIsEqualTo(32.dp).assertHeightIsEqualTo(32.dp).assertIsDisplayed()
+            .fetchSemanticsNode().boundsInRoot
+        assertTrue("Flower must align with the favorite center",kotlin.math.abs(flower.center.x-favorite.center.x) < 1f)
+        assertTrue("Flower must appear below the favorite",flower.top >= favorite.bottom)
     }
     @Test fun tappingArtworkOpensLyricsAndRightSwipeReturnsToCover() {
         player()
@@ -188,6 +204,83 @@ class PlayerNavigationUiTest {
         compose.onNodeWithTag("player-artwork").performClick()
         compose.onNodeWithTag("player-page-cover").performClick()
         compose.onNodeWithTag("favorite-${song.id}").assertIsDisplayed().assertIsSelected()
+    }
+    @Test fun longLyricsTitleKeepsHeaderActionsClearAndFlowerWorksOnBothPages() {
+        val longSong=song.copy(title="长长长长长长长长长长长长长长的歌名",artist="长长长长长长的歌手名")
+        player(songOverride=longSong,modifier=Modifier.size(320.dp,640.dp),fontScale=1.3f)
+        val flower=compose.onNodeWithTag("player-header-flower")
+        flower.assertWidthIsEqualTo(48.dp).assertHeightIsEqualTo(48.dp).assertHasClickAction().performClick()
+        compose.onNodeWithText("正在播放").assertIsDisplayed()
+        compose.onNodeWithTag("player-artwork").performClick()
+        val title=compose.onNodeWithTag("player-header-title",useUnmergedTree=true).assertIsDisplayed().fetchSemanticsNode().boundsInRoot
+        val back=compose.onNodeWithContentDescription("收起播放器").fetchSemanticsNode().boundsInRoot
+        val flowerBounds=flower.assertIsDisplayed().fetchSemanticsNode().boundsInRoot
+        assertTrue("Long title must not overlap the collapse button",title.left >= back.right)
+        assertTrue("Long title must not overlap the flower button",title.right <= flowerBounds.left)
+        compose.onNodeWithTag("lyrics-title-flowers",useUnmergedTree=true)
+            .assert(SemanticsMatcher.keyNotDefined(SemanticsActions.OnClick))
+        repeat(3) {flower.performClick()}
+        compose.onNodeWithText("${longSong.title} - ${longSong.artist}").assertIsDisplayed()
+        compose.onNodeWithTag("player-page-cover").performClick()
+        compose.onNodeWithTag("player-artwork").assertIsDisplayed()
+    }
+    @Test fun longTitleFlowerBoundsStayFixedAcrossPageFadesAndRapidReversals() {
+        compose.mainClock.autoAdvance=false
+        val longSong=song.copy(title="一个很长很长的歌曲名称用来检查标题切换位置",artist="名字也比较长的歌手")
+        player(songOverride=longSong,modifier=Modifier.size(320.dp,640.dp),fontScale=1.3f)
+        val tags=listOf("lyrics-title-sprig-left","lyrics-title-sprig-right")
+        val initial=tags.associateWith {compose.onNodeWithTag(it,useUnmergedTree=true).fetchSemanticsNode().boundsInRoot}
+        fun checkStable() {tags.forEach {tag ->
+            assertEquals("The flower must not move when pager currentPage changes",initial.getValue(tag),
+                compose.onNodeWithTag(tag,useUnmergedTree=true).fetchSemanticsNode().boundsInRoot)
+        }}
+        compose.onNodeWithTag("player-page-lyrics").performClick()
+        repeat(14) {compose.mainClock.advanceTimeByFrame();checkStable()}
+        compose.onNodeWithTag("player-page-cover").performClick()
+        repeat(5) {compose.mainClock.advanceTimeByFrame();checkStable()}
+        compose.onNodeWithTag("player-page-lyrics").performClick()
+        repeat(28) {compose.mainClock.advanceTimeByFrame();checkStable()}
+        compose.onNodeWithText("${longSong.title} - ${longSong.artist}").assertIsDisplayed()
+        compose.onNodeWithTag("player-header-flower").assertHasClickAction().assertWidthIsEqualTo(48.dp)
+        compose.onNodeWithTag("player-page-cover").performClick()
+        repeat(28) {compose.mainClock.advanceTimeByFrame();checkStable()}
+        compose.onNodeWithText("正在播放").assertIsDisplayed()
+    }
+    @Test fun disabledMotionReturnsFromBrowsingWithoutIntermediateLyricAnimationFrames() {
+        durationScale.floatValue=0f
+        compose.mainClock.autoAdvance=false
+        player()
+        compose.onNodeWithTag("player-page-lyrics").performClick()
+        compose.mainClock.advanceTimeByFrame()
+        val viewport=compose.onNodeWithTag("lyrics-list")
+        viewport.assertIsDisplayed().performTouchInput {swipeUp(durationMillis=600)}
+        // The browse timeout and any scroll settle on the test clock. No frame may
+        // expose a color/scale/centering tween while the live motion factor is zero.
+        repeat(240) {
+            compose.mainClock.advanceTimeByFrame()
+            assertFalse(viewport.fetchSemanticsNode().config[LyricMotionRunningKey])
+        }
+        val bounds=viewport.getUnclippedBoundsInRoot()
+        val line=compose.onNodeWithTag("current-lyric").getUnclippedBoundsInRoot()
+        assertTrue(kotlin.math.abs((line.top.value+line.bottom.value-bounds.top.value-bounds.bottom.value)/2) < 3)
+    }
+    @Test fun fixedLyricFeatherKeepsCurrentLineCenteredAndPageNavigationAvailable() {
+        player()
+        compose.onNodeWithTag("player-artwork").performClick()
+        val viewport=compose.onNodeWithTag("lyrics-list").assertIsDisplayed()
+        compose.onNodeWithTag("player-lyrics-page",useUnmergedTree=true).assertIsDisplayed()
+        viewport.assert(hasScrollAction())
+        compose.waitUntil(3_000) {
+            val bounds=viewport.getUnclippedBoundsInRoot()
+            val line=compose.onNodeWithTag("current-lyric").getUnclippedBoundsInRoot()
+            kotlin.math.abs((line.top.value+line.bottom.value-bounds.top.value-bounds.bottom.value)/2) < 3
+        }
+        compose.onNodeWithTag("current-lyric").assertTextEquals("第一行歌词").assertIsDisplayed()
+        compose.onNodeWithTag("player-pages").performTouchInput {swipeRight(durationMillis=450)}
+        compose.onNodeWithTag("player-artwork").assertIsDisplayed()
+        compose.onNodeWithTag("player-page-lyrics").performClick()
+        compose.onNodeWithTag("current-lyric").assertTextEquals("第一行歌词").assertIsDisplayed()
+        compose.onNodeWithContentDescription("播放队列").assertHasClickAction().assertIsDisplayed()
     }
     @Test fun longPressReorderRespectsBoundaryThenMovesByOneMeasuredRow() {
         val tracks=(0..2).map {song.copy(id="reorder-$it",title="排序歌曲 $it")}

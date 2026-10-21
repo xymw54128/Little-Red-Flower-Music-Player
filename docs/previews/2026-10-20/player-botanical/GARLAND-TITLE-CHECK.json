@@ -1,0 +1,457 @@
+{
+  "date": "2026-10-20T10:22:07.107Z",
+  "scope": "1.1.3 compact lyric title garland: left two and right three vivid species, curved shared point-symmetric stems",
+  "layouts": [
+    {
+      "width": 320,
+      "overflow": 0,
+      "counts": [
+        2,
+        3
+      ],
+      "blossoms": [
+        {
+          "species": "cornflower",
+          "color": "rgb(22, 142, 244)",
+          "bounds": {
+            "x": 80.85803985595703,
+            "y": 55.768959045410156,
+            "w": 15.00299072265625,
+            "h": 14.757637023925781
+          },
+          "overlapsTitle": false
+        },
+        {
+          "species": "rose",
+          "color": "rgb(240, 68, 140)",
+          "bounds": {
+            "x": 92.30707550048828,
+            "y": 59.806732177734375,
+            "w": 13.426490783691406,
+            "h": 13.284904479980469
+          },
+          "overlapsTitle": false
+        },
+        {
+          "species": "sunflower",
+          "color": "rgb(255, 190, 22)",
+          "bounds": {
+            "x": 224.63047790527344,
+            "y": 70.01496887207031,
+            "w": 14.051544189453125,
+            "h": 13.970062255859375
+          },
+          "overlapsTitle": false
+        },
+        {
+          "species": "tulip",
+          "color": "rgb(238, 59, 56)",
+          "bounds": {
+            "x": 214.57835388183594,
+            "y": 67.2475814819336,
+            "w": 11.886627197265625,
+            "h": 12.5093994140625
+          },
+          "overlapsTitle": false
+        },
+        {
+          "species": "platycodon",
+          "color": "rgb(142, 62, 232)",
+          "bounds": {
+            "x": 218.16812133789062,
+            "y": 57.05400848388672,
+            "w": 10.8426513671875,
+            "h": 10.842636108398438
+          },
+          "overlapsTitle": false
+        }
+      ],
+      "midpoints": [
+        {
+          "x": 159.9921875,
+          "y": 70
+        },
+        {
+          "x": 159.9921875,
+          "y": 70
+        },
+        {
+          "x": 159.9921875,
+          "y": 70
+        },
+        {
+          "x": 159.9921875,
+          "y": 70
+        },
+        {
+          "x": 159.9921875,
+          "y": 70
+        }
+      ],
+      "titleCenter": {
+        "x": 159.9921875,
+        "y": 70
+      },
+      "titleFits": true,
+      "titleGaps": [
+        1,
+        1
+      ],
+      "stemOverhang": 8,
+      "transparent": true,
+      "buttons": [
+        {
+          "w": 48,
+          "h": 48,
+          "hit": true
+        },
+        {
+          "w": 48,
+          "h": 48,
+          "hit": true
+        }
+      ],
+      "mask": "linear-gradient(rgba(0, 0, 0, 0), rgb(0, 0, 0) min(56px, 16%), rgb(0, 0, 0) calc(100% - min(56px, 16%)), rgba(0, 0, 0, 0))",
+      "longTitleFits": true
+    },
+    {
+      "width": 390,
+      "overflow": 0,
+      "counts": [
+        2,
+        3
+      ],
+      "blossoms": [
+        {
+          "species": "cornflower",
+          "color": "rgb(22, 142, 244)",
+          "bounds": {
+            "x": 115.85803985595703,
+            "y": 55.768959045410156,
+            "w": 15.002998352050781,
+            "h": 14.757637023925781
+          },
+          "overlapsTitle": false
+        },
+        {
+          "species": "rose",
+          "color": "rgb(240, 68, 140)",
+          "bounds": {
+            "x": 127.30707550048828,
+            "y": 59.806732177734375,
+            "w": 13.426490783691406,
+            "h": 13.284904479980469
+          },
+          "overlapsTitle": false
+        },
+        {
+          "species": "sunflower",
+          "color": "rgb(255, 190, 22)",
+          "bounds": {
+            "x": 259.6304626464844,
+            "y": 70.01496887207031,
+            "w": 14.05157470703125,
+            "h": 13.970062255859375
+          },
+          "overlapsTitle": false
+        },
+        {
+          "species": "tulip",
+          "color": "rgb(238, 59, 56)",
+          "bounds": {
+            "x": 249.57835388183594,
+            "y": 67.2475814819336,
+            "w": 11.886611938476562,
+            "h": 12.5093994140625
+          },
+          "overlapsTitle": false
+        },
+        {
+          "species": "platycodon",
+          "color": "rgb(142, 62, 232)",
+          "bounds": {
+            "x": 253.16812133789062,
+            "y": 57.05400848388672,
+            "w": 10.8426513671875,
+            "h": 10.842636108398438
+          },
+          "overlapsTitle": false
+        }
+      ],
+      "midpoints": [
+        {
+          "x": 194.9921875,
+          "y": 70
+        },
+        {
+          "x": 194.9921875,
+          "y": 70
+        },
+        {
+          "x": 194.9921875,
+          "y": 70
+        },
+        {
+          "x": 194.9921875,
+          "y": 70
+        },
+        {
+          "x": 194.9921875,
+          "y": 70
+        }
+      ],
+      "titleCenter": {
+        "x": 194.9921875,
+        "y": 70
+      },
+      "titleFits": true,
+      "titleGaps": [
+        1,
+        1
+      ],
+      "stemOverhang": 8,
+      "transparent": true,
+      "buttons": [
+        {
+          "w": 48,
+          "h": 48,
+          "hit": true
+        },
+        {
+          "w": 48,
+          "h": 48,
+          "hit": true
+        }
+      ],
+      "mask": "linear-gradient(rgba(0, 0, 0, 0), rgb(0, 0, 0) min(56px, 16%), rgb(0, 0, 0) calc(100% - min(56px, 16%)), rgba(0, 0, 0, 0))",
+      "longTitleFits": true
+    },
+    {
+      "width": 430,
+      "overflow": 0,
+      "counts": [
+        2,
+        3
+      ],
+      "blossoms": [
+        {
+          "species": "cornflower",
+          "color": "rgb(22, 142, 244)",
+          "bounds": {
+            "x": 135.85804748535156,
+            "y": 55.768959045410156,
+            "w": 15.00299072265625,
+            "h": 14.757637023925781
+          },
+          "overlapsTitle": false
+        },
+        {
+          "species": "rose",
+          "color": "rgb(240, 68, 140)",
+          "bounds": {
+            "x": 147.30706787109375,
+            "y": 59.806732177734375,
+            "w": 13.426498413085938,
+            "h": 13.284904479980469
+          },
+          "overlapsTitle": false
+        },
+        {
+          "species": "sunflower",
+          "color": "rgb(255, 190, 22)",
+          "bounds": {
+            "x": 279.6304626464844,
+            "y": 70.01496887207031,
+            "w": 14.05157470703125,
+            "h": 13.970062255859375
+          },
+          "overlapsTitle": false
+        },
+        {
+          "species": "tulip",
+          "color": "rgb(238, 59, 56)",
+          "bounds": {
+            "x": 269.5783386230469,
+            "y": 67.2475814819336,
+            "w": 11.886627197265625,
+            "h": 12.5093994140625
+          },
+          "overlapsTitle": false
+        },
+        {
+          "species": "platycodon",
+          "color": "rgb(142, 62, 232)",
+          "bounds": {
+            "x": 273.1681213378906,
+            "y": 57.05400848388672,
+            "w": 10.8426513671875,
+            "h": 10.842636108398438
+          },
+          "overlapsTitle": false
+        }
+      ],
+      "midpoints": [
+        {
+          "x": 214.9921875,
+          "y": 70
+        },
+        {
+          "x": 214.9921875,
+          "y": 70
+        },
+        {
+          "x": 214.9921875,
+          "y": 70
+        },
+        {
+          "x": 214.9921875,
+          "y": 70
+        },
+        {
+          "x": 214.9921875,
+          "y": 70
+        }
+      ],
+      "titleCenter": {
+        "x": 214.9921875,
+        "y": 70
+      },
+      "titleFits": true,
+      "titleGaps": [
+        1,
+        1
+      ],
+      "stemOverhang": 8,
+      "transparent": true,
+      "buttons": [
+        {
+          "w": 48,
+          "h": 48,
+          "hit": true
+        },
+        {
+          "w": 48,
+          "h": 48,
+          "hit": true
+        }
+      ],
+      "mask": "linear-gradient(rgba(0, 0, 0, 0), rgb(0, 0, 0) min(56px, 16%), rgb(0, 0, 0) calc(100% - min(56px, 16%)), rgba(0, 0, 0, 0))",
+      "longTitleFits": true
+    },
+    {
+      "width": 450,
+      "overflow": 0,
+      "counts": [
+        2,
+        3
+      ],
+      "blossoms": [
+        {
+          "species": "cornflower",
+          "color": "rgb(22, 142, 244)",
+          "bounds": {
+            "x": 145.85804748535156,
+            "y": 55.768959045410156,
+            "w": 15.00299072265625,
+            "h": 14.757637023925781
+          },
+          "overlapsTitle": false
+        },
+        {
+          "species": "rose",
+          "color": "rgb(240, 68, 140)",
+          "bounds": {
+            "x": 157.30706787109375,
+            "y": 59.806732177734375,
+            "w": 13.426498413085938,
+            "h": 13.284904479980469
+          },
+          "overlapsTitle": false
+        },
+        {
+          "species": "sunflower",
+          "color": "rgb(255, 190, 22)",
+          "bounds": {
+            "x": 289.6304626464844,
+            "y": 70.01496887207031,
+            "w": 14.05157470703125,
+            "h": 13.970062255859375
+          },
+          "overlapsTitle": false
+        },
+        {
+          "species": "tulip",
+          "color": "rgb(238, 59, 56)",
+          "bounds": {
+            "x": 279.5783386230469,
+            "y": 67.2475814819336,
+            "w": 11.886627197265625,
+            "h": 12.5093994140625
+          },
+          "overlapsTitle": false
+        },
+        {
+          "species": "platycodon",
+          "color": "rgb(142, 62, 232)",
+          "bounds": {
+            "x": 283.1681213378906,
+            "y": 57.05400848388672,
+            "w": 10.8426513671875,
+            "h": 10.842636108398438
+          },
+          "overlapsTitle": false
+        }
+      ],
+      "midpoints": [
+        {
+          "x": 224.9921875,
+          "y": 70
+        },
+        {
+          "x": 224.9921875,
+          "y": 70
+        },
+        {
+          "x": 224.9921875,
+          "y": 70
+        },
+        {
+          "x": 224.9921875,
+          "y": 70
+        },
+        {
+          "x": 224.9921875,
+          "y": 70
+        }
+      ],
+      "titleCenter": {
+        "x": 224.9921875,
+        "y": 70
+      },
+      "titleFits": true,
+      "titleGaps": [
+        1,
+        1
+      ],
+      "stemOverhang": 8,
+      "transparent": true,
+      "buttons": [
+        {
+          "w": 48,
+          "h": 48,
+          "hit": true
+        },
+        {
+          "w": 48,
+          "h": 48,
+          "hit": true
+        }
+      ],
+      "mask": "linear-gradient(rgba(0, 0, 0, 0), rgb(0, 0, 0) min(56px, 16%), rgb(0, 0, 0) calc(100% - min(56px, 16%)), rgba(0, 0, 0, 0))",
+      "longTitleFits": true
+    }
+  ],
+  "errors": [],
+  "nativeFramePerformanceMeasured": false,
+  "passed": true
+}

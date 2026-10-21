@@ -19,6 +19,7 @@ data class LibraryState(
     val settings: Settings = Settings(), val sort: SortMode = SortMode.TITLE, val custom: List<String> = emptyList(),
     val random: List<String> = emptyList(), val manualLyrics: Map<String,String> = emptyMap(),
     val busy: Boolean = false, val status: String = "", val events: List<String> = emptyList(), val showScanProgress: Boolean = false, val ready: Boolean = false,
+    val scanSucceeded: Boolean = false,
 )
 
 class MusicRepository private constructor(private val context: Context) {
@@ -98,7 +99,7 @@ class MusicRepository private constructor(private val context: Context) {
         }
     }
     fun importFiles(uris: List<Uri>) = scope.launch { initialized.await(); scanMutex.withLock {
-        mutable.update { it.copy(busy=true,showScanProgress=true,status="正在读取音乐标签…") }
+        mutable.update { it.copy(busy=true,showScanProgress=true,scanSucceeded=false,status="正在读取音乐标签…") }
         try {
             val scanner = LibraryScanner(context)
             val before = state.value.songs
@@ -123,6 +124,7 @@ class MusicRepository private constructor(private val context: Context) {
             val task=currentCoroutineContext()
             store.replaceSongs(songs) {task.ensureActive()}
             publishSongs(songs,"新增 $added 首，读取失败 ${errors.size} 首",errors)
+            mutable.update {it.copy(scanSucceeded=true)}
         } catch(e: CancellationException) {throw e
         } catch(e: Exception) {mutable.update {it.copy(status="导入失败：${e.message ?: "请重试"}")}
         } finally { mutable.update { it.copy(busy=false,showScanProgress=false) } }
@@ -133,7 +135,7 @@ class MusicRepository private constructor(private val context: Context) {
         initialized.await()
         scanMutex.withLock {
             if(!state.value.ready) return
-            mutable.update { it.copy(busy=true,showScanProgress=showProgress,status="正在刷新文件与全部标签…") }
+            mutable.update { it.copy(busy=true,showScanProgress=showProgress,scanSucceeded=false,status="正在刷新文件与全部标签…") }
             val errors = mutableListOf<String>()
             val failedSources = mutableSetOf<String>()
             val before = state.value.songs
@@ -177,6 +179,7 @@ class MusicRepository private constructor(private val context: Context) {
                 store.replaceSongs(songs) {task.ensureActive()}
                 val summary = "新增 ${(newIds-oldIds).size} · 移除 ${(oldIds-newIds).size} · 更新 $changed"
                 publishSongs(songs,summary,errors)
+                mutable.update {it.copy(scanSucceeded=true)}
             } catch(e: CancellationException) {throw e
             } catch(e: Exception) {mutable.update {it.copy(status="刷新失败：${e.message ?: "请重试"}")}
             } finally { mutable.update { it.copy(busy=false,showScanProgress=false) } }

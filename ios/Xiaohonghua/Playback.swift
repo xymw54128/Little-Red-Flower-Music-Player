@@ -27,6 +27,7 @@ final class Playback: NSObject, ObservableObject, AVAudioPlayerDelegate {
     private var ticker: AnyCancellable?
     private var libraryObservation: AnyCancellable?
     private var orderObservation: AnyCancellable?
+    private var sortObservation: AnyCancellable?
     private var metadataSync: Task<Void, Never>?
     private var artworkTask: Task<Void, Never>?
     private var artworkGeneration: UInt64 = 0
@@ -36,15 +37,18 @@ final class Playback: NSObject, ObservableObject, AVAudioPlayerDelegate {
     private var loadGeneration = 0
     private var lastSaved = Date.distantPast
     private var resumeAfterInterruption = false
-    private var history: [String] = []
+    private var orderedQueue: [String] = []
     private var foreground = true
 
     func connect(_ library: MusicLibrary) {
         guard self.library == nil else { return }
         self.library = library
-        queue = library.state.queueIDs
+        queue = PlaybackOrder.unique(library.state.queueIDs, available: Set(library.state.songs.filter(\.available).map(\.id)))
         queueSource = library.state.queueSource
         mode = library.state.mode
+        if let sourceID = queueSource {
+            orderedQueue = PlaybackOrder.sourceSongs(library.state, sourceID: sourceID, selection: Set(queue)).map(\.id)
+        } else { orderedQueue = queue }
         if let id = library.state.currentID, let song = library.song(id) {
             current = song
             progress.position = max(0, library.state.position)
@@ -61,6 +65,11 @@ final class Playback: NSObject, ObservableObject, AVAudioPlayerDelegate {
         }
         orderObservation = library.$orderGeneration.dropFirst().sink { [weak self] _ in
             self?.synchronizeSourceOrder()
+        }
+        sortObservation = library.$playbackOrderSource.dropFirst().sink { [weak self] sourceID in
+            guard let self, let sourceID, self.queueSource == sourceID else { return }
+            let ids = PlaybackOrder.sourceSongs(library.state, sourceID: sourceID, selection: Set(self.queue)).map(\.id)
+            self.syncQueueSource(sourceID, ids: ids)
         }
         startClock()
         observations.append(NotificationCenter.default.addObserver(forName: AVAudioSession.interruptionNotification, object: nil, queue: .main) { [weak self] note in
@@ -89,17 +98,23 @@ final class Playback: NSObject, ObservableObject, AVAudioPlayerDelegate {
         }
     }
 
-    func play(_ song: Song, within ids: [String]? = nil, sourceID: String? = nil, start: Double = 0, remember: Bool = true) {
-        guard let library else { return }
+    func play(_ song: Song, within ids: [String]? = nil, sourceID: String? = nil, start: Double = 0) {
+        guard let library, let song = library.song(song.id), song.available else { return }
         if let ids {
-            let available = Set(library.state.songs.filter(\.available).map(\.id))
-            queue = PlaybackOrder.unique(ids, available: available)
-            queueSource = sourceID; history = []
+            let resolved: [String]
+            if let sourceID {
+                resolved = PlaybackOrder.sourceSongs(library.state, sourceID: sourceID, selection: Set(ids)).map(\.id)
+            } else {
+                resolved = PlaybackOrder.unique(ids, available: Set(library.state.songs.filter(\.available).map(\.id)))
+            }
+            // A stale clicked row must not silently start a different song.
+            guard resolved.contains(song.id) else { return }
+            orderedQueue = resolved
+            queue = mode == .shuffle ? PlaybackOrder.shuffled(resolved, currentID: song.id) : resolved
+            queueSource = sourceID
         }
-        if queue.isEmpty { queue = [song.id] }
-        if remember, let previous = current?.id, previous != song.id {
-            history.append(previous)
-            if history.count > 1000 { history.removeFirst(history.count - 1000) }
+        if queue.isEmpty || !queue.contains(song.id) {
+            queue = [song.id]; orderedQueue = queue; queueSource = nil
         }
         audio?.stop(); audio = nil; access = nil
         playing = false; loading = true; current = song
@@ -165,66 +180,84 @@ final class Playback: NSObject, ObservableObject, AVAudioPlayerDelegate {
     }
     func previous() {
         guard let library, let current else { return }
-        var id: String?
-        if mode == .shuffle, let previous = history.popLast() { id = previous }
-        else if let index = queue.firstIndex(of: current.id), index > 0 { id = queue[index - 1] }
-        if let id, let song = library.song(id) { play(song, remember: false) }
+        let available = queue.filter { library.song($0)?.available == true }
+        if let index = available.firstIndex(of: current.id), index > 0,
+           let song = library.song(available[index - 1]) { play(song) }
         else { seek(0) }
     }
     func next(automatic: Bool = false) {
         guard let library, let current else { return }
-        let availableIDs = Set(library.state.songs.filter(\.available).map(\.id))
-        let available = queue.filter { availableIDs.contains($0) }
+        let available = queue.filter { library.song($0)?.available == true }
         guard !available.isEmpty else { pause(); return }
         if automatic, mode == .repeatOne { seek(0); if !playing { toggle() }; return }
-        let id: String
-        if mode == .shuffle { id = available.filter { $0 != current.id }.randomElement() ?? current.id }
-        else {
-            let index = available.firstIndex(of: current.id) ?? -1
-            if automatic, mode == .ordered, index + 1 >= available.count { pause(); seek(progress.duration); return }
-            id = available[(index + 1) % available.count]
-        }
-        if let song = library.song(id) { play(song) }
+        let index = available.firstIndex(of: current.id) ?? -1
+        if automatic, mode == .ordered, index + 1 >= available.count { pause(); seek(progress.duration); return }
+        // The visible queue is the traversal, including in shuffle mode.
+        if let song = library.song(available[(index + 1) % available.count]) { play(song) }
     }
     func cycleMode() {
         let modes = PlayMode.allCases
+        let previousMode = mode
         mode = modes[((modes.firstIndex(of: mode) ?? 0) + 1) % modes.count]
+        if mode == .shuffle {
+            orderedQueue = queue
+            queue = PlaybackOrder.shuffled(queue, currentID: current?.id)
+        } else if previousMode == .shuffle {
+            queue = orderedQueue
+        }
         savePosition()
     }
     func setQueue(_ ids: [String]) {
         guard let library else { return }
+        let updated = PlaybackOrder.unique(ids, available: Set(library.state.songs.filter(\.available).map(\.id)))
+        guard updated != queue else { return }
         queueSource = nil
-        queue = PlaybackOrder.unique(ids, available: Set(library.state.songs.filter(\.available).map(\.id)))
+        queue = updated; orderedQueue = updated
+        if mode == .shuffle { mode = .repeatAll }
         savePosition()
     }
     func syncQueueSource(_ sourceID: String, ids: [String]) {
         guard queueSource == sourceID else { return }
-        let updated = PlaybackOrder.synchronized(ids, currentID: current?.id)
-        guard updated != queue else { return }
-        queue = updated
+        let selected = Set(queue)
+        let updated = PlaybackOrder.synchronized(ids.filter { selected.contains($0) }, currentID: current?.id)
+        // Explicitly saving source order exits shuffle, even when physical moves
+        // are unnecessary. This event runs before any later mode button press.
+        if mode == .shuffle { mode = .repeatAll }
+        queue = updated; orderedQueue = updated
         // Reordering changes the next track, never the opened AVAudioPlayer.
         savePosition()
     }
     private func synchronizeSourceOrder() {
         guard let library, let sourceID = queueSource else { return }
-        if sourceID == "library" {
-            syncQueueSource(sourceID, ids: library.orderedSongs.filter(\.available).map(\.id))
-        } else if library.state.playlists.contains(where: { $0.id == sourceID }) {
-            syncQueueSource(sourceID, ids: library.playlistSongs(sourceID).filter(\.available).map(\.id))
-        } else { queueSource = nil; savePosition() }
+        let valid = sourceID == "library" || library.state.playlists.contains { $0.id == sourceID } ||
+            (sourceID.hasPrefix("album:") && library.state.songs.contains { $0.albumKey == String(sourceID.dropFirst(6)) })
+        guard valid else { queueSource = nil; orderedQueue = queue; savePosition(); return }
+        let ids = PlaybackOrder.sourceSongs(library.state, sourceID: sourceID, selection: Set(queue)).map(\.id)
+        orderedQueue = PlaybackOrder.synchronized(ids, currentID: current?.id)
+        if mode == .shuffle {
+            // A cache finishing for another playlist must not reshuffle or leave
+            // random playback. Only remove unavailable/non-member entries.
+            let members = Set(ids)
+            queue = PlaybackOrder.synchronized(queue.filter { members.contains($0) }, currentID: current?.id)
+        } else { queue = orderedQueue }
+        savePosition()
     }
     func insertNext(_ ids: [String]) {
         guard let library else { return }
         let additions = PlaybackOrder.unique(ids, available: Set(library.state.songs.filter(\.available).map(\.id)))
+        let updated = PlaybackOrder.insertingNext(additions, into: queue, currentID: current?.id)
+        guard updated != queue else { return }
         queueSource = nil
-        queue = PlaybackOrder.insertingNext(additions, into: queue, currentID: current?.id)
+        queue = updated; orderedQueue = updated
         savePosition()
     }
     func appendToQueue(_ ids: [String]) {
         guard let library else { return }
         let additions = PlaybackOrder.unique(ids, available: Set(library.state.songs.filter(\.available).map(\.id)))
+        let updated = PlaybackOrder.appending(additions, to: queue, currentID: current?.id)
+        guard updated != queue else { return }
         queueSource = nil
-        queue = PlaybackOrder.appending(additions, to: queue)
+        queue = updated; orderedQueue = updated
         savePosition()
     }
     func updateCurrentMetadata() {

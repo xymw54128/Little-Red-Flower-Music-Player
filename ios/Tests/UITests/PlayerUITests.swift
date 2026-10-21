@@ -107,4 +107,37 @@ final class PlayerUITests: XCTestCase {
         XCTAssertTrue(app.navigationBars["我喜欢"].exists)
     }
 
+
+    func testRemovingFavoriteKeepsTheCurrentPlaybackAndRemovesItsRow() {
+        let app = app()
+        let like = app.buttons["喜欢这首歌"].firstMatch
+        XCTAssertTrue(like.waitForExistence(timeout: 5))
+        like.tap()
+        app.tabBars.buttons["歌单"].tap()
+        app.staticTexts["我喜欢"].firstMatch.tap()
+        let song = app.staticTexts["01 花开"].firstMatch
+        XCTAssertTrue(song.waitForExistence(timeout: 5))
+        let unlike = app.buttons["取消喜欢"].firstMatch
+        XCTAssertTrue(unlike.waitForExistence(timeout: 5))
+        unlike.tap()
+        expectation(for: NSPredicate { _, _ in !song.exists }, evaluatedWith: song)
+        waitForExpectations(timeout: 5)
+        XCTAssertEqual(app.buttons["mini.open"].value as? String, "02 风来")
+    }
+
+    func testRepeatedCoverAndLyricsTransitionsKeepTheSameSong() {
+        let app = app()
+        app.buttons["mini.open"].tap()
+        for _ in 0..<4 {
+            app.buttons["歌词页"].tap()
+            XCTAssertTrue(app.staticTexts["02 风来 - 未知歌手"].waitForExistence(timeout: 5))
+            app.buttons["封面页"].tap()
+            let cover = app.descendants(matching: .any).matching(identifier: "player.artwork").firstMatch
+            XCTAssertTrue(cover.waitForExistence(timeout: 5))
+            XCTAssertTrue(app.buttons["上一首"].exists)
+            XCTAssertTrue(app.buttons["下一首"].exists)
+        }
+        app.buttons["收起播放页"].tap()
+        XCTAssertEqual(app.buttons["mini.open"].value as? String, "02 风来")
+    }
 }

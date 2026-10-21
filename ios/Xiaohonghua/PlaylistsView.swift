@@ -34,7 +34,7 @@ struct PlaylistsView: View {
             .preference(key: RootPagePreferenceKey.self, value: [1: rootVisible])
             .onAppear { rootVisible = true }.onDisappear { rootVisible = false }
             .alert("创建歌单", isPresented: $creating) { TextField("歌单名称", text: $name); Button("取消", role: .cancel) {}; Button("创建") { library.createPlaylist(name) } }
-            .sheet(item: $editing) { PlaylistEditor(playlistID: $0.id) }
+            .sheet(item: $editing) { PlaylistEditor(playlistID: $0.id).flowerPanel() }
             .confirmationDialog("删除这个歌单？歌曲文件会保留。", isPresented: Binding(get: { deleting != nil }, set: { if !$0 { deleting = nil } }), titleVisibility: .visible) {
                 Button("删除歌单", role: .destructive) { if let deleting { library.deletePlaylist(deleting.id) }; deleting = nil }
             }
@@ -83,9 +83,9 @@ struct PlaylistDetail: View {
                     } label: { Image(systemName: "ellipsis").foregroundStyle(Brand.muted.opacity(0.6)) }.accessibilityLabel("歌单操作")
                 }
             }
-            .sheet(isPresented: $editSheet) { PlaylistEditor(playlistID: playlistID) }
-            .sheet(isPresented: $addSheet) { SelectSongs(playlistID: playlistID) }
-            .sheet(isPresented: $removeSheet) { SelectSongs(playlistID: playlistID, removing: true) }
+            .sheet(isPresented: $editSheet) { PlaylistEditor(playlistID: playlistID).flowerPanel() }
+            .sheet(isPresented: $addSheet) { SelectSongs(playlistID: playlistID).flowerPanel() }
+            .sheet(isPresented: $removeSheet) { SelectSongs(playlistID: playlistID, removing: true).flowerPanel() }
             .confirmationDialog("删除这个歌单？歌曲文件会保留。", isPresented: $deleting, titleVisibility: .visible) {
                 Button("删除歌单", role: .destructive) { library.deletePlaylist(playlistID); dismiss() }
             }
@@ -122,13 +122,14 @@ struct PlaylistEditor: View {
                     Section("歌单名称") { TextField("歌单名称", text: $name).disabled(playlist.isFavorites) }
                     Section("歌单描述") { TextEditor(text: $description).frame(minHeight: 120) }
                 }
-            }.navigationTitle("编辑歌单").navigationBarTitleDisplayMode(.inline)
+            }.scrollContentBackground(.hidden).background(Brand.paper)
+                .navigationTitle("编辑歌单").navigationBarTitleDisplayMode(.inline)
                 .toolbar {
                     ToolbarItem(placement: .cancellationAction) { Button("取消") { dismiss() } }
                     ToolbarItem(placement: .confirmationAction) { Button("保存") { library.editPlaylist(id: playlistID, name: name, description: description); dismiss() }.disabled(name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty) }
                 }
                 .onAppear { if let playlist { name = playlist.name; description = playlist.description } }
-                .sheet(isPresented: $coverSheet) { CoverPicker(playlistID: playlistID) }
+                .sheet(isPresented: $coverSheet) { CoverPicker(playlistID: playlistID).flowerPanel() }
         }
     }
 }
@@ -153,7 +154,8 @@ struct SelectSongs: View {
                         Spacer(); Image(systemName: selected.contains(song.id) ? "checkmark.circle.fill" : "circle")
                     }.padding(.vertical, 4)
                 }.buttonStyle(.plain)
-            }.searchable(text: $query, prompt: "搜索歌曲、歌手或专辑").navigationTitle(removing ? "删除歌单歌曲" : "添加歌曲").navigationBarTitleDisplayMode(.inline)
+            }.scrollContentBackground(.hidden).background(Brand.paper)
+                .searchable(text: $query, prompt: "搜索歌曲、歌手或专辑").navigationTitle(removing ? "删除歌单歌曲" : "添加歌曲").navigationBarTitleDisplayMode(.inline)
                 .toolbar {
                     ToolbarItem(placement: .cancellationAction) { Button("取消") { dismiss() } }
                     ToolbarItem(placement: .topBarLeading) { Button(selected.count == filtered.count && !filtered.isEmpty ? "取消全选" : "全选") { let ids = Set(filtered.map(\.id)); if ids.isSubset(of: selected) { selected.subtract(ids) } else { selected.formUnion(ids) } } }

@@ -88,6 +88,7 @@ internal fun clampArtworkPan(pan: Offset,scale: Float,viewport: IntSize,image: I
     }
     Dialog(onDismissRequest=onClose,properties=DialogProperties(usePlatformDefaultWidth=false,
         decorFitsSystemWindows=false,dismissOnClickOutside=false)) {
+        AppDialogWindowAnimation()
         val view=LocalView.current
         val lightBars=MaterialTheme.colorScheme.background.luminance() > .5f
         SideEffect {

@@ -1,0 +1,205 @@
+{
+  "date": "2026-10-20T10:05:30.161Z",
+  "scope": "Android 1.1.2 code 22 user-sketch lyric sprigs; preserves earlier official and title-revision APKs; no iOS changes or GitHub push",
+  "apk": "D:\\music player app\\dist\\小红花-1.1.2-草图花枝修订版.apk",
+  "bytes": 64018831,
+  "sha256": "1c30b48ec7c931b29590aec019ba75a7fbfb7b41fe1aa589fea6defebf9b4111",
+  "package": "com.xiaohonghua.music",
+  "versionName": "1.1.2",
+  "versionCode": 22,
+  "sameCertificateAsFormal112": true,
+  "certificateSha256": "bc582313cf7ef2723931a83b0836ffd143e09905c420760b073ef434375a416b",
+  "debuggable": false,
+  "networkPermissionAbsent": true,
+  "recordAudioPermissionAbsent": true,
+  "testComponentsAbsent": true,
+  "zipAlign16k": true,
+  "unitTests": {
+    "tests": 124,
+    "failures": 0,
+    "errors": 0,
+    "suites": [
+      {
+        "name": "TEST-com.xiaohonghua.music.AppThemeTest.xml",
+        "tests": 3,
+        "failures": 0,
+        "errors": 0
+      },
+      {
+        "name": "TEST-com.xiaohonghua.music.CollectionMetadataTest.xml",
+        "tests": 4,
+        "failures": 0,
+        "errors": 0
+      },
+      {
+        "name": "TEST-com.xiaohonghua.music.CoreTest.xml",
+        "tests": 6,
+        "failures": 0,
+        "errors": 0
+      },
+      {
+        "name": "TEST-com.xiaohonghua.music.FavoritesTest.xml",
+        "tests": 12,
+        "failures": 0,
+        "errors": 0
+      },
+      {
+        "name": "TEST-com.xiaohonghua.music.HeaderFlowerMotionTest.xml",
+        "tests": 7,
+        "failures": 0,
+        "errors": 0
+      },
+      {
+        "name": "TEST-com.xiaohonghua.music.LaunchMotionTest.xml",
+        "tests": 3,
+        "failures": 0,
+        "errors": 0
+      },
+      {
+        "name": "TEST-com.xiaohonghua.music.LibraryCacheTest.xml",
+        "tests": 1,
+        "failures": 0,
+        "errors": 0
+      },
+      {
+        "name": "TEST-com.xiaohonghua.music.LyricFontNamesTest.xml",
+        "tests": 3,
+        "failures": 0,
+        "errors": 0
+      },
+      {
+        "name": "TEST-com.xiaohonghua.music.LyricMotionTest.xml",
+        "tests": 16,
+        "failures": 0,
+        "errors": 0
+      },
+      {
+        "name": "TEST-com.xiaohonghua.music.MiniPlayerFlowerMotionTest.xml",
+        "tests": 6,
+        "failures": 0,
+        "errors": 0
+      },
+      {
+        "name": "TEST-com.xiaohonghua.music.Playback107LogicTest.xml",
+        "tests": 3,
+        "failures": 0,
+        "errors": 0
+      },
+      {
+        "name": "TEST-com.xiaohonghua.music.PlaybackFlowerMotionTest.xml",
+        "tests": 6,
+        "failures": 0,
+        "errors": 0
+      },
+      {
+        "name": "TEST-com.xiaohonghua.music.PlaylistCoverMigrationTest.xml",
+        "tests": 3,
+        "failures": 0,
+        "errors": 0
+      },
+      {
+        "name": "TEST-com.xiaohonghua.music.PlaylistOrderTest.xml",
+        "tests": 8,
+        "failures": 0,
+        "errors": 0
+      },
+      {
+        "name": "TEST-com.xiaohonghua.music.PlaylistUndoTest.xml",
+        "tests": 12,
+        "failures": 0,
+        "errors": 0
+      },
+      {
+        "name": "TEST-com.xiaohonghua.music.ReorderDragTest.xml",
+        "tests": 4,
+        "failures": 0,
+        "errors": 0
+      },
+      {
+        "name": "TEST-com.xiaohonghua.music.SongArtworkPanTest.xml",
+        "tests": 3,
+        "failures": 0,
+        "errors": 0
+      },
+      {
+        "name": "TEST-com.xiaohonghua.music.SongSearchTest.xml",
+        "tests": 7,
+        "failures": 0,
+        "errors": 0
+      },
+      {
+        "name": "TEST-com.xiaohonghua.music.TagParserTest.xml",
+        "tests": 4,
+        "failures": 0,
+        "errors": 0
+      },
+      {
+        "name": "TEST-com.xiaohonghua.music.TagStreamingTest.xml",
+        "tests": 2,
+        "failures": 0,
+        "errors": 0
+      },
+      {
+        "name": "TEST-com.xiaohonghua.music.ThousandCollectionLogicTest.xml",
+        "tests": 8,
+        "failures": 0,
+        "errors": 0
+      },
+      {
+        "name": "TEST-com.xiaohonghua.music.ThousandSongSearchTest.xml",
+        "tests": 3,
+        "failures": 0,
+        "errors": 0
+      }
+    ]
+  },
+  "lint": {
+    "errors": 0,
+    "warnings": 17
+  },
+  "instrumentedTests": {
+    "sourceCases": 91,
+    "compilation": "passed",
+    "execution": "not-run",
+    "reason": "Compiled only; no native runtime or phone acceptance tests were executed in this task"
+  },
+  "changes": [
+    "Left title sprig has two blue and lilac blossoms",
+    "Right title sprig has three gold, rose and cream blossoms",
+    "Sweeping diagonal branches follow the user sketch; shared contours use 180-degree point symmetry, with a third right flower",
+    "Sprig footprint is 44x33dp; title retains ellipsis and 48dp controls; viewport feather and LRC timing are unchanged"
+  ],
+  "previousPackagesPreserved": [
+    {
+      "apk": "小红花-1.1.2.apk",
+      "sha256": "7c0ffc071dd40bf90c850f5de070cf9517eaa9ac5bb86b71f1390249fea79129",
+      "unchanged": true
+    },
+    {
+      "apk": "小红花-1.1.2-歌词花枝修订版.apk",
+      "sha256": "862840ade71d342b735ec50ca356e3ffbe5fd5b4f3c457f1d9d8004e6905ce8f",
+      "unchanged": true
+    }
+  ],
+  "previewCheck": "docs/previews/2026-10-20/player-botanical/SKETCH-TITLE-SPRIG-CHECK.json",
+  "previewPassed": true,
+  "sourceHashes": {
+    "PlayerUi.kt": "5cadd65af4ca8ebb7e70e6adf903678f491feefab0f2bbb573695bd20d416149",
+    "BotanicalCoverFrame.kt": "99c179d0ead8c8252a33c7f1495de6c57810e6d380ed27b721eef75c25e33ad2"
+  },
+  "geometry": {
+    "baseSize": {
+      "width": 48,
+      "height": 36
+    },
+    "displaySizeDp": {
+      "width": 44,
+      "height": 33
+    },
+    "leftFlowers": 2,
+    "rightFlowers": 3,
+    "sharedShapes": "180-degree point symmetry",
+    "leftSweep": "outer upper-left blossoms to inner lower-right stem tail",
+    "rightSweep": "point-rotated with a third blossom on its own short twig"
+  }
+}

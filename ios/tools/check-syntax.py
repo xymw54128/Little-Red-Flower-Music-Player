@@ -1,5 +1,5 @@
 from pathlib import Path
-import json
+import json, hashlib
 import importlib.metadata
 from tree_sitter import Language, Parser
 import tree_sitter_swift
@@ -26,7 +26,8 @@ for path in sorted(root.rglob('*.swift')):
         visit(tree.root_node)
 report = {'scope': 'Swift grammar parsing only, not type checking or Apple SDK compilation',
           'treeSitter': importlib.metadata.version('tree-sitter'), 'swiftGrammar': importlib.metadata.version('tree-sitter-swift'),
-          'files': checked, 'errors': errors}
+          'files': checked, 'errors': errors,
+          'sourceSha256': {name: hashlib.sha256((root / name).read_bytes()).hexdigest() for name in checked}}
 (root / 'verification').mkdir(exist_ok=True)
 (root / 'verification/SWIFT-SYNTAX.json').write_bytes((json.dumps(report, ensure_ascii=False, indent=2) + '\n').encode('utf-8'))
 print(json.dumps(report, ensure_ascii=False, indent=2))

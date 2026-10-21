@@ -59,8 +59,11 @@ private val coverNames=listOf("桃枝","雏菊","郁金香","铃兰","鸢尾","�
 @Composable internal fun PlaylistCoverSheet(playlist: Playlist,onDismiss:()->Unit,onPreset:(Int)->Unit,onPhoto:()->Unit,onComplete:(String)->Unit={}) {
     val haptic=rememberActionHaptic()
     var changed by remember(playlist.id) {mutableStateOf(false)}
-    fun select(index: Int) {if(playlist.coverPhoto.isNotEmpty() || playlist.coverPreset != index) {changed=true;onPreset(index);haptic()}}
-    ModalBottomSheet(onDismissRequest=onDismiss) {
+    val sheetState=rememberModalBottomSheetState()
+    val dismissSheet=rememberSheetDismiss(sheetState)
+    var closing by remember(playlist.id) {mutableStateOf(false)}
+    fun select(index: Int) {if(!closing && (playlist.coverPhoto.isNotEmpty() || playlist.coverPreset != index)) {changed=true;onPreset(index);haptic()}}
+    AppModalBottomSheet(onDismissRequest=onDismiss,sheetState=sheetState,sheetGesturesEnabled=!closing) {
         SheetTitle("歌单封面",playlist.name)
         Column(Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).selectableGroup().padding(horizontal=24.dp),horizontalAlignment=Alignment.CenterHorizontally) {
             PlaylistCover(playlist,Modifier.size(112.dp).padding(bottom=8.dp))
@@ -73,7 +76,7 @@ private val coverNames=listOf("桃枝","雏菊","郁金香","铃兰","鸢尾","�
                     val selected=playlist.coverPhoto.isEmpty() && normalizePlaylistCover(playlist.id,playlist.coverPreset) == index
                     val border by animateColorAsState(if(selected) MaterialTheme.colorScheme.primary else Color.Transparent,tween(160),label="cover-selection-border")
                     val scale by animateFloatAsState(if(selected) 1f else .96f,tween(180),label="cover-selection-scale")
-                    Column(Modifier.testTag("playlist-cover-preset-$index").weight(1f).clip(RoundedCornerShape(16.dp)).selectable(selected,role=Role.RadioButton,onClick={select(index)}).padding(vertical=8.dp),horizontalAlignment=Alignment.CenterHorizontally) {
+                    Column(Modifier.testTag("playlist-cover-preset-$index").weight(1f).clip(RoundedCornerShape(16.dp)).selectable(selected,enabled=!closing,role=Role.RadioButton,onClick={select(index)}).padding(vertical=8.dp),horizontalAlignment=Alignment.CenterHorizontally) {
                         Box(Modifier.fillMaxWidth().aspectRatio(1f).graphicsLayer {scaleX=scale;scaleY=scale}.border(2.dp,border,RoundedCornerShape(16.dp)).padding(4.dp)) {
                             PlaylistCover(playlist.copy(coverPreset=index,coverPhoto=""),Modifier.fillMaxSize())
                         }
@@ -81,9 +84,9 @@ private val coverNames=listOf("桃枝","雏菊","郁金香","铃兰","鸢尾","�
                     }
                 }
             } }
-            OutlinedButton(onClick=onPhoto,modifier=Modifier.fillMaxWidth().padding(top=16.dp)) {Icon(Icons.Outlined.PhotoLibrary,null,Modifier.size(20.dp));Spacer(Modifier.width(8.dp));Text("从本地相册选择")}
+            OutlinedButton(onClick={if(!closing) {closing=true;dismissSheet {onPhoto();onDismiss()}}},enabled=!closing,modifier=Modifier.fillMaxWidth().padding(top=16.dp)) {Icon(Icons.Outlined.PhotoLibrary,null,Modifier.size(20.dp));Spacer(Modifier.width(8.dp));Text("从本地相册选择")}
             TextButton(onClick={select(defaultPlaylistCover(playlist.id))},modifier=Modifier.padding(top=4.dp)) {Text("恢复默认封面")}
-            Button(onClick={if(changed) onComplete("已更换歌单封面");onDismiss()},modifier=Modifier.testTag("playlist-cover-done").fillMaxWidth().padding(top=8.dp,bottom=24.dp)) {Text("完成")}
+            Button(onClick={if(!closing) {closing=true;dismissSheet {if(changed) onComplete("已更换歌单封面");onDismiss()}}},enabled=!closing,modifier=Modifier.testTag("playlist-cover-done").fillMaxWidth().padding(top=8.dp,bottom=24.dp)) {Text("完成")}
         }
     }
 }

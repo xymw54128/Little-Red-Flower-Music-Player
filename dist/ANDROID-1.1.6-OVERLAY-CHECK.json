@@ -1,0 +1,369 @@
+{
+  "date": "2026-10-21T05:56:28.712Z",
+  "versionName": "1.1.6",
+  "versionCode": 27,
+  "label": "Local Android overlay revision",
+  "scope": "Local Android only; no GitHub push or iOS changes",
+  "apk": "D:\\music player app\\dist\\小红花-1.1.6-弹层修订版.apk",
+  "sha256": "613f6f28553cf9198fcc944bb8eba39734f8a638d50605977467419f892a08f8",
+  "bytes": 64052755,
+  "build": {
+    "command": "node tools/build-android.cjs :app:assembleRelease :app:assembleDebug :app:testReleaseUnitTest :app:lintRelease :app:assembleDebugAndroidTest",
+    "result": "passed",
+    "duration": "1m 27s"
+  },
+  "unitTests": {
+    "tests": 125,
+    "failures": 0,
+    "errors": 0
+  },
+  "lint": {
+    "errors": 0,
+    "warnings": 17
+  },
+  "instrumentedTests": {
+    "sourceCases": 108,
+    "files": [
+      {
+        "file": "ActionSnackbarUiTest.kt",
+        "tests": 2
+      },
+      {
+        "file": "AppThemeUiTest.kt",
+        "tests": 2
+      },
+      {
+        "file": "ArtworkCacheTest.kt",
+        "tests": 3
+      },
+      {
+        "file": "CollectionPersistenceTest.kt",
+        "tests": 5
+      },
+      {
+        "file": "FavoriteMotionUiTest.kt",
+        "tests": 5
+      },
+      {
+        "file": "HeaderFlowerUiTest.kt",
+        "tests": 1
+      },
+      {
+        "file": "LargeLibraryPersistenceTest.kt",
+        "tests": 2
+      },
+      {
+        "file": "LyricFontRenderingTest.kt",
+        "tests": 2
+      },
+      {
+        "file": "MainNavigationUiTest.kt",
+        "tests": 11
+      },
+      {
+        "file": "MiniPlayerFlowerUiTest.kt",
+        "tests": 2
+      },
+      {
+        "file": "MiniPlayerUiTest.kt",
+        "tests": 5
+      },
+      {
+        "file": "NativeSmokeTest.kt",
+        "tests": 1
+      },
+      {
+        "file": "OverlayUiTest.kt",
+        "tests": 4
+      },
+      {
+        "file": "Playback107Test.kt",
+        "tests": 5
+      },
+      {
+        "file": "PlaybackFlowerUiTest.kt",
+        "tests": 2
+      },
+      {
+        "file": "PlaybackOrderTest.kt",
+        "tests": 2
+      },
+      {
+        "file": "PlayerNavigationUiTest.kt",
+        "tests": 17
+      },
+      {
+        "file": "PlaylistCoverUiTest.kt",
+        "tests": 3
+      },
+      {
+        "file": "PlaylistDetailUiTest.kt",
+        "tests": 3
+      },
+      {
+        "file": "PlaylistManagementUiTest.kt",
+        "tests": 9
+      },
+      {
+        "file": "ReorderUiTest.kt",
+        "tests": 6
+      },
+      {
+        "file": "SettingsInteractionUiTest.kt",
+        "tests": 8
+      },
+      {
+        "file": "SongArtworkUiTest.kt",
+        "tests": 2
+      },
+      {
+        "file": "SongListUiTest.kt",
+        "tests": 3
+      },
+      {
+        "file": "SongSearchNativeTest.kt",
+        "tests": 3
+      }
+    ],
+    "compilation": "passed",
+    "execution": "not-run",
+    "reason": "ADB device list is empty; no physical device or booted emulator",
+    "newCases": 5,
+    "coverage": [
+      "Actual shared menu paper background on theme changes and in dark mode",
+      "Sheet and alert background on light/dark changes",
+      "Sheet dispatcher is distinct from activity dispatcher",
+      "Back progress/cancel preserve sheet geometry; committed back waits for native hide",
+      "Child-step back priority and back dismissal with sheet dragging disabled",
+      "Song-picker cancel waits for hide and never confirms"
+    ]
+  },
+  "nativeFramePerformanceMeasured": false,
+  "deviceGestureIntegrationMeasured": false,
+  "deviceAudioOutputMeasured": false,
+  "overlayInventory": {
+    "menus": 4,
+    "sheets": 10,
+    "alerts": 5,
+    "files": [
+      {
+        "file": "PlayerUi.kt",
+        "menus": 2,
+        "sheets": 2,
+        "alerts": 0
+      },
+      {
+        "file": "PlaylistCovers.kt",
+        "menus": 0,
+        "sheets": 1,
+        "alerts": 0
+      },
+      {
+        "file": "PlaylistManagementUi.kt",
+        "menus": 0,
+        "sheets": 2,
+        "alerts": 0
+      },
+      {
+        "file": "Screens.kt",
+        "menus": 2,
+        "sheets": 3,
+        "alerts": 3
+      },
+      {
+        "file": "SettingsUi.kt",
+        "menus": 0,
+        "sheets": 2,
+        "alerts": 2
+      }
+    ]
+  },
+  "sourceReview": {
+    "status": "passed; no remaining P1/P2 findings in independent review",
+    "neutralPageColorExplicit": true,
+    "tonalElevationDp": 0,
+    "menuCornerDp": 20,
+    "alertCornerDp": 24,
+    "sheetTopCornerDp": 28,
+    "menuItemMinimumHeightDp": 48,
+    "allSheetCallSitesUseSharedWrapper": true,
+    "defaultMaterialSheetPredictiveBackDisabled": true,
+    "backBoundToDialogDispatcher": true,
+    "backRegistrationOrder": [
+      "base",
+      "child-content",
+      "ime"
+    ],
+    "cancelledBackDoesNotStartHide": true,
+    "committedBackHidesBeforeDisposal": true,
+    "closingBackIsConsumed": true,
+    "verticalSheetGesturesRetained": true,
+    "pickerCancelUsesExistingClose": true,
+    "nameDialogCanRemainOpenAfterRejectedSubmit": true,
+    "stackedCoverAndArtworkFlowsRetained": true,
+    "manifestPredictiveBackNotGloballyDisabled": true
+  },
+  "compiledWindowAnimations": [
+    {
+      "name": "overlay_dialog_enter",
+      "path": "res/Du.xml",
+      "alpha": true,
+      "translation": true,
+      "scale": false
+    },
+    {
+      "name": "overlay_dialog_exit",
+      "path": "res/zc.xml",
+      "alpha": true,
+      "translation": true,
+      "scale": false
+    }
+  ],
+  "dialogMotion": {
+    "enter": {
+      "durationMillis": 200,
+      "alpha": [
+        0,
+        1
+      ],
+      "translationYDp": [
+        12,
+        0
+      ]
+    },
+    "exit": {
+      "durationMillis": 160,
+      "alpha": [
+        1,
+        0
+      ],
+      "translationYDp": [
+        0,
+        8
+      ]
+    },
+    "scale": false,
+    "nativeWindowAnimationsReplaceDefault": true,
+    "systemAnimationScaleRespected": true,
+    "oemFirstFrameTimingMeasured": false
+  },
+  "rootCauses": {
+    "background": "Implicit Material surfaceContainer roles were accent tinted, unlike the home page background",
+    "sheetShrink": "Local Material3 1.4.0 predictive back animates whole-sheet scale by up to 48dp horizontal and 24dp vertical",
+    "pickerAbruptCancel": "Cancel called onDismiss directly instead of the existing close/hide completion path"
+  },
+  "audio": {
+    "coreFiles": [
+      {
+        "file": "android/app/src/main/java/com/xiaohonghua/music/PlaybackService.kt",
+        "unchangedVsHead": true,
+        "sha256": "4aa0ab329fdbfdead2a28e133d02abc94e2a1d2f45f53b1a0a68852935b1409c",
+        "unchangedVs115": true,
+        "unchangedVs116": true
+      },
+      {
+        "file": "android/app/src/main/java/com/xiaohonghua/music/MusicModel.kt",
+        "unchangedVsHead": true,
+        "sha256": "217f3e1734e65fac5c23e6eacf74a7a5daf6da9abc4451420b22ac9481d9a151",
+        "unchangedVs115": true,
+        "unchangedVs116": true
+      },
+      {
+        "file": "android/app/src/main/java/com/xiaohonghua/music/Tags.kt",
+        "unchangedVsHead": true,
+        "sha256": "76044eab3ab83da195d804dfeb2de036161702aeaf8b62405c42de47d711be95",
+        "unchangedVs115": true,
+        "unchangedVs116": true
+      },
+      {
+        "file": "android/app/src/main/java/com/xiaohonghua/music/LibraryStore.kt",
+        "unchangedVsHead": true,
+        "sha256": "ecc7ae4086fa90da0d5684ba481c435739324ab463c21184d003c652c592da79",
+        "unchangedVs115": true,
+        "unchangedVs116": true
+      }
+    ],
+    "newDsp": false,
+    "newTranscoding": false,
+    "decoderOrSpeedOrVolumeConfigurationChanged": false,
+    "bitPerfectOutputClaimed": false
+  },
+  "sameSigningCertificateAs116": true,
+  "historicalSigningBaselines": 20,
+  "official116ArtifactsPreserved": [
+    {
+      "file": "小红花-1.1.6.apk",
+      "sha256": "01ad2338c69712004785b73c9d1bcf334f0433ae775b29d2d19f3185bc53513d",
+      "unchanged": true
+    },
+    {
+      "file": "小红花-1.1.6-CHECK.json",
+      "sha256": "1f6fa1eb9f971c11edb41f798189d93cb4b03668a71fff45cc70eefd7994b10a",
+      "unchanged": true
+    },
+    {
+      "file": "小红花-1.1.6.apk.sha256",
+      "sha256": "cada970d3d55da291d67d24d2b66eb7c60d0caac3d214182715a778d7642b63c",
+      "unchanged": true
+    },
+    {
+      "file": "ANDROID-1.1.6-UI-CHECK.json",
+      "sha256": "b1b57e96bae608587dcbf2729208ada177118cefba33c8e740fc47c2eab26dfe",
+      "unchanged": true
+    }
+  ],
+  "sourceHashes": {
+    "AppTheme.kt": "f0c8ed2162467fcc8f4872a0ceb6d91e2ffcc742fd3a32ebdd7f93d3adaebd97",
+    "ArtworkCache.kt": "cccda7edd9039876618a5620f757b1c86c50c5ec2133649783c11c72a0348370",
+    "BotanicalCoverFrame.kt": "3d908a4997994dbf78021e2aabc6d5c7c398e187ddafc7ac19f8c817781cce7b",
+    "Core.kt": "3954b0c59bc690ad9dc60115906b45aab56ae80778c07088763061b9aae3e50d",
+    "FavoriteButton.kt": "5a4f7f046e703b3ff66800fceef9a6e5c0645dd3baadec2e2663869e71fe7b02",
+    "HeaderFlower.kt": "7f8054ba7c04c632fc1e78adaf1796e140830e6d5994b9545c95f1a3b2efd48d",
+    "HeaderFlowerMotion.kt": "d8595e08dd6dad4cc3b02c9c2e46c28d7a77ca7f09dfe7daacf918be5bc0b640",
+    "InteractionUi.kt": "2d5397f694bf54e7992e40342fb220c62ff41d41dc2e2708a556203d8d9f9b68",
+    "LaunchMotion.kt": "21c9a8524f6205d8d1d2598edeacc6de02b9ee596c14dfd97a66be5607579fc4",
+    "LaunchUi.kt": "c72651490b8bb90f5cecad2f45ce608bbed05b43439a0885af6f5f7a24902f32",
+    "LibraryStore.kt": "ecc7ae4086fa90da0d5684ba481c435739324ab463c21184d003c652c592da79",
+    "LyricFontNames.kt": "8870002451904d308bb58027dcc2968880c30e45a1fe80039c68c1bd2003d343",
+    "LyricFonts.kt": "e587b35545f3db0682547ba528b5deb5cea0a701219fd86f4313cd199649c189",
+    "MainActivity.kt": "010585c355c9e0268749b8cedc08e6d9a552c8e9a97fdd91f95b4a1642ebc275",
+    "MiniPlayerFlower.kt": "3b89da59b38c852691a2f454c1814e91d3cab5559390268eac69926f3df8d369",
+    "MiniPlayerFlowerMotion.kt": "9e0d701db4505c9953137dc99e413837a50c5d14584cf411a2fcdd5e0474c355",
+    "MiniPlayerUi.kt": "b85e466858ef187de4e16578dbbb6a562341898543dd4aa26fbf2a650767735a",
+    "MusicModel.kt": "217f3e1734e65fac5c23e6eacf74a7a5daf6da9abc4451420b22ac9481d9a151",
+    "MusicRepository.kt": "4d0ece6a36ab348b571a95670e6a7f77f6e9183d52a3d2df4e264cd2fe8e8298",
+    "OverlayUi.kt": "460fcde0044c45f61444ec93379bb033f46d1c5af70a2f43c24678857c11edd8",
+    "Playback107Logic.kt": "62966e43e965bee56ce9cdef422e34ac851739c04f59492a8382586dd691749e",
+    "PlaybackFlower.kt": "599fd65bb43bfe9dbf3d7de33687e374fb85d107f5017fbcc807275f29bc5a46",
+    "PlaybackFlowerMotion.kt": "858300f0756d6438337478f2734fffc47153cee62e2fdb1e69e2418bda864126",
+    "PlaybackService.kt": "4aa0ab329fdbfdead2a28e133d02abc94e2a1d2f45f53b1a0a68852935b1409c",
+    "PlayerUi.kt": "783338492120ab55ca38bb92b0c619ff5a6ba0327fd3ec5cd87d951fcebb6cbe",
+    "PlaylistCovers.kt": "452c5e4da3f0ec8c619dce5248cb3644dca5ced63a5619c71960db85489c75a4",
+    "PlaylistDetailUi.kt": "e6510699c0fee28494b4d137ace83d41122c2dd5ed98cb6a6a799dd1e89509dc",
+    "PlaylistManagementUi.kt": "78e66b685ff7258e534f8bff11cf4b9b203734297aeff2be602bb2ff3d03c111",
+    "ReorderDrag.kt": "4be291473efb0e1d8408ad3cbb2806ebbdc820362887cda87a92515255421518",
+    "Screens.kt": "04714bd951599d83bdbecc3a87ac89b9f9e493f1625d0ece7de414b5fb0a626d",
+    "SettingsUi.kt": "5145d2706e45dfe7c624f81c0b2d9c20aa2158e419fe23daceadc0c3980fff36",
+    "SongArtworkUi.kt": "1ab6e0c936d158c38b292eb8d1a0ac653dc5470c60b5805f85eb3679a1ae28ac",
+    "SongSearch.kt": "72f01d11d6b449eeac2f38a859d3756daa6ebd341da90ced97e7154782389466",
+    "Tags.kt": "76044eab3ab83da195d804dfeb2de036161702aeaf8b62405c42de47d711be95"
+  },
+  "resourceHashes": {
+    "anim/overlay_dialog_enter.xml": "2c252c0db2dcfa85e787f2d027d98c10e1cc552eff618f2e30ea4828546fb057",
+    "anim/overlay_dialog_exit.xml": "75e255c3a32f5f497046da1ded8b2f9ab57bea513688a3bc8397239187167d2b",
+    "values/styles.xml": "ed5162272df8378ad933862ee16fb74f7320803342779e8eadebbc137efc563d"
+  },
+  "changedSourcesVs116": [
+    "OverlayUi.kt",
+    "PlayerUi.kt",
+    "PlaylistCovers.kt",
+    "PlaylistManagementUi.kt",
+    "Screens.kt",
+    "SettingsUi.kt",
+    "SongArtworkUi.kt"
+  ],
+  "design": "docs/design/1.1.6-overlay-revision.md",
+  "iosChanged": false,
+  "pushPerformed": false,
+  "gitCommitPerformed": false
+}

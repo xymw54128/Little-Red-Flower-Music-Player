@@ -132,7 +132,7 @@ private fun UriLabel(uri: String)=android.net.Uri.decode(uri.substringAfter("/tr
             name+"\n\n"+context.assets.open("font-licenses/$file").bufferedReader().use {it.readText()}
         }
     }}
-    AlertDialog(onDismissRequest=onDismiss,title={Text("开源字体许可")},text={Text(text,Modifier.heightIn(max=380.dp).verticalScroll(rememberScrollState()),fontSize=12.sp,lineHeight=18.sp)},
+    AppAlertDialog(onDismissRequest=onDismiss,title={Text("开源字体许可")},text={Text(text,Modifier.heightIn(max=380.dp).verticalScroll(rememberScrollState()),fontSize=12.sp,lineHeight=18.sp)},
         confirmButton={TextButton(onClick=onDismiss) {Text("关闭")}})
 }
 @Composable internal fun ThemeSettings(settings: Settings,onChange:(Settings)->Unit) {
@@ -179,7 +179,7 @@ private fun UriLabel(uri: String)=android.net.Uri.decode(uri.substringAfter("/tr
     val haptic=rememberActionHaptic()
     fun submit() {if(name.isNotBlank() && !submitted) {submitted=true;haptic();onConfirm(name.trim())}}
     LaunchedEffect(Unit) {focus.requestFocus()}
-    AlertDialog(onDismissRequest=onDismiss,title={Text(title)},text={OutlinedTextField(name,{if(it.length<=60) {name=it;submitted=false}},Modifier.testTag("playlist-name-field").focusRequester(focus),singleLine=true,label={Text("歌单名称")},keyboardOptions=KeyboardOptions(imeAction=ImeAction.Done),keyboardActions=KeyboardActions(onDone={submit()}))},
+    AppAlertDialog(onDismissRequest=onDismiss,title={Text(title)},text={OutlinedTextField(name,{if(it.length<=60) {name=it;submitted=false}},Modifier.testTag("playlist-name-field").focusRequester(focus),singleLine=true,label={Text("歌单名称")},keyboardOptions=KeyboardOptions(imeAction=ImeAction.Done),keyboardActions=KeyboardActions(onDone={submit()}))},
         confirmButton={TextButton(onClick=::submit,enabled=name.isNotBlank() && !submitted) {Text("确定")}},dismissButton={TextButton(onClick=onDismiss) {Text("取消")}})
 }
 @Composable internal fun PlaylistPicker(song: Song,playlists: List<Playlist>,onDismiss:()->Unit,onAdd:(Playlist)->Unit,onCreate:(String)->Unit) {
@@ -192,9 +192,13 @@ private fun UriLabel(uri: String)=android.net.Uri.decode(uri.substringAfter("/tr
     val focus=remember {FocusRequester()}
     val focusManager=LocalFocusManager.current
     val keyboard=LocalSoftwareKeyboardController.current
+    val sheetState=rememberModalBottomSheetState()
+    val dismissSheet=rememberSheetDismiss(sheetState)
+    var closing by remember(song.id) {mutableStateOf(false)}
+    fun close() {if(!closing) {closing=true;keyboard?.hide();focusManager.clearFocus();dismissSheet(onDismiss)}}
     fun showLists() {keyboard?.hide();focusManager.clearFocus();create=false;submitted=false}
-    fun submitName() {if(name.isNotBlank() && !submitted) {submitted=true;haptic();onCreate(name.trim())}}
-    ModalBottomSheet(onDismissRequest=onDismiss) {
+    fun submitName() {if(name.isNotBlank() && !submitted && !closing) {submitted=true;haptic();onCreate(name.trim());close()}}
+    AppModalBottomSheet(onDismissRequest=onDismiss,sheetState=sheetState,sheetGesturesEnabled=!closing) {
         BackHandler(create) {showLists()}
         AnimatedContent(create,modifier=Modifier.fillMaxWidth().imePadding(),transitionSpec={
             (fadeIn(tween(160,delayMillis=40))+slideInHorizontally(tween(220)) {if(targetState) it/12 else -it/12}) togetherWith
@@ -208,7 +212,7 @@ private fun UriLabel(uri: String)=android.net.Uri.decode(uri.substringAfter("/tr
             }
             Text("创建后加入「${song.title}」",fontSize=12.sp,color=muted,modifier=Modifier.padding(top=8.dp,bottom=20.dp))
             OutlinedTextField(name,{if(it.length<=60) {name=it;submitted=false}},Modifier.testTag("playlist-picker-name").fillMaxWidth().focusRequester(focus),singleLine=true,label={Text("歌单名称")},keyboardOptions=KeyboardOptions(imeAction=ImeAction.Done),keyboardActions=KeyboardActions(onDone={submitName()}))
-            Button(onClick=::submitName,enabled=name.isNotBlank() && !submitted,modifier=Modifier.testTag("playlist-create-confirm").fillMaxWidth().padding(top=20.dp)) {Text("确定")}
+            Button(onClick=::submitName,enabled=name.isNotBlank() && !submitted && !closing,modifier=Modifier.testTag("playlist-create-confirm").fillMaxWidth().padding(top=20.dp)) {Text("确定")}
         } else Column(Modifier.fillMaxWidth()) {
             SheetTitle("添加到歌单",song.title)
             TextButton(onClick={create=true;submitted=false},modifier=Modifier.padding(horizontal=16.dp)) {Icon(Icons.Outlined.Add,null);Text("新建歌单并添加")}
@@ -223,13 +227,13 @@ private fun UriLabel(uri: String)=android.net.Uri.decode(uri.substringAfter("/tr
             }}
             if(playlists.isEmpty()) Text("还没有歌单，创建一个即可添加歌曲。",Modifier.padding(24.dp),fontSize=13.sp,color=muted)
             val target=playlists.find {it.id == selected && song.id !in it.songIds}
-            Button(onClick={if(!submitted) latestPlaylists.find {it.id == selected && song.id !in it.songIds}?.let {submitted=true;haptic();onAdd(it)}},enabled=target != null && !submitted,modifier=Modifier.testTag("playlist-add-confirm").fillMaxWidth().padding(24.dp)) {Text("确认添加")}
+            Button(onClick={if(!submitted && !closing) latestPlaylists.find {it.id == selected && song.id !in it.songIds}?.let {submitted=true;haptic();onAdd(it);close()}},enabled=target != null && !submitted && !closing,modifier=Modifier.testTag("playlist-add-confirm").fillMaxWidth().padding(24.dp)) {Text("确认添加")}
         }
         }
     }
 }
 @Composable internal fun SongInfo(song: Song,onDismiss:()->Unit) {
-    ModalBottomSheet(onDismissRequest=onDismiss) {SheetTitle("歌曲信息",song.title)
+    AppModalBottomSheet(onDismissRequest=onDismiss) {SheetTitle("歌曲信息",song.title)
         Column(Modifier.fillMaxWidth().heightIn(max=480.dp).verticalScroll(rememberScrollState()).padding(24.dp),verticalArrangement=Arrangement.spacedBy(12.dp)) {
             SongArtworkPreview(song,Modifier.align(Alignment.CenterHorizontally))
             listOf("歌手" to song.artist,"专辑" to song.album,"专辑歌手" to song.albumDisplayArtist,"碟号" to song.disc.ifBlank {"未设置"},"曲目" to song.track.ifBlank {"未设置"},"格式" to song.format,

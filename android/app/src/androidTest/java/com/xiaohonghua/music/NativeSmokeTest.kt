@@ -91,7 +91,7 @@ class NativeSmokeTest {
         compose.runOnIdle {model.stopForRestore()}
         compose.waitUntil(30_000) {model.playback.value.currentId == null && model.playback.value.queue.isEmpty()}
         assertEquals(1,model.library.value.playlists.count {it.isFavorites})
-        val songs=model.library.value.songs
+        val songs=playbackSourceSongs(model.library.value,LIBRARY_QUEUE_SOURCE)
         val flac=songs.first {it.format == "FLAC" && it.bitDepth == 16}
         val high=songs.first {it.bitDepth == 24}
         val wav=songs.first {it.format == "WAV"}

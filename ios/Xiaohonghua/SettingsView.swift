@@ -69,7 +69,7 @@ struct SourcesView: View {
                 }
             }
             Section { Text("可在“文件”→“我的 iPhone”→“小红花”→“Music”中放入音乐，或由电脑通过 Finder 文件共享传入。外部文件或文件夹需要持续的系统授权。放在 iCloud/其他提供商的文件，请先下载到本机。") }
-        }.navigationTitle("歌曲文件夹").navigationBarTitleDisplayMode(.inline).toolbar(.visible, for: .navigationBar)
+        }.scrollContentBackground(.hidden).background(Brand.paper).navigationTitle("歌曲文件夹").navigationBarTitleDisplayMode(.inline).toolbar(.visible, for: .navigationBar)
             .fileImporter(isPresented: $importing, allowedContentTypes: folder ? [.folder] : [.audio], allowsMultipleSelection: !folder && replacing == nil) { result in
                 switch result {
                 case .success(let urls): Task { await library.importURLs(urls, folder: folder, replacingID: replacing) }
@@ -105,7 +105,7 @@ struct LyricSettingsView: View {
             Section {
                 Toggle("动态滚动歌词", isOn: Binding(get: { library.state.settings.dynamicLyrics }, set: { value in library.update { $0.settings.dynamicLyrics = value } }))
             } footer: { Text("按 LRC 时间戳跟随播放，手动浏览后 1.5 秒回到当前行。系统“减少动态效果”开启时直接定位。") }
-        }.navigationTitle("歌词设置").navigationBarTitleDisplayMode(.inline).toolbar(.visible, for: .navigationBar)
+        }.scrollContentBackground(.hidden).background(Brand.paper).navigationTitle("歌词设置").navigationBarTitleDisplayMode(.inline).toolbar(.visible, for: .navigationBar)
     }
 }
 
@@ -136,7 +136,7 @@ struct BackupView: View {
                 }.disabled(preparing)
                 Button("从备份恢复", systemImage: "square.and.arrow.down") { importing = true }
             } footer: { Text("备份包含歌单、顺序、歌词与设置，不包含音乐原文件、封面照片和文件访问授权。换手机后先导入原音乐，再恢复备份；同名同大小且唯一匹配的歌曲会自动关联。iOS 备份不直接导入 Android 的私有文件路径。") }
-        }.navigationTitle("备份与恢复").navigationBarTitleDisplayMode(.inline).toolbar(.visible, for: .navigationBar)
+        }.scrollContentBackground(.hidden).background(Brand.paper).navigationTitle("备份与恢复").navigationBarTitleDisplayMode(.inline).toolbar(.visible, for: .navigationBar)
             .fileExporter(isPresented: $exporting, document: document, contentType: .json, defaultFilename: "小红花-备份") { result in if case .failure(let error) = result { library.message = error.localizedDescription } }
             .fileImporter(isPresented: $importing, allowedContentTypes: [.json]) { result in
                 if case .success(let url) = result { Task { await library.restoreBackup(url) } }
@@ -157,7 +157,7 @@ struct AboutView: View {
                     NavigationLink(license.replacingOccurrences(of: ".OFL", with: "")) { LicenseView(name: license) }
                 }
             }
-        }.navigationTitle("关于小红花").navigationBarTitleDisplayMode(.inline).toolbar(.visible, for: .navigationBar)
+        }.scrollContentBackground(.hidden).background(Brand.paper).navigationTitle("关于小红花").navigationBarTitleDisplayMode(.inline).toolbar(.visible, for: .navigationBar)
     }
 }
 
@@ -178,7 +178,7 @@ private struct LyricImportSongs: View {
             Button { selected = song; importing = true } label: {
                 VStack(alignment: .leading, spacing: 6) { Text(song.title).foregroundStyle(Brand.ink); Text(song.subtitle).font(.caption).foregroundStyle(Brand.muted) }
             }
-        }.searchable(text: $query, prompt: "选择歌曲").navigationTitle("导入歌词").navigationBarTitleDisplayMode(.inline)
+        }.scrollContentBackground(.hidden).background(Brand.paper).searchable(text: $query, prompt: "选择歌曲").navigationTitle("导入歌词").navigationBarTitleDisplayMode(.inline)
             .fileImporter(isPresented: $importing, allowedContentTypes: [UTType(filenameExtension: "lrc") ?? .plainText, .plainText]) { result in
                 switch result {
                 case .success(let url): if let selected { Task { await library.importLyrics(url, songID: selected.id) } }

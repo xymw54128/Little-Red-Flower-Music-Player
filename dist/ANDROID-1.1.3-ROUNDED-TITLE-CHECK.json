@@ -1,0 +1,82 @@
+{
+  "date": "2026-10-20T10:38:10.607Z",
+  "scope": "Android 1.1.3 rounded title sprig local revision",
+  "versionName": "1.1.3",
+  "versionCode": 23,
+  "apk": "D:\\music player app\\dist\\小红花-1.1.3-圆润花枝修订版.apk",
+  "sha256": "515f5d495705f36db1c633413e40902304233a55f52efd33334c4487e5ab8f6b",
+  "bytes": 64018827,
+  "build": {
+    "command": "node tools/build-android.cjs :app:assembleRelease :app:assembleDebug :app:testReleaseUnitTest :app:lintRelease :app:assembleDebugAndroidTest",
+    "result": "passed",
+    "finalSourceHashes": {
+      "BotanicalCoverFrame.kt": "f52ef5e47dbe8d3fd368f6985c82d7c30542bf7efadc160b7a21caae641e9af5",
+      "PlayerUi.kt": "715f199d2ee77e2df82cfc43d4ee2ce8316089223c71c85095d31062e4041e1d"
+    }
+  },
+  "unitTests": {
+    "tests": 124,
+    "failures": 0,
+    "errors": 0
+  },
+  "lint": {
+    "errors": 0,
+    "warnings": 17
+  },
+  "instrumentedTests": {
+    "sourceCases": 91,
+    "compilation": "passed",
+    "execution": "not-run",
+    "reason": "adb devices -l returned an empty list"
+  },
+  "webPreview": {
+    "report": "docs/previews/2026-10-20/player-botanical/ROUNDED-TITLE-CHECK.json",
+    "passed": true,
+    "widthsPx": [
+      320,
+      390,
+      430,
+      450
+    ],
+    "fontSizesPx": [
+      13,
+      16.9,
+      26
+    ],
+    "multilingualTitleCases": 96,
+    "marqueeMoves": true,
+    "nativeFramePerformanceMeasured": false
+  },
+  "titleSprigs": {
+    "left": 2,
+    "right": 3,
+    "leftUpRightDown": true,
+    "style": "Rounded app-logo petals, yellow centers, simple filled leaves",
+    "commonStemPointSymmetry": true,
+    "canvasSizeDp": 36,
+    "titleGapDp": 1,
+    "stemOverhangDp": 0,
+    "staticCachedPaths": true,
+    "longTitle": "Clipped single-line 24dp/s marquee; starts and repeats after1200ms; only while lyrics visible and lifecycle STARTED"
+  },
+  "sameSigningCertificateAs113": true,
+  "preservedOriginal": [
+    {
+      "file": "小红花-1.1.3.apk",
+      "sha256": "e1a691836285117268db52dbfc33a28f4b76cc489c27366bb044a7075a660973",
+      "unchanged": true
+    },
+    {
+      "file": "小红花-1.1.3-CHECK.json",
+      "sha256": "7426b130db8f14134945ea7eb4176e4ce32bcac3b7c81e5afab62b66c6890a1a",
+      "unchanged": true
+    },
+    {
+      "file": "小红花-1.1.3.apk.sha256",
+      "sha256": "70e7c9604754d16b5c1252f1a529eaf0852d85d4388702d3709566def42fe6a8",
+      "unchanged": true
+    }
+  ],
+  "pushPerformed": false,
+  "iosChanged": false
+}

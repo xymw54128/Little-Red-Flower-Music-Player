@@ -19,13 +19,16 @@ app_target = next(obj for obj in objects.values() if obj.get('isa') == 'PBXNativ
 app_config = objects[app_target['buildConfigurationList']]
 for key in app_config['buildConfigurations']:
     settings = objects[key]['buildSettings']
-    assert settings['MARKETING_VERSION'] == '1.1.1'
-    assert settings['CURRENT_PROJECT_VERSION'] == '21'
+    assert settings['MARKETING_VERSION'] == '1.1.7'
+    assert settings['CURRENT_PROJECT_VERSION'] == '28'
     assert settings['TARGETED_DEVICE_FAMILY'] == '1'
     assert not settings.get('DEVELOPMENT_TEAM'), 'Do not prefill a signing team'
 for key, obj in objects.items():
     if obj.get('isa') == 'XCBuildConfiguration' and 'IPHONEOS_DEPLOYMENT_TARGET' in obj['buildSettings']:
         assert obj['buildSettings']['IPHONEOS_DEPLOYMENT_TARGET'] == '17.0'
+for folder, key in [('Xiaohonghua', 'appSources'), ('Tests/CoreTests', 'unitTests'), ('Tests/UITests', 'uiTests')]:
+    actual = sorted(path.relative_to(root).as_posix() for path in (root / folder).rglob('*.swift'))
+    assert actual == sorted(manifest[key]), 'Regenerate project for current Swift files: ' + folder
 for swift in manifest['appSources']:
     assert (root / swift).exists()
 phase = next(objects[key] for key in app_target['buildPhases'] if objects[key]['isa'] == 'PBXSourcesBuildPhase')

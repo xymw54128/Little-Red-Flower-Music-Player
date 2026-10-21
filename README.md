@@ -6,23 +6,19 @@
 
 ## 下载与安装
 
-**1.1.1 双端版本**：Android 提供可安装 APK；iOS 提供 iPhone / iOS 17+ 的 Xcode 源码工程，尚无 IPA。
+**1.1.7 双端版本**：Android 提供可覆盖安装的 APK（code 28）；iOS 提供 iPhone / iOS 17+ 的 Xcode 源码工程（build 28），没有可安装的 IPA。
 
-- **[下载 Android 1.1.1 APK](https://github.com/xymw54128/Little-Red-Flower-Music-Player/releases/download/v1.1.1/Xiaohonghua-1.1.1.apk)** · [安装说明](dist/安装说明.md) · [Android 版本说明](dist/小红花-1.1.1-发布说明.md)
-- **[下载 iOS 1.1.1 源码工程](https://github.com/xymw54128/Little-Red-Flower-Music-Player/releases/download/v1.1.1/Xiaohonghua-iOS-1.1.1-source.zip)** · [iPhone 构建说明](ios/README.md) · [iOS 版本说明](dist/小红花-iOS-1.1.1-发布说明.md)
-- [1.1.1 发布页面与校验文件](https://github.com/xymw54128/Little-Red-Flower-Music-Player/releases/tag/v1.1.1) · [全部历史版本](https://github.com/xymw54128/Little-Red-Flower-Music-Player/releases)
+- **[下载 Android 1.1.7 APK](https://github.com/xymw54128/Little-Red-Flower-Music-Player/releases/download/v1.1.7/Xiaohonghua-1.1.7.apk)** · [安装说明](dist/安装说明.md) · [Android 版本说明](dist/小红花-1.1.7-发布说明.md)
+- **[下载 iOS 1.1.7 源码工程](https://github.com/xymw54128/Little-Red-Flower-Music-Player/releases/download/v1.1.7/Xiaohonghua-iOS-1.1.7-source.zip)** · [iPhone 构建说明](ios/README.md) · [iOS 版本说明](dist/小红花-iOS-1.1.7-发布说明.md)
+- [1.1.7 发布页面](https://github.com/xymw54128/Little-Red-Flower-Music-Player/releases/tag/v1.1.7) · [SHA-256 校验](https://github.com/xymw54128/Little-Red-Flower-Music-Player/releases/download/v1.1.7/SHA256SUMS.txt) · [历史版本](https://github.com/xymw54128/Little-Red-Flower-Music-Player/releases)
 
-两端采用原版 B「封面画廊」方向，固定放大封面并预留单行歌词，长歌词完整滚动预览，进度左侧已播放时间、右侧歌曲总时长。iOS 同步默认收藏、歌单描述与批量管理、主题/夜间模式、八项字体、花朵互动、手动刷新、拼音搜索和千首曲库处理；具体平台差异及未验证范围见各端说明。
+Android 最低 8.0，目标 Android 16；沿用历史签名，可直接覆盖安装。首次打开在“设置 → 歌曲文件夹”导入歌曲或授权文件夹。原文件按原位置读取，应用无需网络权限。
 
-Android 最低 8.0，目标 Android 16，版本 1.1.1 / code 21；签名与历史版本一致，可直接覆盖安装。安装后在“设置 → 歌曲文件夹”导入音乐或授权文件夹。应用无需网络权限，首次下载源码和构建依赖需要联网。APK 保存在 GitHub Releases，Git 克隆不包含安装包。
+本版整理花瓣迷你栏、播放页与歌词花枝、收藏反馈、主题弹层，以及音乐库/我喜欢/自建歌单的独立播放顺序和队列编辑。iOS 使用原生 SwiftUI / UIKit / AVFoundation，同步主要视觉与顺序逻辑；系统菜单、抽屉、文件授权和音频格式支持按各平台实现，详见各端说明。
 
-APK SHA-256（[校验文件](https://github.com/xymw54128/Little-Red-Flower-Music-Player/releases/download/v1.1.1/Xiaohonghua-1.1.1.apk.sha256)）：
+iOS 仍需 Mac + Xcode 和有效 Apple 签名才能构建安装。Windows 端的语法、工程和资源检查不等同 Xcode SDK 编译或 iPhone 实测，不能把源码 ZIP 当作 IPA。
 
-```text
-40409d59feb55828a84fbce367870c6ac8c616bd6cc4813ab8928484a1a4ee59
-```
-
-iOS 版本 1.1.1 / build 21。Windows 端已检查 Swift 语法、工程引用、资源、字体和源码 ZIP；没有运行 Xcode 编译、XCTest、签名或 iPhone 验证。制作可安装 IPA 仍需 macOS + Xcode 与有效 Apple 签名。不能把源码包当成可安装应用。
+Android APK SHA-256：`72d0860f808c1313baa9471080513f0bccf5bfb9a5ec53186ce77bd0a871b45f`。安装包与 iOS 源码 ZIP 放在 GitHub Releases，Git 克隆包含源码和检查报告。此前本地 1.1.2–1.1.6 的设计与验证记录保留；其历史本地安装包未随本次上传。公开历史 [1.1.1 双端版本](https://github.com/xymw54128/Little-Red-Flower-Music-Player/releases/tag/v1.1.1) 保留。
 
 ## 主要功能
 
@@ -30,7 +26,7 @@ iOS 版本 1.1.1 / build 21。Windows 端已检查 Swift 语法、工程引用�
 
 ### 当前版本使用入口
 
-- 1.1.1 延续固定的原版 B 播放页，扩大 22 dp 圆角封面；先预留一行歌词，长歌词以横向滚动完整展示。左侧为已播放时间，右侧为歌曲总时长。保留呼吸动效、收藏、音质、更多操作、横向歌词分页和完整歌词页纵向浏览。千首曲库的数据加载、序列化、排序及封面处理减少主线程开销，见本轮详细检查报告。
+- 1.1.5：迷你栏压缩至72dp，去除阴影和播放键底纹，逐瓣跳动更明显，右侧连续花枝避开按键；播放封面去除细绿边并修复完整花朵，32dp七色花位于爱心正下方并稍加快；“我喜欢”取消收藏先完成爱心动效再移除行，歌曲/专辑/歌手分类滑动淡入淡出，完成提示改为白色花朵样式与画圈后画勾动画。歌词标题保留左二右三圆润小红花与长标题滚动，千首曲库处理沿用既有优化。
 - 中文与英文直接搜索；Android 10 及以上也可输入完整拼音或首字母，如“dengziqi”“dzq”，Android 8/9 保留原词检索。覆盖音乐库、歌单及批量选择；初次后台准备索引时有状态提示。多音字按系统 ICU 转写。
 - 专辑按专辑歌手聚合，内部按盘号、曲号排序；没有专辑歌手标签时使用歌曲歌手。专辑播放队列与全库排序独立；原文件缺少标签时需自行补标签。
 - 歌曲三个点菜单 → 下一首播放 / 追加队尾；已有歌曲移动，当前歌曲不重启，空队列加入保持暂停。队列显示实际随机顺序、来源、模式和当前位置；手动拖动排序后关闭随机模式。
@@ -45,7 +41,7 @@ iOS 版本 1.1.1 / build 21。Windows 端已检查 Swift 语法、工程引用�
 - 音乐库支持歌曲、专辑、歌手分类；右上角搜索图标向左展开搜索框，收起时让出列表空间；歌曲名 / 歌手 A–Z、随机、自定义拖动排序。
 - 默认保留“我喜欢”歌单；点亮歌曲列表的白色描边爱心后变为红色并收藏，再点取消。普通歌单支持创建、编辑名称/封面/简介和删除，详情右上角菜单批量添加或移出音乐，添加歌曲时选择目标歌单；十款自然花朵与“心之花”，支持本地相册照片；旧八款图标已移除。
 - 点击歌单封面、名称或卡片其他区域均进入详情，点击详情中的歌曲开始播放；详情与音乐库共用收起式搜索，封面/简介/数量在上划时收起、下划时展开。
-- 自定义排序支持长列表边缘自动滚动、手柄菜单与无障碍移动、固定取消/保存；曲库更新保留排序草稿，保存后同步同一来源的播放队列，保留当前歌曲、进度、播放状态和循环模式，关闭该队列的随机播放。
+- 自定义排序支持长列表边缘自动滚动、手柄菜单与无障碍移动、固定取消/保存；曲库更新保留排序草稿，保存后同步同一来源的播放队列，保留当前歌曲、进度、播放状态和循环模式，使保存顺序成为实际播放顺序；若随后另选播放模式则保留较新的模式。
 - 音乐库、歌单、设置三个主页支持左右滑动切换，仍可点击底部导航。
 - 迷你与完整播放器支持上一首、播放暂停、下一首、进度拖动、播放模式与队列调整。
 - 点击播放页封面或当前歌词预览、向左滑动均进入歌词页，向右滑动返回封面；按 LRC 时间戳滚动和高亮，手动浏览结束 1.5 秒后平滑回位；主题色当前行、轻微放大与灰色非当前行，颜色与居中同步过渡，正常播放在下一行时间戳前完成；长短间隔及倍速自动调整提前窗口。
@@ -108,6 +104,13 @@ python -m http.server 49173 --bind 127.0.0.1 --directory ui
 ```
 
 ## 验证状态与反馈
+
+iOS 1.1.7 / build28：25个Swift文件语法解析无错误，工程引用、scheme、版本、资源与7份字体许可/哈希检查通过；发现52项CoreTests与9项界面用例，未执行。Windows无法验证Apple SDK类型编译、Xcode/XCTest、模拟器或iPhone运行，本版提供源码ZIP。[iOS检查报告](dist/小红花-iOS-1.1.7-CHECK.json)。
+
+Android 1.1.7 / code 28（2026-10-21）：135 项 JVM 测试通过，含四来源×四排序及千首顺序矩阵；Lint 0 错误、17 项既有提醒。Release/Debug 与原生测试 APK 构建成功，114 项原生用例仅编译，当前无连接设备，跨歌单 MediaController 行为、音频输出与手机帧率尚未实测。签名兼容 21 个历史包；未更改解码、DSP、音量或速度配置。[验证报告](dist/ANDROID-1.1.7-UI-CHECK.json)。
+
+Android 1.1.6 / code 26（2026-10-21，仅本地）：125 项 JVM 测试通过，Lint 0 错误、17 项提醒；Release/Debug 与原生测试 APK 构建成功。103 项原生用例仅编译，当前无连接设备，实际手势、帧率和音频输出未测。最终包通过同签名覆盖、资源与 16 KB 对齐检查；播放核心与 1.1.5 保持相同。[验证报告](dist/ANDROID-1.1.6-UI-CHECK.json)。
+
 
 iOS 1.1.1：22 个 Swift 文件语法解析无错误；Xcode 工程、资源、7 份字体与许可证/哈希和源码 ZIP 检查通过。发现 39 项核心测试、7 项 UI 用例，未执行；Xcode 编译、模拟器、真机、签名和 IPA 导出均未运行。[iOS 检查报告](dist/小红花-iOS-1.1.1-CHECK.json) · [平台说明](ios/README.md)。
 
