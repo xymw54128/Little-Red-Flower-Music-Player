@@ -32,6 +32,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.semantics.Role
@@ -233,13 +234,44 @@ private fun UriLabel(uri: String)=android.net.Uri.decode(uri.substringAfter("/tr
     }
 }
 @Composable internal fun SongInfo(song: Song,onDismiss:()->Unit) {
-    AppModalBottomSheet(onDismissRequest=onDismiss) {SheetTitle("歌曲信息",song.title)
-        Column(Modifier.fillMaxWidth().heightIn(max=480.dp).verticalScroll(rememberScrollState()).padding(24.dp),verticalArrangement=Arrangement.spacedBy(12.dp)) {
-            SongArtworkPreview(song,Modifier.align(Alignment.CenterHorizontally))
-            listOf("歌手" to song.artist,"专辑" to song.album,"专辑歌手" to song.albumDisplayArtist,"碟号" to song.disc.ifBlank {"未设置"},"曲目" to song.track.ifBlank {"未设置"},"格式" to song.format,
-                "时长" to timeLabel(song.duration),"采样率" to if(song.sampleRate > 0) "${song.sampleRate} Hz" else "未知",
-                "位深" to if(song.bitDepth > 0) "${song.bitDepth} bit" else "未知","文件大小" to "%.2f MB".format(song.size/1048576.0),
-                "文件名" to song.name,"文件地址" to android.net.Uri.decode(song.uri)).forEach {(key,value) -> Column {Text(key,fontSize=11.sp,color=muted);Text(value,fontSize=14.sp,modifier=Modifier.padding(top=4.dp))}}
+    AppModalBottomSheet(onDismissRequest=onDismiss) {
+        Row(Modifier.fillMaxWidth().padding(start=24.dp,end=20.dp,bottom=8.dp),verticalAlignment=Alignment.CenterVertically) {
+            Text("歌曲信息",Modifier.weight(1f),fontSize=22.sp,fontWeight=FontWeight.SemiBold)
+            BotanicalTitleSprig(false,Modifier.size(36.dp))
+        }
+        BoxWithConstraints(Modifier.fillMaxWidth().heightIn(max=560.dp).verticalScroll(rememberScrollState())
+            .testTag("song-info-content").padding(horizontal=24.dp)) {
+            val stacked=maxWidth < 280.dp || LocalDensity.current.fontScale > 1.3f
+            Column(Modifier.fillMaxWidth().padding(bottom=28.dp)) {
+                SongArtworkPreview(song,Modifier.align(Alignment.CenterHorizontally))
+                Text("标题",fontSize=12.sp,color=muted,modifier=Modifier.padding(top=8.dp))
+                Text(song.title.ifBlank {"未设置"},Modifier.fillMaxWidth().padding(top=6.dp),
+                    fontSize=22.sp,lineHeight=30.sp,fontWeight=FontWeight.SemiBold)
+                Spacer(Modifier.height(24.dp))
+                SongInfoRows(listOf("艺术家" to song.artist,"作曲家" to song.composer,"专辑" to song.album),stacked)
+                HorizontalDivider(Modifier.padding(top=24.dp,bottom=20.dp),color=ink.copy(alpha=.1f))
+                Text("音频与文件",fontSize=14.sp,fontWeight=FontWeight.SemiBold,color=MaterialTheme.colorScheme.primary)
+                Spacer(Modifier.height(16.dp))
+                SongInfoRows(listOf("格式" to song.format,"时长" to timeLabel(song.duration),
+                    "采样率" to if(song.sampleRate > 0) "${song.sampleRate} Hz" else "未知",
+                    "位深" to if(song.bitDepth > 0) "${song.bitDepth} bit" else "未知",
+                    "文件大小" to "%.2f MB".format(song.size/1048576.0),
+                    "文件名" to song.name,"文件地址" to android.net.Uri.decode(song.uri)),stacked)
+            }
+        }
+    }
+}
+
+@Composable private fun SongInfoRows(fields: List<Pair<String,String>>,stacked: Boolean) {
+    Column(Modifier.fillMaxWidth(),verticalArrangement=Arrangement.spacedBy(14.dp)) {
+        fields.forEach {(label,value) ->
+            if(stacked) Column(Modifier.fillMaxWidth(),verticalArrangement=Arrangement.spacedBy(5.dp)) {
+                Text(label,fontSize=12.sp,color=muted)
+                Text(value.ifBlank {"未设置"},fontSize=15.sp,lineHeight=22.sp)
+            } else Row(Modifier.fillMaxWidth(),verticalAlignment=Alignment.Top) {
+                Text(label,Modifier.width(76.dp).padding(top=1.dp,end=12.dp),fontSize=13.sp,lineHeight=21.sp,color=muted)
+                Text(value.ifBlank {"未设置"},Modifier.weight(1f),fontSize=15.sp,lineHeight=22.sp)
+            }
         }
     }
 }

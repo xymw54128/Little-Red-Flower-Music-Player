@@ -32,6 +32,8 @@ import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.compositeOver
+import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.graphics.CompositingStrategy
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.graphicsLayer
@@ -67,9 +69,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.repeatOnLifecycle
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.isActive
 
@@ -82,8 +82,6 @@ internal var SemanticsPropertyReceiver.lyricMotionRunning by LyricMotionRunningK
     val scope=rememberCoroutineScope()
     val lyricText=library.manualLyrics[song?.id] ?: song?.lyrics.orEmpty()
     val lines=remember(lyricText,song?.duration) {Lrc.parse(lyricText,song?.duration?.takeIf {it > 0})}
-    val lyricIndex=remember(lines,model) {model.playback.map {Lrc.current(lines,it.position)}.distinctUntilChanged()}
-    val current by lyricIndex.collectAsStateWithLifecycle(initialValue=-1)
     val pageMotion=tween<Float>(360,easing=FastOutSlowInEasing)
     val lyricsVisible by remember {derivedStateOf {pager.currentPage == 1 || pager.currentPageOffsetFraction > 0f}}
     val lyricHeaderSettled by remember {derivedStateOf {pager.settledPage == 1}}
@@ -126,7 +124,6 @@ internal var SemanticsPropertyReceiver.lyricMotionRunning by LyricMotionRunningK
                 if(page == 0) BoxWithConstraints(Modifier.fillMaxSize()) {
                     val favorite=library.playlists.firstOrNull {it.isFavorites}?.songIds?.contains(song.id) == true
                     val compact=maxHeight < 400.dp
-                    val previewSize=library.settings.lyricSize.coerceAtMost(20f)
                     Column(Modifier.testTag("player-cover-content").fillMaxSize().padding(horizontal=23.dp,vertical=6.dp),horizontalAlignment=Alignment.CenterHorizontally) {
                         // Reserve the actual lyric height first; artwork receives only the remainder.
                         Column(Modifier.weight(1f).fillMaxWidth(),horizontalAlignment=Alignment.CenterHorizontally) {
@@ -153,10 +150,7 @@ internal var SemanticsPropertyReceiver.lyricMotionRunning by LyricMotionRunningK
                             }
                         }
                         Box(Modifier.testTag("player-lyric-preview").fillMaxWidth().heightIn(min=48.dp).clickable(onClickLabel="查看歌词",onClick=::openLyrics).padding(vertical=6.dp),contentAlignment=Alignment.Center) {
-                            Text(lines.getOrNull(current)?.text ?: "点击封面或左滑查看歌词",Modifier.testTag("player-lyric-preview-text").basicMarquee(
-                                iterations=if(!lyricsVisible && lifecycleState.isAtLeast(Lifecycle.State.STARTED)) Int.MAX_VALUE else 0,
-                                initialDelayMillis=1200,repeatDelayMillis=1200,velocity=28.dp),textAlign=TextAlign.Center,fontSize=previewSize.sp,lineHeight=(previewSize*1.5f).sp,
-                                fontFamily=lyricFont(library.settings.lyricFont),color=MaterialTheme.colorScheme.primary,maxLines=1,softWrap=false,overflow=TextOverflow.Clip)
+                            PlayerLyricPreview(lines,library.settings,p,!lyricsVisible,model::playbackPosition)
                         }
                     }
                 } else LyricsPage(lines,lyricText,library.settings,lyricsVisible,p,model)
@@ -252,6 +246,30 @@ internal var SemanticsPropertyReceiver.lyricMotionRunning by LyricMotionRunningK
             if(fraction > 0f) drawLine(accent,start,Offset(size.width*fraction,end.y),strokeWidth=size.height,cap=StrokeCap.Round)
         } })
 }
+/** The small preview follows the media clock directly; only a changed line recomposes. */
+@Composable internal fun PlayerLyricPreview(lines: List<LyricLine>,settings: Settings,p: PlaybackState,visible: Boolean,position: ()->Long) {
+    val lifecycle=LocalLifecycleOwner.current.lifecycle
+    val lifecycleState by lifecycle.currentStateFlow.collectAsState()
+    val latestPosition by rememberUpdatedState(position)
+    var current by remember(lines,p.currentId) {mutableIntStateOf(Lrc.current(lines,position()))}
+    LaunchedEffect(lines,p.currentId,p.playing,p.seekRevision,visible,lifecycle) {
+        if(!visible) return@LaunchedEffect
+        lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
+            current=Lrc.current(lines,latestPosition())
+            while(isActive) {
+                if(p.playing) withFrameNanos {} else delay(50)
+                // No lead window here: the preview switches at the exact LRC timestamp.
+                current=Lrc.current(lines,latestPosition())
+            }
+        }
+    }
+    val size=settings.lyricSize.coerceAtMost(20f)
+    Text(lines.getOrNull(current)?.text ?: "点击封面或左滑查看歌词",Modifier.testTag("player-lyric-preview-text").basicMarquee(
+        iterations=if(visible && lifecycleState.isAtLeast(Lifecycle.State.STARTED)) Int.MAX_VALUE else 0,
+        initialDelayMillis=1200,repeatDelayMillis=1200,velocity=28.dp),textAlign=TextAlign.Center,fontSize=size.sp,lineHeight=(size*1.5f).sp,
+        fontFamily=lyricFont(settings.lyricFont),color=MaterialTheme.colorScheme.primary,maxLines=1,softWrap=false,overflow=TextOverflow.Clip)
+}
+
 @Composable private fun LyricsPage(lines: List<LyricLine>,text: String,settings: Settings,visible: Boolean,p: PlaybackState,model: MusicModel) {
     val density=LocalDensity.current
     val measurer=rememberTextMeasurer()
@@ -262,8 +280,9 @@ internal var SemanticsPropertyReceiver.lyricMotionRunning by LyricMotionRunningK
     val latestVisible by rememberUpdatedState(visible)
     val latestPlayback by rememberUpdatedState(p)
     val latestDynamic by rememberUpdatedState(settings.dynamicLyrics)
-    val inactiveColor=muted
     val surface=pageColor
+    // Bake the idle opacity into this flat background; every glyph is painted once.
+    val inactiveColor=muted.copy(alpha=.6f).compositeOver(surface)
     BoxWithConstraints(Modifier.testTag("player-lyrics-page").fillMaxSize().background(surface).drawWithCache {
         // Feather the fixed viewport, not individual rows. Cached gradients are equivalent
         // to an alpha fade over this flat page color and avoid a full-screen blur layer.
@@ -410,12 +429,11 @@ internal var SemanticsPropertyReceiver.lyricMotionRunning by LyricMotionRunningK
                         val weight=remember(index) {derivedStateOf(structuralEqualityPolicy()) {visual.value.weights[index] ?: 0f}}
                         Box(Modifier.fillMaxWidth().height(with(density) {heights[index].toDp()}).testTag(if(index == current) "current-lyric" else "lyric-$index")
                             .clickable {model.seek(line.startTime.coerceIn(0,latestPlayback.duration.takeIf {it > 0} ?: Long.MAX_VALUE));seekRequest++;follow=true},contentAlignment=Alignment.Center) {
-                            // Static glyph layers: only alpha and the shared transform change per frame.
-                            // Keep one accessible text label, despite the two visual color layers.
-                            Box(Modifier.fillMaxWidth().graphicsLayer {scaleX=1f+.05f*weight.value;scaleY=scaleX}) {
-                                BasicText(line.text.ifBlank {"·"},Modifier.fillMaxWidth().graphicsLayer {alpha=.6f},style=style,color={inactiveColor})
-                                BasicText(line.text.ifBlank {"·"},Modifier.fillMaxWidth().clearAndSetSemantics {}.graphicsLayer {alpha=weight.value},style=style,color={activeColor})
-                            }
+                            // One opaque glyph pass avoids transparent text-layer reuse artifacts.
+                            // Color and scale still read the same frame weight, without remeasuring text.
+                            BasicText(line.text.ifBlank {"·"},Modifier.fillMaxWidth().graphicsLayer {
+                                scaleX=1f+.05f*weight.value;scaleY=scaleX
+                            },style=style,color={lerp(inactiveColor,activeColor,weight.value)})
                         }
                     }
                 }

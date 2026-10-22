@@ -21,12 +21,13 @@ fun Song.toJson(backup: Boolean = false): JSONObject = JSONObject().apply {
     put("lyricFile", lyricFile)
     put("artworkRevision", artworkRevision)
     put("albumArtist",albumArtist); put("disc",disc); put("lyricRevision",if(backup) "" else lyricRevision)
+    put("composer",composer)
 }
 fun songFromJson(j: JSONObject): Song = Song(j.getString("id"), j.getString("uri"), j.getString("name"), j.optString("title"),
     j.optString("artist", "未知歌手"), j.optString("album", "未知专辑"), j.optLong("duration"), j.optLong("size"), j.optLong("modified"),
     j.optString("format"), j.optInt("sampleRate"), j.optInt("bitDepth"), j.optString("track"), j.optString("lyrics"), j.optString("artwork"),
     j.optJSONArray("sources").strings().toSet(), j.optBoolean("available", true), j.optString("lyricFile"), j.optString("artworkRevision"),
-    j.optString("albumArtist"),j.optString("disc"),j.optString("lyricRevision"))
+    j.optString("albumArtist"),j.optString("disc"),j.optString("lyricRevision"),j.optString("composer"))
 fun JSONArray?.strings(): List<String> = if (this == null) emptyList() else (0 until length()).map { getString(it) }
 fun Playlist.toJson(backup: Boolean = false): JSONObject = JSONObject().apply {
     put("id", id); put("name", name); put("songIds", JSONArray(songIds)); put("sort", sort.name); put("randomIds", JSONArray(randomIds))

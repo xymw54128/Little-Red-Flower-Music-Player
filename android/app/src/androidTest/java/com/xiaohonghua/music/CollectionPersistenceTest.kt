@@ -26,7 +26,7 @@ class CollectionPersistenceTest {
         val old=JSONObject().put("id","old").put("uri","content://test/old").put("name","old.flac")
             .put("title","旧歌").put("track","10/12").put("lyrics","[00:01]歌词")
         val song=songFromJson(old)
-        assertEquals("",song.albumArtist);assertEquals("",song.disc);assertEquals("",song.lyricRevision)
+        assertEquals("",song.albumArtist);assertEquals("",song.disc);assertEquals("",song.lyricRevision);assertEquals("",song.composer)
         assertEquals("10/12",song.track);assertEquals("[00:01]歌词",song.lyrics)
         val settings=settingsFromJson(JSONObject().put("font","kai").put("size",29).put("theme",2))
         assertFalse(settings.nightMode);assertEquals(29f,settings.lyricSize);assertEquals(2,settings.theme)
@@ -42,10 +42,11 @@ class CollectionPersistenceTest {
         }
         val store=LibraryStore(isolated)
         try {
-            val song=Song("id","content://test/id","album.flac","歌曲",albumArtist="群星",disc="2/3",lyricRevision="cached-revision")
+            val song=Song("id","content://test/id","album.flac","歌曲",albumArtist="群星",disc="2/3",lyricRevision="cached-revision",composer="作曲者")
             assertEquals(song,songFromJson(song.toJson()))
             val portable=songFromJson(song.toJson(true))
             assertEquals("群星",portable.albumArtist);assertEquals("2/3",portable.disc);assertEquals("",portable.lyricRevision)
+            assertEquals("作曲者",portable.composer)
             store.saveSettings(Settings(nightMode=true));assertTrue(LibraryStore(isolated).settings().nightMode)
         } finally {store.close();context.deleteSharedPreferences(unique)}
     }

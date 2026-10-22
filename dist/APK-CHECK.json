@@ -1,15 +1,15 @@
 {
-  "date": "2026-10-21T06:31:12.378Z",
-  "apk": "D:\\music player app\\dist\\小红花-1.1.7.apk",
+  "date": "2026-10-22T05:55:47.716Z",
+  "apk": "D:\\music player app\\dist\\小红花-1.1.8.apk",
   "buildType": "release",
   "debuggable": false,
   "testComponentsAbsent": true,
   "networkPermissionAbsent": true,
   "recordAudioPermissionAbsent": true,
   "size": 64052755,
-  "sha256": "72d0860f808c1313baa9471080513f0bccf5bfb9a5ec53186ce77bd0a871b45f",
+  "sha256": "838bd824b09554b7729076477c9a5ed6209e4c1785c0c5b411ab94778ad0cb88",
   "metadata": [
-    "package: name='com.xiaohonghua.music' versionCode='28' versionName='1.1.7' platformBuildVersionName='16' platformBuildVersionCode='36' compileSdkVersion='36' compileSdkVersionCodename='16'",
+    "package: name='com.xiaohonghua.music' versionCode='29' versionName='1.1.8' platformBuildVersionName='16' platformBuildVersionCode='36' compileSdkVersion='36' compileSdkVersionCodename='16'",
     "minSdkVersion:'26'",
     "targetSdkVersion:'36'",
     "application-label:'小红花'",
@@ -23,6 +23,7 @@
   "sameSigningCertificateAs115": true,
   "sameSigningCertificateAs116": true,
   "sameSigningCertificateAs116Overlay": true,
+  "sameSigningCertificateAs117": true,
   "upgradeCertificates": [
     {
       "version": "0.1.0",
@@ -106,6 +107,10 @@
     },
     {
       "version": "1.1.6-弹层修订版",
+      "sameSigningCertificate": true
+    },
+    {
+      "version": "1.1.7",
       "sameSigningCertificate": true
     }
   ],
@@ -291,6 +296,12 @@
       "errors": 0
     },
     {
+      "name": "com.xiaohonghua.music.ComposerTagTest",
+      "tests": 3,
+      "failures": 0,
+      "errors": 0
+    },
+    {
       "name": "com.xiaohonghua.music.CoreTest",
       "tests": 6,
       "failures": 0,
@@ -427,6 +438,6 @@
     "errors": 0,
     "warnings": 17
   },
-  "acceptance": "1.1.7 code 28: validates library, favorites and independent playlist playback order; uses current source order for clicked subsets, prevents inactive-source sort and stale sorting jobs from overriding active/manual queue requests, compares shuffled traversal for queue edits, and reads live controller mode for rapid mode changes. Source switching, sorted replay and position-preserving queue movement covered by JVM and compiled native regressions. Decoder, DSP, volume and speed configuration unchanged; actual controller/device execution is recorded separately.",
-  "nativeTests": "Instrumented compilation and execution status is recorded separately in ANDROID-1.1.7-UI-CHECK.json; compilation alone does not confirm runtime behavior or native frame performance."
+  "acceptance": "1.1.8 code 29: single opaque lyric glyph pass with shared draw-stage color and scale weights; cover preview samples the live media clock at frame cadence only while visible and playing, and uses exact LRC timestamps. Song details show labeled title, artist, composer and album in a clear flower-themed layout, with persisted COMPOSER/TCOM metadata and backward-compatible defaults. Audio decoding, DSP, volume and speed configuration unchanged. Original intermittent GPU symptoms and device timing require native verification",
+  "nativeTests": "Instrumented compilation and execution status is recorded separately in ANDROID-1.1.8-UI-CHECK.json; compilation alone does not confirm runtime behavior or native frame performance."
 }

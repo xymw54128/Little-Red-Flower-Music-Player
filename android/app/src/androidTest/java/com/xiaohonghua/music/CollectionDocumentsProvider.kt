@@ -23,20 +23,24 @@ class CollectionDocumentsProvider : DocumentsProvider() {
     override fun onCreate(): Boolean {
         audio=File(context!!.cacheDir,"collection-fixture.flac")
         lyric=File(context!!.cacheDir,"collection-fixture.lrc")
-        context!!.assets.open("tone.flac").use {input -> audio.outputStream().use {out -> input.copyTo(out)}}
+        resetAudio()
         lyric.writeText("[00:01]默认歌词")
         return true
     }
     @Synchronized override fun call(method: String,arg: String?,extras: Bundle?): Bundle? = when(method) {
-        "reset" -> Bundle().also {present=false;readable=true;failListing=false;modified=1000;audioReads=0;lyricReads=0}
+        "reset" -> Bundle().also {resetAudio();present=false;readable=true;failListing=false;modified=1000;audioReads=0;lyricReads=0}
         "configure" -> Bundle().also {
             val data=requireNotNull(extras)
             failListing=data.getBoolean("failListing",false)
             present=data.getBoolean("present",true);readable=data.getBoolean("readable",true);modified=data.getLong("modified",1000)
             data.getString("text")?.let {lyric.writeText(it)}
+            data.getByteArray("audioBytes")?.let {audio.writeBytes(it)}
         }
         "counts" -> Bundle().apply {putInt("audio",audioReads);putInt("lyrics",lyricReads)}
         else -> super.call(method,arg,extras)
+    }
+    private fun resetAudio() {
+        context!!.assets.open("tone.flac").use {input -> audio.outputStream().use {out -> input.copyTo(out)}}
     }
     override fun queryRoots(projection: Array<out String>?): Cursor = MatrixCursor(projection ?: arrayOf("root_id","document_id","title")).apply {
         addRow(columnNames.map {when(it) {"root_id","document_id" -> "root";"title" -> "Collection test";else -> null}}.toTypedArray())

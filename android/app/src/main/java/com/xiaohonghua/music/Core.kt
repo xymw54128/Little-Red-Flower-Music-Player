@@ -26,6 +26,7 @@ data class Song(
     val albumArtist: String = "",
     val disc: String = "",
     val lyricRevision: String = "",
+    val composer: String = "",
 ) {
     val albumDisplayArtist: String get() = albumArtist.trim().ifBlank {artist}
     val albumKey: String get() = "${albumDisplayArtist}\u0000$album"

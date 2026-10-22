@@ -158,8 +158,8 @@ object TagParser {
                     val start = terminator(frame, mimeEnd+2, frame[0].toInt())
                     picture = frame.copyOfRange(start, frame.size)
                 }
-            } else if (name in listOf("TIT2", "TPE1", "TPE2", "TALB", "TPOS", "TRCK") && frame.isNotEmpty()) {
-                values[mapOf("TIT2" to "TITLE", "TPE1" to "ARTIST", "TPE2" to "ALBUMARTIST", "TALB" to "ALBUM", "TPOS" to "DISCNUMBER", "TRCK" to "TRACKNUMBER").getValue(name)] = decodeText(frame.copyOfRange(1, frame.size), frame[0].toInt())
+            } else if (name in listOf("TIT2", "TPE1", "TPE2", "TALB", "TPOS", "TRCK", "TCOM") && frame.isNotEmpty()) {
+                values[mapOf("TIT2" to "TITLE", "TPE1" to "ARTIST", "TPE2" to "ALBUMARTIST", "TALB" to "ALBUM", "TPOS" to "DISCNUMBER", "TRCK" to "TRACKNUMBER", "TCOM" to "COMPOSER").getValue(name)] = decodeText(frame.copyOfRange(1, frame.size), frame[0].toInt())
             }
         }
         return AudioTags(values, picture=picture)
@@ -200,7 +200,7 @@ class TagReader(private val context: Context) {
         try {
             retriever.setDataSource(context, uri)
             listOf("TITLE" to MediaMetadataRetriever.METADATA_KEY_TITLE, "ARTIST" to MediaMetadataRetriever.METADATA_KEY_ARTIST,
-                "ALBUM" to MediaMetadataRetriever.METADATA_KEY_ALBUM, "ALBUMARTIST" to MediaMetadataRetriever.METADATA_KEY_ALBUMARTIST, "DISCNUMBER" to MediaMetadataRetriever.METADATA_KEY_DISC_NUMBER, "TRACKNUMBER" to MediaMetadataRetriever.METADATA_KEY_CD_TRACK_NUMBER).forEach { (key, code) ->
+                "ALBUM" to MediaMetadataRetriever.METADATA_KEY_ALBUM, "COMPOSER" to MediaMetadataRetriever.METADATA_KEY_COMPOSER, "ALBUMARTIST" to MediaMetadataRetriever.METADATA_KEY_ALBUMARTIST, "DISCNUMBER" to MediaMetadataRetriever.METADATA_KEY_DISC_NUMBER, "TRACKNUMBER" to MediaMetadataRetriever.METADATA_KEY_CD_TRACK_NUMBER).forEach { (key, code) ->
                 retriever.extractMetadata(code)?.takeIf { it.isNotBlank() }?.let { tags[key] = it }
             }
             duration = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)?.toLongOrNull() ?: 0
@@ -253,7 +253,7 @@ class TagReader(private val context: Context) {
             tags["ARTIST"].orEmpty().ifBlank { "未知歌手" }, tags["ALBUM"].orEmpty().ifBlank { "未知专辑" }, duration, size, modified,
             format, rate, bits, tags["TRACKNUMBER"].orEmpty(), externalLyrics ?: tags["LYRICS"] ?: tags["UNSYNCEDLYRICS"] ?: "",
             if (cover.exists()) cover.absolutePath else "", setOf(source),artworkRevision=revision,
-            albumArtist=(tags["ALBUMARTIST"] ?: tags["ALBUM ARTIST"] ?: tags["ALBUM_ARTIST"]).orEmpty(),disc=(tags["DISCNUMBER"] ?: tags["DISC"]).orEmpty())
+            albumArtist=(tags["ALBUMARTIST"] ?: tags["ALBUM ARTIST"] ?: tags["ALBUM_ARTIST"]).orEmpty(),disc=(tags["DISCNUMBER"] ?: tags["DISC"]).orEmpty(),composer=tags["COMPOSER"].orEmpty().trim())
     }
     fun lyricText(uri: Uri): String = context.contentResolver.openInputStream(uri)!!.use { input ->
         val bytes = input.readLimited(1024 * 1024 + 1)

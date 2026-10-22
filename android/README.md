@@ -1,6 +1,10 @@
-# 小红花 Android · 1.1.7
+# 小红花 Android · 1.1.8（仅本地）
 
-当前版本为 `1.1.7` / code `28`：[下载 APK](https://github.com/xymw54128/Little-Red-Flower-Music-Player/releases/download/v1.1.7/Xiaohonghua-1.1.7.apk) · [版本说明](../dist/小红花-1.1.7-发布说明.md) · [顺序检查报告](../dist/ANDROID-1.1.7-UI-CHECK.json)。修复来源间排序干扰、过期排序覆盖手动队列、随机遍历提交比较及收藏页旧顺序点播；快速模式选择不会丢掉保存的排序。135 项 JVM 测试通过，Lint 0 错误、17 项既有提醒，114 项原生用例仅编译，未运行手机验证。Android APK 与 iOS 1.1.7 源码见 [双端发布页](https://github.com/xymw54128/Little-Red-Flower-Music-Player/releases/tag/v1.1.7)。
+当前本地版本为 `1.1.8` / code `29`：[APK](../dist/小红花-1.1.8.apk) · [版本说明](../dist/小红花-1.1.8-发布说明.md) · [检查](../dist/ANDROID-1.1.8-UI-CHECK.json)。改为单层歌词绘制并保留上下渐隐；封面歌词按实时媒体时钟在LRC时间戳切换，避免100ms快照延迟；信息页改为清晰分组与花枝点缀，新增真实作曲家标签与兼容存储。旧曲库需要手动刷新一次，缺失标签显示“未设置”。本轮暂不推送GitHub，不改iOS。
+
+138 项 JVM 测试通过，Lint 0 错误、17 项提醒，Release/Debug 与原生测试 APK 构建成功。121 项原生用例仅编译，未连接手机验证实际布局、像素和播放时序；签名兼容 22 个历史包。
+
+已发布版本为 `1.1.7` / code `28`：[下载 APK](https://github.com/xymw54128/Little-Red-Flower-Music-Player/releases/download/v1.1.7/Xiaohonghua-1.1.7.apk) · [版本说明](../dist/小红花-1.1.7-发布说明.md) · [顺序检查报告](../dist/ANDROID-1.1.7-UI-CHECK.json)。修复来源间排序干扰、过期排序覆盖手动队列、随机遍历提交比较及收藏页旧顺序点播；快速模式选择不会丢掉保存的排序。135 项 JVM 测试通过，Lint 0 错误、17 项既有提醒，114 项原生用例仅编译，未运行手机验证。Android APK 与 iOS 1.1.7 源码见 [双端发布页](https://github.com/xymw54128/Little-Red-Flower-Music-Player/releases/tag/v1.1.7)。
 
 此前弹层修订版为 `1.1.6` / code `27`：[安装包](../dist/小红花-1.1.6-弹层修订版.apk) · [版本说明](../dist/小红花-1.1.6-弹层修订版-发布说明.md) · [验证报告](../dist/ANDROID-1.1.6-OVERLAY-CHECK.json)。仅本地 Android；统一全部菜单、抽屉和对话框背景与布局，替换抽屉返回缩放为保持尺寸后隐藏，保留子步骤和键盘返回优先级。
 
