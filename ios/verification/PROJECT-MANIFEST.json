@@ -21,7 +21,9 @@
   ],
   "unitTests": [
     "Tests/CoreTests/Collection111Tests.swift",
+    "Tests/CoreTests/Composer118Tests.swift",
     "Tests/CoreTests/CoreTests.swift",
+    "Tests/CoreTests/Lyrics118Tests.swift",
     "Tests/CoreTests/Playback117IntegrationTests.swift",
     "Tests/CoreTests/PlaybackLyrics111Tests.swift",
     "Tests/CoreTests/PlaybackOrder117Tests.swift"
@@ -55,7 +57,7 @@
     "Xiaohonghua/Resources/PrivacyInfo.xcprivacy"
   ],
   "bundleID": "com.xiaohonghua.music.ios",
-  "version": "1.1.7",
-  "build": 28,
+  "version": "1.1.8",
+  "build": 29,
   "deploymentTarget": "17.0"
 }

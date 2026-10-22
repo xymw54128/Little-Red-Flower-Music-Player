@@ -19,8 +19,8 @@ app_target = next(obj for obj in objects.values() if obj.get('isa') == 'PBXNativ
 app_config = objects[app_target['buildConfigurationList']]
 for key in app_config['buildConfigurations']:
     settings = objects[key]['buildSettings']
-    assert settings['MARKETING_VERSION'] == '1.1.7'
-    assert settings['CURRENT_PROJECT_VERSION'] == '28'
+    assert settings['MARKETING_VERSION'] == '1.1.8'
+    assert settings['CURRENT_PROJECT_VERSION'] == '29'
     assert settings['TARGETED_DEVICE_FAMILY'] == '1'
     assert not settings.get('DEVELOPMENT_TEAM'), 'Do not prefill a signing team'
 for key, obj in objects.items():

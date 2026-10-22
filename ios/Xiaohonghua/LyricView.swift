@@ -81,7 +81,7 @@ final class LyricScrollView: UIScrollView, UIScrollViewDelegate {
                 let label = UILabel()
                 label.text = line.text; label.numberOfLines = 0; label.textAlignment = .center
                 label.font = Brand.font(settings.lyricFont, size: settings.lyricSize)
-                label.textColor = UIColor(Brand.muted); label.alpha = 0.6
+                label.textColor = inactiveColor(); label.alpha = 1
                 label.isAccessibilityElement = true
                 addSubview(label)
                 return label
@@ -91,9 +91,7 @@ final class LyricScrollView: UIScrollView, UIScrollViewDelegate {
             needsPlacement = true; lastPosition = -1
             setNeedsLayout()
         }
-        if colorChanged {
-            for label in labels { label.textColor = UIColor(Brand.muted) }
-        }
+        if colorChanged || layoutChanged { apply(displayedEmphasis, allRows: true) }
         if active && !wasActive {
             // Before the page becomes visible, place the actual current line once.
             // Do not animate from a stale page offset or from the first lyric.
@@ -111,6 +109,13 @@ final class LyricScrollView: UIScrollView, UIScrollViewDelegate {
         } else if !active || !timed { stop() }
     }
     func stop() { link?.invalidate(); link = nil; lastFrameTime = 0 }
+
+    override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
+        super.traitCollectionDidChange(previousTraitCollection)
+        if traitCollection.hasDifferentColorAppearance(comparedTo: previousTraitCollection) {
+            apply(displayedEmphasis, allRows: true)
+        }
+    }
 
     override func layoutSubviews() {
         super.layoutSubviews()
@@ -178,17 +183,28 @@ final class LyricScrollView: UIScrollView, UIScrollViewDelegate {
         if !manual && (settings.dynamicLyrics || needsPlacement), abs(contentOffset.y - target) > 0.05 { contentOffset = CGPoint(x: 0, y: target) }
         needsPlacement = false
     }
-    private func apply(_ emphasis: [Int: CGFloat]) {
-        let rows = Set(displayedEmphasis.keys).union(emphasis.keys)
+    private func apply(_ emphasis: [Int: CGFloat], allRows: Bool = false) {
+        let rows = allRows ? Set(labels.indices) : Set(displayedEmphasis.keys).union(emphasis.keys)
+        let idle = inactiveColor()
         for row in rows where labels.indices.contains(row) {
             let weight = emphasis[row] ?? 0
             let label = labels[row]
-            label.alpha = 0.6 + 0.4 * weight
+            // Composite the idle color once, rather than fading a dynamic
+            // secondaryLabel color whose own alpha differs from blended rows.
+            label.alpha = 1
             label.transform = CGAffineTransform(scaleX: 1 + 0.05 * weight, y: 1 + 0.05 * weight)
-            label.textColor = blend(UIColor(Brand.muted), UIColor(Brand.accent(settings)), fraction: weight)
+            label.textColor = blend(idle, UIColor(Brand.accent(settings)), fraction: weight)
             label.accessibilityTraits = weight >= 0.5 ? [.staticText, .selected] : .staticText
         }
         displayedEmphasis = emphasis.filter { $0.value > 0 }
+    }
+    private func inactiveColor() -> UIColor {
+        var r0: CGFloat = 0, g0: CGFloat = 0, b0: CGFloat = 0, a0: CGFloat = 0
+        var r1: CGFloat = 0, g1: CGFloat = 0, b1: CGFloat = 0, a1: CGFloat = 0
+        UIColor(Brand.muted).resolvedColor(with: traitCollection).getRed(&r0, green: &g0, blue: &b0, alpha: &a0)
+        UIColor(Brand.paper).resolvedColor(with: traitCollection).getRed(&r1, green: &g1, blue: &b1, alpha: &a1)
+        let alpha = a0 * 0.6
+        return UIColor(red: r0 * alpha + r1 * (1 - alpha), green: g0 * alpha + g1 * (1 - alpha), blue: b0 * alpha + b1 * (1 - alpha), alpha: 1)
     }
     private func blend(_ from: UIColor, _ to: UIColor, fraction: CGFloat) -> UIColor {
         var r0: CGFloat = 0, g0: CGFloat = 0, b0: CGFloat = 0, a0: CGFloat = 0

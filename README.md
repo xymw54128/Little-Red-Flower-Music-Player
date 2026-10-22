@@ -6,21 +6,19 @@
 
 ## 下载与安装
 
-**Android 1.1.8 / code29（仅本地）**：[APK](dist/小红花-1.1.8.apk) · [版本说明](dist/小红花-1.1.8-发布说明.md) · [检查记录](dist/ANDROID-1.1.8-UI-CHECK.json)。歌词改为单层不透明颜色绘制，播放页预览直接匹配实时播放时钟；歌曲信息分组重排，明确标题/艺术家/作曲家，保留封面放大。旧曲库手动刷新后补读作曲家。未推送GitHub，以下1.1.7仍为公开版本。
+**1.1.8 双端版本**：Android 提供可覆盖安装的 APK（code 29）；iOS 提供 iPhone / iOS 17+ 的 Xcode 源码工程（build 29），没有可安装的 IPA。
 
-**1.1.7 双端版本**：Android 提供可覆盖安装的 APK（code 28）；iOS 提供 iPhone / iOS 17+ 的 Xcode 源码工程（build 28），没有可安装的 IPA。
-
-- **[下载 Android 1.1.7 APK](https://github.com/xymw54128/Little-Red-Flower-Music-Player/releases/download/v1.1.7/Xiaohonghua-1.1.7.apk)** · [安装说明](dist/安装说明.md) · [Android 版本说明](dist/小红花-1.1.7-发布说明.md)
-- **[下载 iOS 1.1.7 源码工程](https://github.com/xymw54128/Little-Red-Flower-Music-Player/releases/download/v1.1.7/Xiaohonghua-iOS-1.1.7-source.zip)** · [iPhone 构建说明](ios/README.md) · [iOS 版本说明](dist/小红花-iOS-1.1.7-发布说明.md)
-- [1.1.7 发布页面](https://github.com/xymw54128/Little-Red-Flower-Music-Player/releases/tag/v1.1.7) · [SHA-256 校验](https://github.com/xymw54128/Little-Red-Flower-Music-Player/releases/download/v1.1.7/SHA256SUMS.txt) · [历史版本](https://github.com/xymw54128/Little-Red-Flower-Music-Player/releases)
+- **[下载 Android 1.1.8 APK](https://github.com/xymw54128/Little-Red-Flower-Music-Player/releases/download/v1.1.8/Xiaohonghua-1.1.8.apk)** · [安装说明](dist/安装说明.md) · [Android 版本说明](dist/小红花-1.1.8-发布说明.md)
+- **[下载 iOS 1.1.8 源码工程](https://github.com/xymw54128/Little-Red-Flower-Music-Player/releases/download/v1.1.8/Xiaohonghua-iOS-1.1.8-source.zip)** · [iPhone 构建说明](ios/README.md) · [iOS 版本说明](dist/小红花-iOS-1.1.8-发布说明.md)
+- [1.1.8 发布页面](https://github.com/xymw54128/Little-Red-Flower-Music-Player/releases/tag/v1.1.8) · [SHA-256 校验](https://github.com/xymw54128/Little-Red-Flower-Music-Player/releases/download/v1.1.8/SHA256SUMS.txt) · [历史版本](https://github.com/xymw54128/Little-Red-Flower-Music-Player/releases)
 
 Android 最低 8.0，目标 Android 16；沿用历史签名，可直接覆盖安装。首次打开在“设置 → 歌曲文件夹”导入歌曲或授权文件夹。原文件按原位置读取，应用无需网络权限。
 
-本版整理花瓣迷你栏、播放页与歌词花枝、收藏反馈、主题弹层，以及音乐库/我喜欢/自建歌单的独立播放顺序和队列编辑。iOS 使用原生 SwiftUI / UIKit / AVFoundation，同步主要视觉与顺序逻辑；系统菜单、抽屉、文件授权和音频格式支持按各平台实现，详见各端说明。
+本版重排歌曲信息页，突出封面和明确的标题，分组展示艺术家、作曲家、专辑与音频/文件信息，以少量花枝点缀。两端读取真实作曲家标签并兼容旧索引和备份；**已有曲库需手动刷新一次补读作曲家**，缺失标签显示“未设置”。歌词采用清晰的单层文字呈现，播放页单行歌词直接读取媒体时钟，按 LRC 原时间戳切换。
 
-iOS 仍需 Mac + Xcode 和有效 Apple 签名才能构建安装。Windows 端的语法、工程和资源检查不等同 Xcode SDK 编译或 iPhone 实测，不能把源码 ZIP 当作 IPA。
+iOS 使用原生 SwiftUI / UIKit / AVFoundation；系统菜单、抽屉、文件授权和音频格式支持按平台实现。仍需 Mac + Xcode 和有效 Apple 签名才能构建安装；Windows 语法、工程和资源检查不等同 Apple SDK 编译或 iPhone 实测，不能把源码 ZIP 当作 IPA。
 
-Android APK SHA-256：`72d0860f808c1313baa9471080513f0bccf5bfb9a5ec53186ce77bd0a871b45f`。安装包与 iOS 源码 ZIP 放在 GitHub Releases，Git 克隆包含源码和检查报告。此前本地 1.1.2–1.1.6 的设计与验证记录保留；其历史本地安装包未随本次上传。公开历史 [1.1.1 双端版本](https://github.com/xymw54128/Little-Red-Flower-Music-Player/releases/tag/v1.1.1) 保留。
+Android APK SHA-256：`838bd824b09554b7729076477c9a5ed6209e4c1785c0c5b411ab94778ad0cb88`。安装包与 iOS 源码 ZIP 放在 GitHub Releases，Git 克隆包含源码和检查报告。历史 [1.1.7 双端版本](https://github.com/xymw54128/Little-Red-Flower-Music-Player/releases/tag/v1.1.7) 与 [1.1.1 双端版本](https://github.com/xymw54128/Little-Red-Flower-Music-Player/releases/tag/v1.1.1) 保留。
 
 ## 主要功能
 
@@ -107,7 +105,9 @@ python -m http.server 49173 --bind 127.0.0.1 --directory ui
 
 ## 验证状态与反馈
 
-Android 1.1.8 / code 29（2026-10-22，仅本地）：138 项 JVM 测试通过，Lint 0 错误、17 项提醒；Release/Debug 与原生测试 APK 构建成功。121 项原生用例仅编译，无连接设备，歌曲信息布局、歌词像素及时序仍待手机复测。签名兼容 22 个历史包；未修改播放服务、解码依赖、DSP、音量或速度配置。[验证报告](dist/ANDROID-1.1.8-UI-CHECK.json)。
+Android 1.1.8 / code 29（2026-10-22）：138 项 JVM 测试通过，Lint 0 错误、17 项提醒；Release/Debug 与原生测试 APK 构建成功。121 项原生用例仅编译，无连接设备，歌曲信息布局、歌词像素及时序仍待手机复测。签名兼容 22 个历史包；未修改播放服务、解码依赖、DSP、音量或速度配置。[验证报告](dist/ANDROID-1.1.8-UI-CHECK.json)。
+
+iOS 1.1.8 / build29（2026-10-22）：27 个 Swift 文件语法解析无错误，工程、版本、scheme、资源与 7 份字体许可/哈希检查通过；提供 61 项 CoreTests（54 项纯 Core、7 项仅 iOS 模型/渲染）和 9 项 UI 用例，均未执行。未做 Apple SDK 编译、Xcode/XCTest、模拟器或 iPhone 验收，交付源码 ZIP。[iOS 检查报告](dist/小红花-iOS-1.1.8-CHECK.json)。
 
 iOS 1.1.7 / build28：25个Swift文件语法解析无错误，工程引用、scheme、版本、资源与7份字体许可/哈希检查通过；发现52项CoreTests与9项界面用例，未执行。Windows无法验证Apple SDK类型编译、Xcode/XCTest、模拟器或iPhone运行，本版提供源码ZIP。[iOS检查报告](dist/小红花-iOS-1.1.7-CHECK.json)。
 

@@ -150,6 +150,19 @@ actor FileLibrary {
                             }
                         }
                     }
+                    // The bounded FLAC reader already handles COMPOSER. Other containers
+                    // may expose composer only through their format-specific metadata.
+                    if tags.composer.isEmpty, url.pathExtension.lowercased() != "flac",
+                       let formats = try? await asset.load(.availableMetadataFormats) {
+                        for format in formats {
+                            guard let metadata = try? await asset.loadMetadata(for: format) else { continue }
+                            for item in metadata where item.identifier == .iTunesMetadataComposer || item.identifier == .id3MetadataComposer {
+                                let value = ((try? await item.load(.stringValue)) ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
+                                if !value.isEmpty { tags.composer = value; break }
+                            }
+                            if !tags.composer.isEmpty { break }
+                        }
+                    }
                     if let lrc, let data = try? boundedData(lrc, maximum: 2 * 1024 * 1024), let text = Lyrics.decode(data) { tags.lyrics = text }
                     var artwork = ""
                     if let image = tags.artwork {
@@ -162,7 +175,7 @@ actor FileLibrary {
                     }
                     sourceSongs.append(Song(id: id, sourceID: source.id, relativePath: relative, name: url.lastPathComponent,
                         title: tags.title.isEmpty ? url.deletingPathExtension().lastPathComponent : tags.title,
-                        artist: tags.artist.isEmpty ? "未知歌手" : tags.artist, albumArtist: tags.albumArtist, track: tags.track, disc: tags.disc, album: tags.album.isEmpty ? "未知专辑" : tags.album,
+                        artist: tags.artist.isEmpty ? "未知歌手" : tags.artist, composer: tags.composer.trimmingCharacters(in: .whitespacesAndNewlines), albumArtist: tags.albumArtist, track: tags.track, disc: tags.disc, album: tags.album.isEmpty ? "未知专辑" : tags.album,
                         duration: tags.duration, size: size, modified: modified, format: url.pathExtension.uppercased(),
                         sampleRate: tags.sampleRate, bitDepth: tags.bitDepth, lyrics: tags.lyrics, artwork: artwork, lyricModified: lyricTime))
                 }

@@ -1,7 +1,7 @@
 import Foundation
 
 struct AudioTags {
-    var title = "", artist = "", album = "", albumArtist = "", lyrics = ""
+    var title = "", artist = "", composer = "", album = "", albumArtist = "", lyrics = ""
     var track = 0, disc = 0
     var duration: Double = 0
     var sampleRate = 0, bitDepth = 0
@@ -65,6 +65,7 @@ enum TagReader {
                     switch key {
                     case "TITLE": result.title = text
                     case "ARTIST": result.artist = result.artist.isEmpty ? text : result.artist + " / " + text
+                    case "COMPOSER": result.composer = result.composer.isEmpty ? text : result.composer + " / " + text
                     case "ALBUM": result.album = text
                     case "ALBUMARTIST", "ALBUM ARTIST": result.albumArtist = text
                     case "TRACKNUMBER", "TRACK": result.track = number(text)
@@ -114,6 +115,7 @@ enum TagReader {
             switch id {
             case "TIT2": result.title = text(frame.dropFirst(), encoding: frame[0])
             case "TPE1": result.artist = text(frame.dropFirst(), encoding: frame[0])
+            case "TCOM": result.composer = text(frame.dropFirst(), encoding: frame[0])
             case "TALB": result.album = text(frame.dropFirst(), encoding: frame[0])
             case "TPE2": result.albumArtist = text(frame.dropFirst(), encoding: frame[0])
             case "TRCK": result.track = number(text(frame.dropFirst(), encoding: frame[0]))

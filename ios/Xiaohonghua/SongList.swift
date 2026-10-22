@@ -204,28 +204,44 @@ struct AddToPlaylist: View {
 /// Reused by the list menu and the full player.
 struct SongInfoView: View {
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+    @EnvironmentObject private var library: MusicLibrary
     var song: Song
     @State private var showingArtwork = false
     var body: some View {
         NavigationStack {
-            Form {
-                Section {
-                    Button { showingArtwork = true } label: {
-                        Artwork(name: song.artwork, radius: 22, pixels: 1000).aspectRatio(1, contentMode: .fit)
-                    }.buttonStyle(.plain).accessibilityLabel("放大歌曲封面")
-                        .listRowInsets(EdgeInsets(top: 14, leading: 14, bottom: 14, trailing: 14))
-                }
-                Section("歌曲信息") {
-                    LabeledContent("歌名", value: song.title)
-                    LabeledContent("歌手", value: song.artist)
-                    LabeledContent("专辑", value: song.album)
-                    LabeledContent("时长", value: timeLabel(song.duration))
-                    LabeledContent("格式", value: song.format.uppercased())
-                    if song.sampleRate > 0 { LabeledContent("采样率", value: String(format: "%.1f kHz", Double(song.sampleRate) / 1000)) }
-                    if song.bitDepth > 0 { LabeledContent("位深", value: "\(song.bitDepth) bit") }
-                    LabeledContent("文件", value: song.name)
-                }.textSelection(.enabled)
-            }.scrollContentBackground(.hidden).background(Brand.paper)
+            GeometryReader { geometry in
+                let stacked = geometry.size.width < 340 || dynamicTypeSize > .xLarge
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 0) {
+                        Button { showingArtwork = true } label: {
+                            Artwork(name: song.artwork, radius: 22, pixels: 1000).frame(width: 120, height: 120)
+                        }.buttonStyle(.plain).accessibilityLabel("放大歌曲封面")
+                            .frame(maxWidth: .infinity)
+                            .overlay(alignment: .topTrailing) { TitleFlowerSprig().frame(width: 48, height: 36).padding(.top, 4) }
+                        Text("标题").font(.caption).foregroundStyle(Brand.muted).padding(.top, 16)
+                        Text(song.title.isEmpty ? "未设置" : song.title)
+                            .font(.title2.weight(.semibold)).foregroundStyle(Brand.ink)
+                            .fixedSize(horizontal: false, vertical: true).textSelection(.enabled).padding(.top, 6)
+                        VStack(alignment: .leading, spacing: 14) {
+                            infoRow("艺术家", song.artist, stacked: stacked)
+                            infoRow("作曲家", song.composer, stacked: stacked)
+                            infoRow("专辑", song.album, stacked: stacked)
+                        }.padding(.top, 24)
+                        Divider().overlay(Brand.ink.opacity(0.08)).padding(.top, 24).padding(.bottom, 20)
+                        Text("音频与文件").font(.subheadline.weight(.semibold)).foregroundStyle(Brand.accent(library.state.settings))
+                        VStack(alignment: .leading, spacing: 14) {
+                            infoRow("格式", song.format.uppercased(), stacked: stacked)
+                            infoRow("时长", timeLabel(song.duration), stacked: stacked)
+                            infoRow("采样率", song.sampleRate > 0 ? String(format: "%.1f kHz", Double(song.sampleRate) / 1000) : "未知", stacked: stacked)
+                            infoRow("位深", song.bitDepth > 0 ? "\(song.bitDepth) bit" : "未知", stacked: stacked)
+                            infoRow("文件大小", ByteCountFormatter.string(fromByteCount: song.size, countStyle: .file), stacked: stacked)
+                            infoRow("文件名", song.name, stacked: stacked)
+                            infoRow("文件路径", song.relativePath.isEmpty ? song.name : song.relativePath, stacked: stacked)
+                        }.padding(.top, 16)
+                    }.padding(24).frame(maxWidth: 560, alignment: .leading).frame(maxWidth: .infinity)
+                }.background(Brand.paper)
+            }
                 .navigationTitle("歌曲信息").navigationBarTitleDisplayMode(.inline)
                 .toolbar { ToolbarItem(placement: .confirmationAction) { Button("完成") { dismiss() } } }
         }.fullScreenCover(isPresented: $showingArtwork) {
@@ -233,6 +249,21 @@ struct SongInfoView: View {
                 Brand.paper.ignoresSafeArea()
                 Artwork(name: song.artwork, radius: 0, pixels: 2048).aspectRatio(1, contentMode: .fit).frame(maxHeight: .infinity)
                 Button { showingArtwork = false } label: { Image(systemName: "xmark").font(.system(size: 20, weight: .medium)).frame(width: 44, height: 44).background(.regularMaterial, in: Circle()) }.padding(20).accessibilityLabel("关闭封面")
+            }
+        }
+    }
+    @ViewBuilder private func infoRow(_ label: String, _ value: String, stacked: Bool) -> some View {
+        if stacked {
+            VStack(alignment: .leading, spacing: 5) {
+                Text(label).font(.caption).foregroundStyle(Brand.muted)
+                Text(value.isEmpty ? "未设置" : value).font(.subheadline).foregroundStyle(Brand.ink)
+                    .fixedSize(horizontal: false, vertical: true).textSelection(.enabled)
+            }.frame(maxWidth: .infinity, alignment: .leading)
+        } else {
+            HStack(alignment: .top, spacing: 16) {
+                Text(label).font(.caption).foregroundStyle(Brand.muted).frame(width: 64, alignment: .leading).padding(.top, 2)
+                Text(value.isEmpty ? "未设置" : value).font(.subheadline).foregroundStyle(Brand.ink)
+                    .fixedSize(horizontal: false, vertical: true).frame(maxWidth: .infinity, alignment: .leading).textSelection(.enabled)
             }
         }
     }

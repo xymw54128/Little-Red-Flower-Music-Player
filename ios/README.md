@@ -1,12 +1,18 @@
-# 小红花 · iPhone 1.1.7
+# 小红花 · iPhone 1.1.8
 
-作者：浪雨林兴云魔王。SwiftUI / UIKit / AVFoundation 原生 iPhone 工程，最低 iOS17、竖屏；版本 1.1.7、构建号28，Bundle ID `com.xiaohonghua.music.ios`。
+作者：浪雨林兴云魔王。SwiftUI / UIKit / AVFoundation 原生 iPhone 工程，最低 iOS17、竖屏；版本 1.1.8、构建号29，Bundle ID `com.xiaohonghua.music.ios`。
 
 **提供 Xcode 源码工程，没有可安装 IPA。** 当前开发环境为 Windows；语法、工程引用、资源和源码包检查不能替代 Apple SDK 类型检查、Xcode 编译、XCTest 或 iPhone 验收。
 
-[下载 iOS 1.1.7 源码包](https://github.com/xymw54128/Little-Red-Flower-Music-Player/releases/download/v1.1.7/Xiaohonghua-iOS-1.1.7-source.zip) · [双端发布页](https://github.com/xymw54128/Little-Red-Flower-Music-Player/releases/tag/v1.1.7) · [源代码许可](LICENSE) · [字体许可](THIRD_PARTY_NOTICES.md)
+[下载 iOS 1.1.8 源码包](https://github.com/xymw54128/Little-Red-Flower-Music-Player/releases/download/v1.1.8/Xiaohonghua-iOS-1.1.8-source.zip) · [双端发布页](https://github.com/xymw54128/Little-Red-Flower-Music-Player/releases/tag/v1.1.8) · [源代码许可](LICENSE) · [字体许可](THIRD_PARTY_NOTICES.md)
 
 ## 本版变化
+
+- 歌曲信息采用纸色分组布局，突出封面与明确的“标题”，展示艺术家、作曲家和专辑，音频与文件信息独立排列，加入少量静态花枝。长标题、路径和大字号可完整查看；保留点击封面放大。
+- 读取真实作曲家标签并兼容旧索引和备份。升级后请手动刷新曲库补读作曲家；缺失标签显示“未设置”。仅移除专辑歌手/碟号/曲目的信息展示，保留专辑排序字段。
+- 歌词的字色与缩放由同一帧状态驱动，保留上下渐隐；封面单行歌词读取实际媒体时钟，按 LRC 时间戳与 offset 切换。
+
+## 保留功能
 
 - 原版 B 固定封面播放页，取消封面呼吸；封面周围采用彩色野花，小红心下方七色花按播放状态旋转、暂停逐渐停下。保留上一首/播放暂停/下一首、队列与完整歌曲时长，长歌词单行滚动完整预览。
 - 迷你栏采用圆润全宽布局，圆形封面与进度圈、紧密七色花瓣逐瓣跳动、右侧五片绿叶；按钮无灰色底纹。花朵使用原生图层，减少动态和退到后台时停帧。
@@ -27,7 +33,7 @@
 需要 Xcode16或更新版本与iOS17+模拟器。源码包已包含资源，不需要CocoaPods或XcodeGen：
 
 ```sh
-cd "/解压位置/小红花-iOS-1.1.7"
+cd "/解压位置/小红花-iOS-1.1.8"
 open Xiaohonghua.xcodeproj
 bash tools/verify-mac.sh
 ```
@@ -40,10 +46,10 @@ bash tools/verify-mac.sh
 
 [语法报告](verification/SWIFT-SYNTAX.json)检查Swift grammar；[工程报告](verification/PROJECT-CHECK.json)检查OpenStep工程、target/source引用、版本、scheme、隐私XML、资源、字体许可/哈希、样本文字与标点回退，并记录发现的测试数量。发现数量不表示测试执行通过。
 
-本轮25个Swift文件语法解析无错误，工程与资源检查通过；发现52项CoreTests（47项可用于Swift Package核心检查，5项仅iOS播放模型）和9项界面用例，均未在Windows执行。
+本轮 27 个 Swift 文件语法解析无错误，18 个应用源码的工程引用、版本 1.1.8/build29、scheme、图片与 7 份字体许可/哈希检查通过。提供 61 项 CoreTests（54 项纯 Core、7 项仅 iOS 模型/渲染）和 9 项 UI 用例，均未在 Windows 执行；发现数量不表示测试通过。
 
 本轮未执行Xcode SDK编译、XCTest、模拟器、实机、Apple签名和IPA导出，也未测真实千首FLAC、100GB文件夹、手机帧率、峰值内存、权限重启、锁屏音频或SE至Pro Max排版。解码器、DSP、音量和速度配置保持原实现，不宣称系统输出bit-perfect。
 
-[本版源码打包报告](https://github.com/xymw54128/Little-Red-Flower-Music-Player/releases/download/v1.1.7/Xiaohonghua-iOS-1.1.7-CHECK.json) · [设计与验收范围](https://github.com/xymw54128/Little-Red-Flower-Music-Player/blob/main/docs/design/ios-1.1.7.md)。历史 [iOS1.1.1源码发布](https://github.com/xymw54128/Little-Red-Flower-Music-Player/releases/tag/v1.1.1) 保留。
+[本版源码打包报告](https://github.com/xymw54128/Little-Red-Flower-Music-Player/releases/download/v1.1.8/Xiaohonghua-iOS-1.1.8-CHECK.json) · [设计与验收范围](https://github.com/xymw54128/Little-Red-Flower-Music-Player/blob/main/docs/design/ios-1.1.8.md)。历史 [iOS1.1.1源码发布](https://github.com/xymw54128/Little-Red-Flower-Music-Player/releases/tag/v1.1.1) 保留。
 
 源码包解压后本目录即工程根目录，示例命令的外层文件夹名可自定。Windows `tools/host-python.cjs` 仅供原工作区检查；其他主机可安装 `tools/requirements-host.txt` 后直接运行Python检查。Mac构建无需运行资源生成器。

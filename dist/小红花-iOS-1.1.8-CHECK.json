@@ -1,0 +1,26 @@
+{
+  "artifact": "小红花-iOS-1.1.8-源码.zip",
+  "bytes": 49638968,
+  "sha256": "947c95fc252cdb9fd3648faf67539bd31312aade76d8c86812a49252f48687ab",
+  "files": 101,
+  "artifactType": "Xcode source project, NOT an installable IPA",
+  "version": "1.1.8",
+  "build": 29,
+  "minimumIOS": "17.0",
+  "windowsChecks": {
+    "swiftGrammarErrors": 0,
+    "swiftFiles": 27,
+    "projectResourcesAndFonts": "pass",
+    "zipIntegrity": "pass",
+    "android118Unchanged": "838bd824b09554b7729076477c9a5ed6209e4c1785c0c5b411ab94778ad0cb88"
+  },
+  "coreTestsProvided": 61,
+  "uiTestsProvided": 9,
+  "notRun": [
+    "Xcode SDK type checking and compilation",
+    "XCTest execution",
+    "iPhone simulator",
+    "iPhone device and performance",
+    "Apple signing and IPA export"
+  ]
+}

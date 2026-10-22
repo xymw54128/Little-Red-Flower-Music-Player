@@ -1,0 +1,59 @@
+{
+  "date": "2026-10-22T06:20:10.726Z",
+  "version": "1.1.8",
+  "repo": "https://github.com/xymw54128/Little-Red-Flower-Music-Player",
+  "releaseTarget": "https://github.com/xymw54128/Little-Red-Flower-Music-Player/releases/tag/v1.1.8",
+  "android": {
+    "asset": "Xiaohonghua-1.1.8.apk",
+    "bytes": 64052755,
+    "sha256": "838bd824b09554b7729076477c9a5ed6209e4c1785c0c5b411ab94778ad0cb88",
+    "versionCode": 29,
+    "sameVerifiedApkAsLocal118": true,
+    "unitTests": {
+      "tests": 138,
+      "failures": 0,
+      "errors": 0
+    },
+    "lint": {
+      "errors": 0,
+      "warnings": 17
+    },
+    "nativeTests": {
+      "compiled": 121,
+      "execution": "not_run_no_device"
+    },
+    "audioConfigurationChanged": false
+  },
+  "ios": {
+    "asset": "Xiaohonghua-iOS-1.1.8-source.zip",
+    "bytes": 49638968,
+    "sha256": "947c95fc252cdb9fd3648faf67539bd31312aade76d8c86812a49252f48687ab",
+    "build": 29,
+    "minimumIOS": "17.0",
+    "files": 101,
+    "swiftFiles": 27,
+    "grammarErrors": 0,
+    "projectResourcesFontsAndZip": "pass",
+    "coreModelTestsProvided": 61,
+    "swiftPackageCoreTests": 54,
+    "iosOnlyModelRenderingTests": 7,
+    "uiTestsProvided": 9,
+    "testExecution": "not_run_no_mac",
+    "audioPreparationSessionAndCallbacksUnchanged": true,
+    "changes": [
+      "Composer metadata, backwards-compatible Codable and portable backup encoding",
+      "Paper-themed grouped song information with title, artist, composer, album and tappable cover",
+      "Uniform opaque idle lyric colors across initial and previously emphasized rows; theme/trait refresh",
+      "Live media-clock cover lyric preview; timestamp and offset accurate, hidden frame sampling stopped"
+    ],
+    "notRun": [
+      "Xcode SDK type checking and compilation",
+      "XCTest execution",
+      "iPhone simulator",
+      "iPhone device and performance",
+      "Apple signing and IPA export"
+    ]
+  },
+  "previous117AndroidAndIOSArtifactsUnchanged": true,
+  "sourceReview": "Independent read-only review found no P1/P2; not a substitute for Apple SDK compilation or device testing"
+}

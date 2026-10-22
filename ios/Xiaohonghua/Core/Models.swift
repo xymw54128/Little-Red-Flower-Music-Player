@@ -49,6 +49,7 @@ struct Song: Codable, Identifiable, Equatable {
     var name: String
     var title: String
     var artist: String = "未知歌手"
+    var composer: String = ""
     var albumArtist: String = ""
     var track: Int = 0
     var disc: Int = 0
@@ -356,7 +357,7 @@ extension MusicOrder {
 
 extension Song {
     enum CodingKeys: String, CodingKey {
-        case id, sourceID, relativePath, name, title, artist, albumArtist, track, disc, album
+        case id, sourceID, relativePath, name, title, artist, composer, albumArtist, track, disc, album
         case duration, size, modified, format, sampleRate, bitDepth, lyrics, artwork, lyricModified, available
     }
     init(from decoder: Decoder) throws {
@@ -367,6 +368,7 @@ extension Song {
         name = try c.decode(String.self, forKey: .name)
         title = try c.decodeIfPresent(String.self, forKey: .title) ?? name
         artist = try c.decodeIfPresent(String.self, forKey: .artist) ?? "未知歌手"
+        composer = try c.decodeIfPresent(String.self, forKey: .composer) ?? ""
         albumArtist = try c.decodeIfPresent(String.self, forKey: .albumArtist) ?? ""
         track = max(0, try c.decodeIfPresent(Int.self, forKey: .track) ?? 0)
         disc = max(0, try c.decodeIfPresent(Int.self, forKey: .disc) ?? 0)

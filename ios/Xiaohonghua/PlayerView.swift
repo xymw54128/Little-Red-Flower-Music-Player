@@ -124,8 +124,8 @@ struct PlayerView: View {
                     Text(quality(song)).font(.system(size: 11)).foregroundStyle(Brand.muted).lineLimit(1)
                 }
             }.fixedSize(horizontal: false, vertical: true).padding(.top, 10)
-            CoverLyricPreview(lines: lines, settings: library.state.settings, progress: playback.progress,
-                              active: page == 0 && phase == .active, reduceMotion: reduceMotion)
+            CoverLyricPreview(lines: lines, settings: library.state.settings, playback: playback, progress: playback.progress,
+                              active: page == 0 && phase == .active && !queueSheet && !addSheet && !infoSheet, reduceMotion: reduceMotion)
                 .frame(height: 48).contentShape(Rectangle()).onTapGesture { openLyrics() }
                 .accessibilityAddTraits(.isButton).accessibilityAction { openLyrics() }
                 .accessibilityIdentifier("player.lyric-preview")
@@ -140,31 +140,102 @@ struct PlayerView: View {
     }
 }
 
-/// Only this small preview observes progress ticks; the cover and navigation do not.
-private struct CoverLyricPreview: View {
+/// Progress events handle paused seeks; the UIKit leaf samples the live clock
+/// while playing, without recomputing SwiftUI layout on every display frame.
+private struct CoverLyricPreview: UIViewRepresentable {
     var lines: [LyricLine]
     var settings: MusicSettings
+    var playback: Playback
     @ObservedObject var progress: PlaybackProgress
     var active: Bool
     var reduceMotion: Bool
-    private var text: String {
-        let index = Lyrics.current(lines, at: progress.position)
-        return lines.indices.contains(index) ? lines[index].text.replacingOccurrences(of: "\n", with: " · ") : "点击封面或左滑查看歌词"
+    func makeUIView(context: Context) -> CoverLyricPreviewView { CoverLyricPreviewView() }
+    func updateUIView(_ view: CoverLyricPreviewView, context: Context) {
+        view.configure(lines: lines, settings: settings, playback: playback, active: active, reduceMotion: reduceMotion)
     }
-    var body: some View {
-        GeometryReader { space in
-            if reduceMotion {
-                ScrollView(.horizontal, showsIndicators: false) {
-                    Text(text).font(Font(Brand.font(settings.lyricFont, size: CGFloat(min(settings.lyricSize, 20)))))
-                        .fixedSize(horizontal: true, vertical: false).frame(minWidth: space.size.width)
-                }.foregroundStyle(Brand.accent(settings)).frame(maxHeight: .infinity)
-            } else {
-                LyricMarquee(text: text, font: Brand.font(settings.lyricFont, size: min(settings.lyricSize, 20)),
-                             color: UIColor(Brand.accent(settings)), active: active)
-                    .accessibilityLabel(text)
-            }
-        }
+    static func dismantleUIView(_ view: CoverLyricPreviewView, coordinator: ()) { view.stop() }
+}
+
+@MainActor
+private final class PreviewFrameTarget: NSObject {
+    weak var view: CoverLyricPreviewView?
+    @objc func frame(_ link: CADisplayLink) { view?.sample() }
+}
+
+final class CoverLyricPreviewView: UIView {
+    private let scroll = UIScrollView()
+    private let marquee = MarqueeLabelView()
+    private let frameTarget = PreviewFrameTarget()
+    private weak var playback: Playback?
+    private var link: CADisplayLink?
+    private var lines: [LyricLine] = []
+    private var settings = MusicSettings()
+    private var active = false
+    private var reduceMotion = false
+    private var currentIndex = Int.min
+    private var currentText = "点击封面或左滑查看歌词"
+
+    override init(frame: CGRect) {
+        super.init(frame: frame)
+        scroll.showsHorizontalScrollIndicator = false
+        scroll.contentInsetAdjustmentBehavior = .never
+        scroll.isDirectionalLockEnabled = true
+        isAccessibilityElement = true; accessibilityTraits = .button
+        scroll.accessibilityElementsHidden = true
+        scroll.addSubview(marquee); addSubview(scroll)
+        frameTarget.view = self
     }
+    required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
+
+    func configure(lines: [LyricLine], settings: MusicSettings, playback: Playback, active: Bool, reduceMotion: Bool) {
+        let changed = self.lines != lines || self.settings != settings || self.reduceMotion != reduceMotion
+        let visibilityChanged = self.active != active
+        self.lines = lines; self.settings = settings; self.playback = playback
+        self.active = active; self.reduceMotion = reduceMotion
+        if changed { currentIndex = Int.min }
+        scroll.isScrollEnabled = reduceMotion
+        if active { sample(force: changed || visibilityChanged) }
+        else if changed || visibilityChanged { configureLabel() }
+        updateClock()
+    }
+    fileprivate func sample(force: Bool = false) {
+        guard active, let playback else { return }
+        // The detail page can anticipate its scroll motion; cover text must use
+        // the exact LRC timestamp, never that lead window or a 100ms snapshot.
+        let index = Lyrics.current(lines, at: playback.audio?.currentTime ?? playback.progress.position)
+        guard force || index != currentIndex else { return }
+        currentIndex = index
+        currentText = lines.indices.contains(index) ? lines[index].text.replacingOccurrences(of: "\n", with: " · ") : "点击封面或左滑查看歌词"
+        configureLabel()
+        scroll.contentOffset = .zero
+    }
+    private func configureLabel() {
+        marquee.configure(text: currentText, font: Brand.font(settings.lyricFont, size: min(settings.lyricSize, 20)),
+                          color: UIColor(Brand.accent(settings)), active: active && !reduceMotion)
+        accessibilityLabel = currentText
+        setNeedsLayout()
+    }
+    override func layoutSubviews() {
+        super.layoutSubviews()
+        scroll.frame = bounds
+        let width = reduceMotion ? max(bounds.width, marquee.naturalWidth) : bounds.width
+        marquee.frame = CGRect(x: 0, y: 0, width: width, height: bounds.height)
+        scroll.contentSize = CGSize(width: width, height: bounds.height)
+    }
+    override func didMoveToWindow() {
+        super.didMoveToWindow()
+        if window != nil { sample() }
+        updateClock()
+    }
+    private func updateClock() {
+        guard active, playback?.playing == true, window != nil, !lines.isEmpty else { stop(); return }
+        guard link == nil else { return }
+        let link = CADisplayLink(target: frameTarget, selector: #selector(PreviewFrameTarget.frame(_:)))
+        link.preferredFrameRateRange = CAFrameRateRange(minimum: 30, maximum: 120, preferred: ProcessInfo.processInfo.isLowPowerModeEnabled ? 60 : 120)
+        link.add(to: .main, forMode: .common)
+        self.link = link
+    }
+    func stop() { link?.invalidate(); link = nil }
 }
 
 private struct LyricMarquee: UIViewRepresentable {
@@ -181,6 +252,7 @@ private final class MarqueeLabelView: UIView {
     private let label = UILabel()
     private var active = false
     private var animationKey = ""
+    var naturalWidth: CGFloat { ceil(label.sizeThatFits(CGSize(width: CGFloat.greatestFiniteMagnitude, height: CGFloat.greatestFiniteMagnitude)).width) }
     override init(frame: CGRect) { super.init(frame: frame); clipsToBounds = true; label.numberOfLines = 1; addSubview(label) }
     required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
     func configure(text: String, font: UIFont, color: UIColor, active: Bool) {
